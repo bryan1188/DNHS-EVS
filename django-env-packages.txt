@@ -1,0 +1,11 @@
+#for PostgreSQL driver
+pip install psycopg2
+
+#for populating sample data
+pip install faker
+
+#for opening image file formats
+pip install pillow
+
+#for bootstrap3 integration with Django
+pip install django-bootstrap3
