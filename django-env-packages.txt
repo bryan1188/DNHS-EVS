@@ -9,3 +9,12 @@ pip install pillow
 
 #for bootstrap3 integration with Django
 pip install django-bootstrap3
+
+#Mixins to add easy functionality to Django class-based views, forms, and models
+pip install django-braces
+
+#The secure Argon2 password hashing algorithm
+pip install argon2-cffi
+
+# password hashing function
+pip install bcrypt
