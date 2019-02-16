@@ -1,0 +1,2 @@
+study for hasing and managing User:
+	check class UserManager in contrib.auth.models
