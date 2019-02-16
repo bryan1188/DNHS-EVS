@@ -2,10 +2,11 @@ from django.db import models
 
 # Create your models here.
 class School(models.Model):
-    name = models.CharField(max_length=50, verbose_name="School Name")
-    region = models.CharField(max_length=20, verbose_name="Region")
-    division = models.CharField(max_length=50, verbose_name="Division")
-    principal_name = models.CharField(max_length=150, verbose_name="Principal Name")
+    school_id = models.CharField(max_length=10, verbose_name="School ID", default="")
+    name = models.CharField(max_length=50, verbose_name="School Name", default="")
+    region = models.CharField(max_length=20, verbose_name="Region", default="")
+    division = models.CharField(max_length=50, verbose_name="Division", default="")
+    principal_name = models.CharField(max_length=150, verbose_name="Principal Name", default="")
 
     def __str__(self):
         return self.name
