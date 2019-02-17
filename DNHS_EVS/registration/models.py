@@ -13,15 +13,16 @@ class School(models.Model):
 
 class Class(models.Model):
     school = models.ForeignKey(School, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="School")
-    school_year = models.CharField(max_length=15, verbose_name="School Year")
-    grade_level = models.CharField(max_length=20, verbose_name="Grade Level")
-    section = models.CharField(max_length=20, verbose_name="Section")
+    school_year = models.CharField(max_length=15, verbose_name="School Year", null=True)
+    grade_level = models.CharField(max_length=20, verbose_name="Grade Level", null=True)
+    section = models.CharField(max_length=20, verbose_name="Section", null=True)
     registered_male_bosy = models.PositiveSmallIntegerField(verbose_name="Registered Male BoSY", null=True)
     registered_female_bosy = models.PositiveSmallIntegerField(verbose_name="Registered Female BoSY", null=True)
     registered_total_bosy = models.PositiveSmallIntegerField(verbose_name="Registered Total BoSY", null=True)
     registered_male_eosy = models.PositiveSmallIntegerField(verbose_name="Registered Male EoSY", null=True)
     registered_female_eosy = models.PositiveSmallIntegerField(verbose_name="Registered Female EoSY", null=True)
-    registered_total_bosy = models.PositiveSmallIntegerField(verbose_name="Registered Total EoSY", null=True)
+    registered_total_eosy = models.PositiveSmallIntegerField(verbose_name="Registered Total EoSY", null=True)
+    adviser = models.CharField(max_length=150, verbose_name='Adviser', null=True)
 
     def __str__(self):
         return serlf.grade_level + " - " + self.section
@@ -34,8 +35,8 @@ class Sex(models.Model):
     def __str__(self):
         return self.sex
 
-class MotherTounge(models.Model):
-    mother_tounge = models.CharField(max_length=50, verbose_name="Mother Tounge")
+class MotherTongue(models.Model):
+    mother_tongue = models.CharField(max_length=50, verbose_name="Mother Tongue")
 
     def __str__(self):
         return self.mother_tounge
@@ -80,7 +81,7 @@ class Student(models.Model):
     sex = models.ForeignKey(Sex, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Sex")
     birth_date = models.DateField(verbose_name="Birth Date", blank=True, null=True)
     age = models.PositiveSmallIntegerField(verbose_name="Age", blank=True, null=True)
-    mother_tounge = models.ForeignKey(MotherTounge, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Mother Tounge")
+    mother_tongue = models.ForeignKey(MotherTongue, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Mother Tounge")
     ethnic_group = models.ForeignKey(EthnicGroup, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Ethnic Group")
     religion = models.ForeignKey(Religion, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Religion")
     address_house_no = models.CharField(max_length=50,verbose_name="Address House Number",blank=True, null=True)

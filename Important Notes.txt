@@ -1,2 +1,8 @@
 study for hasing and managing User:
 	check class UserManager in contrib.auth.models
+	
+	
+testing and error handling:
+	upload record Use case:
+		make sure it will continue even record or field is empty. 
+		data cleansing - ethnic group has blank column
