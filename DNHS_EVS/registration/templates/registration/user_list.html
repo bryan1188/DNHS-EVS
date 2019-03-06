@@ -16,7 +16,7 @@
       {{ user_filter_form.as_p }}
   </form>
   <p>
-     <button type="button" class="btn btn-primary js-create-user">
+     <button type="button" class="btn btn-primary js-create-user" data-url="{% url 'registration:create_user_ajax' %}">
        <span class="glyphicon glyphicon-plus"></span>
        New User
      </button>
@@ -79,7 +79,7 @@
         ],
         "columnDefs": [
           { "render": function ( data, type, row ) {
-                      return '<a href="/registration/student/update/' + data  +'">' +'<button class="btn btn-success">Update</button>' +"</a>";
+                      return '<button type="button" class="btn btn-warning btn-sm js-update-user" data-url="/registration/user/update/' + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span> Edit </button>';
                   },
                   "targets": -1
           },

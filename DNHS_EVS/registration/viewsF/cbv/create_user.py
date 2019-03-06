@@ -43,20 +43,66 @@ class UserCreate(TemplateView):
                 if for_student[0] == 'election_officer':
                     election_officer, created = ElectionOfficer.objects.get_or_create(
                         student = student,
+                        user = user,
                     )
                     #add user to group
                     group = Group.objects.get(name="Election Officer")
                     group.user_set.add(user)
+            else: #try to revoke privilege for election officer
+                #check if election Officer exist
+                election_officer = ElectionOfficer.objects.filter(pk=user).first()
+                if election_officer:
+                    #deactivate election_officer
+                    election_officer.is_active = False
+                    election_officer.save()
+
+                #remove from Election Officer group
+                try:
+                    election_officer_group = Group.objects.get(name="Election Officer")
+                    election_officer_group.user_set.remove(user)
+                except:
+                    pass
 
             #check if other groups are checked
             other_groups = user_form.cleaned_data['other_groups']
             if other_groups:
                 if 'teacher' in other_groups:
                     group = Group.objects.get(name="Teacher")
-                    group.user_set.add(user)
+                    try:
+                        group.user_set.add(user)
+                    except:
+                        pass
+                else: #revoke teacher
+                    try:
+                        group = Group.objects.get(name="Teacher")
+                        group.user_set.remove(user)
+                    except:
+                        pass
+
                 if 'system_administrator' in other_groups:
                     group = Group.objects.get(name="System Administrator")
-                    group.user_set.add(user)
+                    try:
+                        group.user_set.add(user)
+                    except:
+                        pass
+                else: #revoke System Administrator
+                    try:
+                        group = Group.objects.get(name="System Administrator")
+                        group.user_set.remove(user)
+                    except:
+                        pass
+            else: #revoke Teacher and System Administrator Group
+                try:
+                    group = Group.objects.get(name="Teacher")
+                    group.user_set.remove(user)
+                except:
+                    pass
+
+                try:
+                    group = Group.objects.get(name="System Administrator")
+                    group.user_set.remove(user)
+                except:
+                    pass
 
             profile.save()
             data['form_is_valid'] = True
@@ -117,9 +163,17 @@ def create_user_ajax(request, **kwargs):
         else:
             context['user_form'] = forms.UserForm()
 
+    if 'template' in kwargs: #from update_user
+        template = kwargs['template']
+    else: #default template if not set
+        template = 'registration/partial_user_create_ajax.html'
+
+    if 'groups' in kwargs: #from update_user
+        context['groups'] = kwargs.get('groups')
+
     student_list = Student.objects.all()
     context['student_list'] = student_list
-    data['html_form'] = render_to_string('registration/partial_user_create_ajax.html',
+    data['html_form'] = render_to_string(template,
                 context,
                 request=request,
                 )

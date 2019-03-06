@@ -130,13 +130,14 @@ class Student(models.Model):
 class ElectionOfficer(models.Model):
 
     student = models.OneToOneField(Student, on_delete=models.CASCADE, verbose_name="Student", related_query_name='student', null=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="User", related_query_name='user', null=False, primary_key=True)
     is_active = models.BooleanField(default=True, verbose_name="Is Active?")
 
     def __str__(self):
         return self.student
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="User", related_query_name='user', null=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="User", related_query_name='user', null=False, primary_key=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, verbose_name="Student", related_query_name='students', null=True)
     password_is_temp = models.BooleanField(default=True, verbose_name="Password Is Temp?")
     profile_pic = models.ImageField(upload_to='profile_pics/', blank=True, default='profile_pics/default_avatar.png')
