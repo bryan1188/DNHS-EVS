@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load bootstrap3 %}
+
+{% block heading  %}
+  <link rel="stylesheet" href="http://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script >
+    $(document).ready( function () {
+    $('#uploaded_students').DataTable();
+} );
+  </script>
+
+{% endblock %}
+
+{% block content %}
+  <h2>Verify Upload</h2>
+
+  <table id="uploaded_students" class="table table-bordered display">
+    <thead>
+      <tr>
+        <th>LRN</th>
+        <th>Last Name</th>
+        <th>First Name</th>
+        <th>Middle Name</th>
+        <th>Sex</th>
+        <th>Birth Date</th>
+        <th>Age</th>
+        <th>Father's Name</th>
+        <th>Mother's Name</th>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <th>LRN</th>
+        <th>Last Name</th>
+        <th>First Name</th>
+        <th>Middle Name</th>
+        <th>Sex</th>
+        <th>Birth Date</th>
+        <th>Age</th>
+        <th>Father's Name</th>
+        <th>Mother's Name</th>
+      </tr>
+    </tfoot>
+  <tbody>
+    {% for student in student_list %}
+    <tr>
+      <td>
+        <a href="{% url 'registration:update_student' pk=student.id %}">
+        {{ student.lrn }}
+        </a>
+      </td>
+      <td>{{ student.last_name }}</td>
+      <td>{{ student.first_name }}</td>
+      <td>{{ student.middle_name }}</td>
+      <td>{{ student.sex }} </td>
+      <td>{{ student.birth_date }}</td>
+      <td>{{ student.age }}</td>
+      <td>{{ student.father_name }}</td>
+      <td>{{ student.mother_name }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

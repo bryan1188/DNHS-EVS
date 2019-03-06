@@ -6,3 +6,7 @@ testing and error handling:
 	upload record Use case:
 		make sure it will continue even record or field is empty. 
 		data cleansing - ethnic group has blank column
+		Restrict upload to certain file extension
+	datepicker
+		Value will change if clicked then canceled
+	blank value on add is showing None

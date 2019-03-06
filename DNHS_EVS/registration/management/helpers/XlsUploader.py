@@ -11,9 +11,11 @@ class XlsUploader(XlsImportHelper):
 
         def __init__(self, *args, **kwargs):
             super(XlsUploader,self).__init__(*args, **kwargs)
-            self._school_data = {}
-            self._class_data = {}
+            self._school_data = None
+            self._class_data = None
             self._my_helper = XlsImportHelper(sheet=self._sheet)
+            self._class_object = None
+            self._student_list =  []
 
         #column properties
         @property
@@ -114,43 +116,65 @@ class XlsUploader(XlsImportHelper):
                 'school_year': self.my_helper.getValueHorizontalAdjacent(search_string='school year'),
                 'grade_level': self.my_helper.getValueHorizontalAdjacent(search_string='grade level').split("(")[0].strip(), #to trim the unwanted characters after (
                 'section': self.my_helper.getValueHorizontalAdjacent(search_string='section'),
-                'registered_male_bosy': bosy_data.get('male'),
-                'registered_female_bosy': bosy_data.get('female'),
-                'registered_total_bosy': bosy_data.get('total'),
-                'registered_male_eosy': eosy_data.get('male'),
-                'registered_female_eosy': eosy_data.get('female'),
-                'registered_total_eosy': eosy_data.get('total'),
+                'registered_male_bosy':  self.helper_convertIntor0(string=bosy_data.get('male',0)),
+                'registered_female_bosy':  self.helper_convertIntor0(string=bosy_data.get('female',0)),
+                'registered_total_bosy':  self.helper_convertIntor0(string=bosy_data.get('total',0)),
+                'registered_male_eosy':  self.helper_convertIntor0(string=eosy_data.get('male',0)),
+                'registered_female_eosy':  self.helper_convertIntor0(string=eosy_data.get('female',0)),
+                'registered_total_eosy':  self.helper_convertIntor0(string=eosy_data.get('total',0)),
                 'adviser': self.my_helper.getValueVerticalAdjacent(search_string='adviser'),
             }
             return self._class_data
 
         #end of Table properties
 
-        def convertIntor0(self, *args, **kwargs):
+        @property
+        def class_object(self, *args, **kwargs):
+            if self._class_object is None: #if empty, then upload class to create class object
+                self._class_object = self.uploadClass()
+            return self._class_object
+
+        @property
+        def student_list(self, *args, **kwargs):
+            return self._student_list
+
+        #self helper methods
+        def helper_convertIntor0(self, *args, **kwargs):
             return int(kwargs.get('string')) if kwargs.get('string') else 0 #if string is blank return zero
+
+        def helper_setAttributes(self, *args, **kwargs):
+            """
+                helpter method that set attributes to a certain objects, mostly model object.
+                parameters: object(model), attributes(dictionary)
+            """
+            for attribute, value in kwargs.get('attributes').items():
+                setattr(kwargs.get('object'), attribute, value)
+            return kwargs.get('object')
+
+        #end of self helper methods
 
         def uploadAllData(self, *args, **kwargs):
             self.uploadClass()
             self.uploadStudent()
 
         def uploadSchool(self, *args, **kwargs):
-            school, created = models.School.objects.get_or_create(**self.school_data)
+            school, created = models.School.objects.get_or_create(
+                school_id = self.my_helper.getSchoolIDRegionValue().get('school_id'),
+                school_year = self.my_helper.getValueHorizontalAdjacent(search_string='school year'),
+            )
+            school = self.helper_setAttributes(object=school, attributes=self.school_data)
+            school.save()
             return school
 
         def uploadClass(self, *args, **kwargs):
-            class_object, created = models.Class.objects.get_or_create(
-                school = self.uploadSchool(),
+            class_object, created = models.Class.objects.get_or_create( #primary keys
+                school =  self.uploadSchool(),
                 school_year = self.class_data.get('school_year'),
                 grade_level = self.class_data.get('grade_level'),
                 section = self.class_data.get('section'),
-                registered_male_bosy = self.convertIntor0(string=self.class_data.get('registered_male_bosy',0)),
-                registered_female_bosy = self.convertIntor0(string=self.class_data.get('registered_female_bosy',0)),
-                registered_total_bosy = self.convertIntor0(string=self.class_data.get('registered_total_bosy',0)),
-                registered_male_eosy = self.convertIntor0(string=self.class_data.get('registered_male_eosy',0)),
-                registered_female_eosy = self.convertIntor0(string=self.class_data.get('registered_female_eosy',0)),
-                registered_total_eosy = self.convertIntor0(string=self.class_data.get('registered_total_eosy',0)),
-                adviser = self.class_data.get('adviser')
             )
+            class_object =  self.helper_setAttributes(object=class_object, attributes=self.class_data)
+            class_object.save()
             return class_object
 
         def uploadStudent(self, *args, **kwargs):
@@ -179,7 +203,7 @@ class XlsUploader(XlsImportHelper):
                     student_data.update({
                         'sex': models.Sex.objects.get_or_create(sex=self._sheet.row_values(rownum)[self.sex_column].__str__().strip()[:1].upper())[0], #get the index 0 from the tupple (object, created)
                         'birth_date': datetime.datetime.strptime(self._sheet.row_values(rownum)[self.birth_date_column].__str__().strip(), '%m-%d-%Y').date(),
-                        'age': self.convertIntor0(string=self._sheet.row_values(rownum)[self.age_column].__str__().strip()),
+                        'age': self.helper_convertIntor0(string=self._sheet.row_values(rownum)[self.age_column].__str__().strip()),
                         'mother_tongue': models.MotherTongue.objects.get_or_create(mother_tongue=self._sheet.row_values(rownum)[self.mother_tongue_column].__str__().strip())[0],
                         'ethnic_group': models.EthnicGroup.objects.get_or_create(ethnic_group=self._sheet.row_values(rownum)[self.ethnic_group_column].__str__().strip())[0],
                         'religion':  models.Religion.objects.get_or_create(religion=self._sheet.row_values(rownum)[self.religion_column].__str__().strip())[0],
@@ -197,6 +221,7 @@ class XlsUploader(XlsImportHelper):
 
                     #check if student already exist, if not then create, if exist update
                     student, created = models.Student.objects.get_or_create(lrn=self._sheet.row_values(rownum)[self.LRN_column].__str__().strip())
-                    for attribute, value in student_data.items(): #set the arrtibute to Student object from student_date dictionary
-                        setattr(student, attribute, value)
+                    student =  self.helper_setAttributes(object=student, attributes=student_data)
                     student.save()
+                    student.classes.add(self.class_object)#populate many to many bridge table
+                    self._student_list.append(student.id)

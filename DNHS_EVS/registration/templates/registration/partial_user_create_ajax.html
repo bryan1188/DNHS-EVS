@@ -1,0 +1,146 @@
+{% load widget_tweaks %}
+<script >
+  function sentenceCase (str) { //convert string to Title. Upper case first letter of the word
+      if ((str===null) || (str===''))
+           return false;
+      else
+       str = str.toString();
+
+     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+      }
+
+
+  $(document).ready( function () {  //ling my table,uploaded_students, to datable.js
+    $('#uploaded_students').DataTable(
+              {
+                "order": [[ 1, "asc" ]]
+              }
+    );
+    $('#uploaded_students_wrapper').hide();
+
+    $('.table tbody').on('click','.my-btn',function(){
+      var currow = $(this).closest('tr');
+      $('#id_first_name').val(sentenceCase(currow.find('td:eq(2)').text()));
+      $('#id_last_name').val(sentenceCase(currow.find('td:eq(1)').text()));
+      $('input[name="student_lrn"]').val(currow.find('td:eq(0)').text().trim());
+    });
+
+  });
+</script>
+
+<script> //ajax script. check if user exist
+    $(document).ready(function() {
+        $("#id_username").change(function () {
+          var form = $(this).closest("form");
+
+          $.ajax({
+            url: '{% url "registration:validate_username_ajax" %}',
+            data: form.serialize(),
+            dataType: 'json',
+            success: function(data){
+              if (data.is_taken){
+                alert(data.error_message);
+                $('#create-btn').prop('disabled',true);
+              }
+              else {
+                $('#create-btn').prop('disabled',false);
+              }
+            }
+          });
+       });
+    });
+
+</script>
+
+<form method="post" action="{% url 'registration:create_user_ajax' %}" class="js-user-create-form">
+  {% csrf_token %}
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
+      <span area-hidden="true">&times;</span>
+    </button>
+    <h4 class="modal-title">Create New User</h4>
+  </div>
+  <div class="modal-body">
+      {% for field in user_form %}
+        <div class="form-group {% if field.errors %} has-error {% endif%}">
+          <label for="{{field.id_for_label}}"> {{field.label}}</label>
+          {% render_field field  %}
+          {% for error in fields.errors %}
+            <p class="help-block"> {{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endfor %}
+
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-primary">Create User</button>
+  </div>
+  <table id="uploaded_students" class="table table-bordered display" hidden>
+    <thead>
+      <tr>
+        <th>LRN</th>
+        <th>Last Name</th>
+        <th>First Name</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <th>LRN</th>
+        <th>Last Name</th>
+        <th>First Name</th>
+        <th>Action</th>
+      </tr>
+    </tfoot>
+    <tbody>
+      {% for student in student_list %}
+      <tr>
+        <td>{{ student.lrn }}</td>
+        <td>{{ student.last_name }}</td>
+        <td>{{ student.first_name }}</td>
+        <td id="td_action"> <button type="button" class="btn btn-success my-btn"> Select </button> </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+</table>
+</form>
+
+<script>// script to switch the two checkboxed if the other is checked
+
+  $(document).ready(function() {
+    var fade_time = 500;
+
+    $('#id_for_student_0').change(function() {
+
+        $('#uploaded_students').prop("hidden", false);
+        if(this.checked) {
+          $('#id_for_student_1').prop("checked", false);
+          // $('#uploaded_students_wrapper').show();
+          $('#uploaded_students_wrapper').fadeIn(fade_time);
+          // $(':button').prop('disabled', false);
+        }
+        else if($('#id_for_student_1').prop("checked") == false){
+            // $('#uploaded_students_wrapper').hide();
+            $('#uploaded_students_wrapper').fadeOut(fade_time);
+            // $(':button').prop('disabled', true);
+        }
+
+  });
+
+  $('#id_for_student_1').change(function() {
+      $('#uploaded_students').prop("hidden", false);
+      if(this.checked) {
+        $('#id_for_student_0').prop("checked", false);
+        // $('#uploaded_students_wrapper').show();
+        $('#uploaded_students_wrapper').fadeIn(fade_time);
+         // $(':button').prop('disabled', false);
+      }
+      else if($('#id_for_student_0').prop("checked") == false){
+          // $('#uploaded_students_wrapper').hide();
+          $('#uploaded_students_wrapper').fadeOut(fade_time);
+          // $(':button').prop('disabled', true);
+      }
+    });
+  });
+</script>
