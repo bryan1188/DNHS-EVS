@@ -1,7 +1,7 @@
 {% extends 'registration/partial_user_base_ajax.html' %}
 
 {% block form_content %}
-<form action="{% url 'registration:update_user' user_form.instance.pk %}" method="post" class="js-user-update-form">
+<form action="{% url 'registration:update_user_ajax' user_form.instance.pk %}" method="post" class="js-user-update-form">
   {% csrf_token %}
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
@@ -46,7 +46,7 @@
 </table>
 </form>
 
-<script> //update checkbox based on the user group 
+<script> //update checkbox based on the user group
   function check_group_checkbox(group){
     switch(group){
       case "Election Officer":

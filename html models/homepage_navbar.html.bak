@@ -75,9 +75,8 @@
 
     </div>
 	
-	<div class="container">
-		<input type="checkbox" data-toggle="toggle" data-on="Active" data-off="Inactive" data-size="mini" data-onstyle="success">
-	</div>
+	<input type="checkbox" data-toggle="toggle" data-on="Active" data-off="Inactive" data-size="mini" data-onstyle="success">
+	
 
   </body>
 </html>
