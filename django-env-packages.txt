@@ -18,3 +18,6 @@ pip install argon2-cffi
 
 # password hashing function
 pip install bcrypt
+
+#import excel
+pip install xlrd

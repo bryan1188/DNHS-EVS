@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+      <link rel="stylesheet" href="static/bootstrap.min.css">
+      <link rel="stylesheet" href="static/mystyle.css">
+	  <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+		<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+  </head>
+  <body>
+
+    <nav class="navbar navbar-default navbar-static-top">
+      <div class="container">
+        <ul class="nav navbar-nav">
+          <li ><a class="navbar-brand" href="">DNHS E-Voting</a></li>
+          <!-- <li><a class="navbar-link" href="">Admin</a></li>
+          <li><a class="navbar-link" href="">Other</a></li> -->
+          <li>
+            <div class="dropdown">
+              <button class="dropbtn">Student Management</button>
+              <div class="dropdown-content">
+                <a href="#">Upload Students</a>
+                <a href="#">Add Student</a>
+                <a href="#">Update Student</a>
+              </div>
+          </div>
+        </li>
+        <li>
+          <div class="dropdown">
+            <button class="dropbtn">User Management</button>
+            <div class="dropdown-content">
+              <a href="#">Create User</a>
+              <a href="#">Create Election Officer</a>
+              <a href="#">Update User</a>
+              <a href="#">Update Election Officer</a>
+              <!-- <a href="#">Link 2</a>
+              <a href="#">Link 3</a> -->
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="dropdown">
+            <button class="dropbtn">Election Management</button>
+            <div class="dropdown-content">
+              <a href="#">Create Election</a>
+              <a href="#">Update Election</a>
+              <a href="#">Review List Voters and Candidates</a>
+              <a href="#">Generate Voter's Token</a>
+              <a href="#">Add Candidate</a>
+              <a href="#">Update Candidate</a>
+              <a href="#">Update Candidate Profile</a>
+              <a href="#">Create Position</a>
+              <a href="#">Update Position</a>
+            </div>
+          </div>
+        </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+         <li><a href="#"> Login</a>
+         </li>
+         <li><a href="#"> Review my Vote</a>
+         </li>
+       </ul>
+      </div>
+    </nav>
+
+
+    <div class="container">
+      <div class="jumbotron">
+          <h1>Home Page with Navbar</h1>
+          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      </div>
+
+    </div>
+	
+	<input type="checkbox" data-toggle="toggle" data-on="Active" data-off="Inactive" data-size="mini" data-onstyle="success">
+	
+
+  </body>
+</html>

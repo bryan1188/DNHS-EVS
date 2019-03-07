@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block heading  %}
+
+  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
+  <!-- <script src="{% static 'js/jquery.min.js' %}"></script> -->
+  <!-- <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script> -->
+  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    {% csrf_token %}
+      {{ user_filter_form.as_p }}
+  </form>
+  <p>
+     <button type="button" class="btn btn-primary js-create-user" data-url="{% url 'registration:create_user_ajax' %}">
+       <span class="glyphicon glyphicon-plus"></span>
+       New User
+     </button>
+   </p>
+  <table id="user_list" class="table table-bordered display">
+    <thead>
+      <tr>
+        <th>username</th>
+        <th>Last Name</th>
+        <th>First Name</th>
+        <th>Groups</th>
+        <th>Active</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <th>username</th>
+        <th>Last Name</th>
+        <th>First Name</th>
+        <th>Groups</th>
+        <th>Active</th>
+        <th>Action</th>
+      </tr>
+    </tfoot>
+    <tbody>
+
+    </tbody>
+  </table>
+
+  <div class="modal fade" id="modal-user">
+    <div class="modal-dialog">
+      <div class="modal-content">
+      </div>
+    </div>
+  </div>
+
+<script> //initialize script
+    $(document).ready( function () {
+      var form = $('#id_group').closest("form");
+      var table = $('#user_list').DataTable({
+        "processing": true,
+        "ajax": {
+            "processing": true,
+            "url": "{% url 'registration:populate_table_user_list_ajax' %}",
+            "data": function( d ) {
+                    d.group =   get_group_selection(); //$('#id_group_1').val();
+                    d.is_active = get_active_checkbox();
+                    d.select_all_users = get_all_users_checkbox();
+                  },
+            "dataSrc": ""
+        },
+        'columns': [
+          {"data": "fields.username"},
+          {"data": "fields.last_name"},
+          {"data": "fields.first_name"},
+          {"data": "fields.groups"},
+          {"data": "fields.is_active"},
+          {"data": "fields.pk"},
+        ],
+        "columnDefs": [
+          { "render": function ( data, type, row ) {
+                    if (data) {
+                        return '<button type="button" class="btn btn-danger btn-sm js-toggle-user" data-url="/registration/ajax/user/deactivate_activate/' + row['pk']  +'/">' +'<span class="glyphicon glyphicon-remove-sign"></span> Deactivate </button>';
+                    }
+                    else
+                        return '<button type="button" class="btn btn-success btn-sm js-toggle-user" data-url="/registration/ajax/user/deactivate_activate/' + row['pk']  +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span> Activate </button>';
+                  },
+                  "targets": -2
+          },
+          { "render": function ( data, type, row ) {
+                      return '<button type="button" class="btn btn-warning btn-sm js-update-user" data-url="/registration/ajax/user/update/' + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span> Edit </button>';
+                  },
+                  "targets": -1
+          },
+
+        ],
+        "order": [[ 0, "asc" ]]
+      });
+      $('input:checkbox').prop('checked',true); //check all checkboxes filter by default
+      $('#id_all_users').prop('checked',false);  //except all users
+    });
+
+</script>
+
+<script> //filter options manipulation
+
+  function get_group_selection(){
+    var group_checked = [];
+    $.each($("input[name='group']:checked"), function(){
+      group_checked.push($(this).val()); //get all checked group
+    });
+    return group_checked;
+  }
+
+  function get_active_checkbox(){
+    if ($('#id_active').prop('checked'))
+      return true;
+    else
+      return false;
+  }
+
+  function get_all_users_checkbox(){
+    if ($('#id_all_users').prop('checked'))
+      return true;
+    else
+      return false;
+  }
+
+  $(document).ready( function () {
+      //$('[id^=id_group_]').change( function(){
+    $(':checkbox').change( function(){
+        $('#user_list').DataTable().ajax.reload();
+    });
+  });
+
+  $(document).ready( function () {
+    $('#id_all_users').change( function(){
+      if ($(this).prop('checked')) {
+        $('input:checkbox').prop('checked',true);
+        $('input:checkbox').prop('disabled',true);
+        $(this).prop('disabled',false);
+      }
+      else{
+        $('input:checkbox').prop('disabled',false);
+      }
+    });
+  });
+</script>
+
+<script src="{% static 'registration/js/create_user_ajax_3.js' %}"></script>
+{% endblock %}

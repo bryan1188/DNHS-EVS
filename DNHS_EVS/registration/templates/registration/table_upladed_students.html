@@ -1,0 +1,45 @@
+<thead>
+  <tr>
+    <th>LRN</th>
+    <th>Last Name</th>
+    <th>First Name</th>
+    <th>Middle Name</th>
+    <th>Sex</th>
+    <th>Birth Date</th>
+    <th>Age</th>
+    <th>Father's Name</th>
+    <th>Mother's Name</th>
+  </tr>
+</thead>
+<tfoot>
+  <tr>
+    <th>LRN</th>
+    <th>Last Name</th>
+    <th>First Name</th>
+    <th>Middle Name</th>
+    <th>Sex</th>
+    <th>Birth Date</th>
+    <th>Age</th>
+    <th>Father's Name</th>
+    <th>Mother's Name</th>
+  </tr>
+</tfoot>
+<tbody>
+{% for student in student_list %}
+<tr>
+  <td>
+    <a href="{% url 'registration:update_student' pk=student.id %}">
+    {{ student.lrn }}
+    </a>
+  </td>
+  <td>{{ student.last_name }}</td>
+  <td>{{ student.first_name }}</td>
+  <td>{{ student.middle_name }}</td>
+  <td>{{ student.sex }} </td>
+  <td>{{ student.birth_date }}</td>
+  <td>{{ student.age }}</td>
+  <td>{{ student.father_name }}</td>
+  <td>{{ student.mother_name }}</td>
+</tr>
+{% endfor %}
+</tbody>

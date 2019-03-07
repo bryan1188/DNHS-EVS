@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load bootstrap3 %}
+
+{% block content %}
+  <h1>Upload Students Page</h1>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <input type="submit" class="btn btn-default" value="Upload">
+  </form>
+{% endblock %}
