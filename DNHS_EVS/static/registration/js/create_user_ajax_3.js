@@ -18,6 +18,19 @@ $(function () {
       });
     };
 
+    var toggleUser = function(){
+      var btn = $(this);
+      $.ajax({
+          // url:  '{% url "registration:create_user_ajax" %}',
+          url: btn.attr("data-url"),
+          type: 'get',
+          dataType: 'json',
+          success: function(data){
+                      $('#user_list').DataTable().ajax.reload();
+                    },
+      });
+    };
+
     var saveForm = function() {
       var form = $(this);
       $.ajax({
@@ -47,4 +60,7 @@ $(function () {
     //Update User
     $('#user_list').on("click",".js-update-user",loadForm);
     $('#modal-user').on("submit",".js-user-update-form", saveForm);
+
+    //toggle User
+    $('#user_list').on("click",".js-toggle-user",toggleUser);
 });

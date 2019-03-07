@@ -20,7 +20,7 @@ class UserForm(forms.ModelForm):
     confirm_password=forms.CharField(widget=forms.PasswordInput())
     for_student = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,
                       choices=FOR_STUDENT_CHOICES, required=False)
-    student_lrn = forms.CharField(widget=forms.HiddenInput(), required=False)
+    student_lrn = forms.CharField(disabled=True, required=False) #widget=forms.HiddenInput()
     other_groups = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,
                       choices=FOR_OTHER_GROUPS_CHOICES, required=False)
 
