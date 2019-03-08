@@ -56,6 +56,16 @@
   </div>
 
 <script> //initialize script
+
+  function strike_trough(data, row){
+    if ((row['fields']['is_active'])){
+        return data;
+    }
+    else {
+      return '<strike>' + data + '</strike>';
+    }
+  }
+
     $(document).ready( function () {
       var form = $('#id_group').closest("form");
       var table = $('#user_list').DataTable({
@@ -92,6 +102,15 @@
                       return '<button type="button" class="btn btn-warning btn-sm js-update-user" data-url="/registration/ajax/user/update/' + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span> Edit </button>';
                   },
                   "targets": -1
+          },
+          { "render": function ( data, type, row ) {
+                    if ((row['fields']['is_active'])) {
+                        return data;
+                    }
+                    else
+                        return '<strike>' + data + '</strike>';
+                  },
+                  "targets": [0,1,2,3]
           },
 
         ],

@@ -29,22 +29,28 @@ class UserCreate(TemplateView):
 
             profile = profile_form.save(commit=False)
             profile.user = user
-            # print(request.FILES.get('profile_pic'))
 
             if 'profile_pic' in request.FILES:
                 profile.profile_pic = request.FILES['profile_pic']
 
             #check if for_student checkbox is checkbox
             for_student = user_form.cleaned_data['for_student']
+            # print("Student LRN: " + str(user_form.cleaned_data['student_lrn']))
+            print("Student LRN: " + str(request.POST))
+
             if for_student:
                 student = Student.objects.get(lrn=user_form.cleaned_data['student_lrn'])
                 profile.student = student
+
                 #if for election_officer
                 if for_student[0] == 'election_officer':
                     election_officer, created = ElectionOfficer.objects.get_or_create(
                         student = student,
                         user = user,
                     )
+                    # election_officer.student = student
+                    election_officer.is_active = True
+                    election_officer.save()
                     #add user to group
                     group = Group.objects.get(name="Election Officer")
                     group.user_set.add(user)
