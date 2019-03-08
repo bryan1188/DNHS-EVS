@@ -39,6 +39,8 @@ class UserCreate(TemplateView):
             print("Student LRN: " + str(request.POST))
 
             if for_student:
+                #put a mechanism to check if user has already a record in election_officer table
+                #even if lrn is not checked. 
                 student = Student.objects.get(lrn=user_form.cleaned_data['student_lrn'])
                 profile.student = student
 
