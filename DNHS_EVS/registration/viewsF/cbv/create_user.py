@@ -4,7 +4,8 @@ from registration import forms
 from django.contrib.auth.forms import UserCreationForm
 from registration.models import UserProfile,Student,ElectionOfficer
 from django.contrib.auth.models import User,Group
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404
+# from django.shortcuts import s
 from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.template.loader import render_to_string
@@ -40,17 +41,23 @@ class UserCreate(TemplateView):
 
             if for_student:
                 #put a mechanism to check if user has already a record in election_officer table
-                #even if lrn is not checked. 
-                student = Student.objects.get(lrn=user_form.cleaned_data['student_lrn'])
+                #even if lrn is not checked.
+                try:#to fix empty lrn for updating existing election_officer
+                    student = Student.objects.get(lrn=user_form.cleaned_data['student_lrn'])
+                except:
+                    student = ElectionOfficer.objects.get(user=user).student
+
                 profile.student = student
 
                 #if for election_officer
                 if for_student[0] == 'election_officer':
+                    #handle a scenario that user created as election officer and mapped the student an existing election Officer
+                    #this will throw an error of key student_id already exists
                     election_officer, created = ElectionOfficer.objects.get_or_create(
                         student = student,
                         user = user,
                     )
-                    # election_officer.student = student
+                    election_officer.student = student
                     election_officer.is_active = True
                     election_officer.save()
                     #add user to group
@@ -178,6 +185,9 @@ def create_user_ajax(request, **kwargs):
 
     if 'groups' in kwargs: #from update_user
         context['groups'] = kwargs.get('groups')
+
+    if 'election_officer_flag' in kwargs: #from update_user
+        context['election_officer_flag'] = kwargs.get('election_officer_flag')
 
     student_list = Student.objects.all()
     context['student_list'] = student_list

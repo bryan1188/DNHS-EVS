@@ -2,10 +2,10 @@
 
 {% for field in user_form %}
   <div class="form-group {% if field.errors %} has-error {% endif%}">
-    <label for="{{field.id_for_label}}"> {{field.label}}</label>
-    {% render_field field  %}
-    {% for error in fields.errors %}
+    {% for error in field.errors %}
       <p class="help-block"> {{ error }}</p>
     {% endfor %}
+    <label for="{{field.id_for_label}}"> {{field.label}}</label>
+    {% render_field field  %}
   </div>
 {% endfor %}

@@ -1,11 +1,9 @@
 
-
 $(function () {
     //https://simpleisbetterthancomplex.com/tutorial/2016/11/15/how-to-implement-a-crud-using-ajax-and-json.html
     var loadForm = function(){
       var btn = $(this);
       $.ajax({
-          // url:  '{% url "registration:create_user_ajax" %}',
           url: btn.attr("data-url"),
           type: 'get',
           dataType: 'json',
@@ -21,7 +19,6 @@ $(function () {
     var toggleUser = function(){
       var btn = $(this);
       $.ajax({
-          // url:  '{% url "registration:create_user_ajax" %}',
           url: btn.attr("data-url"),
           type: 'get',
           dataType: 'json',

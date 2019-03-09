@@ -1,6 +1,7 @@
 
 from registration.viewsF.cbv import create_user
 from django.contrib.auth.models import User, Group
+from registration.models import ElectionOfficer
 from registration import forms
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
@@ -15,8 +16,15 @@ def update_user_ajax(request, pk):
 
     #get user groups
     groups = Group.objects.order_by('name').filter(user=user).values_list('name',flat=True)
+
+    #check if user is/was an election Officer
+    if ElectionOfficer.objects.filter(user=user).first():
+        election_officer_flag = True
+    else:
+        election_officer_flag = False
+
     #reuse the function view from creatue_user.py
-    return create_user.create_user_ajax(request, groups=groups, user_form=user_form, template='registration/partial_user_update_ajax.html')
+    return create_user.create_user_ajax(request, election_officer_flag=election_officer_flag, groups=groups, user_form=user_form, template='registration/partial_user_update_ajax.html')
 
 def deactivate_activate_ajax(request, pk):
     user = get_object_or_404(User, pk=pk)

@@ -128,8 +128,8 @@ class Student(models.Model):
             return self.last_name + ", " + self.first_name
 
 class ElectionOfficer(models.Model):
-
-    student = models.OneToOneField(Student, on_delete=models.CASCADE, verbose_name="Student", related_query_name='student', null=False)
+    #null True to update later. editable to map
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, verbose_name="Student", related_query_name='student')
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="User", related_query_name='user', null=False, primary_key=True)
     is_active = models.BooleanField(default=True, verbose_name="Is Active?")
 

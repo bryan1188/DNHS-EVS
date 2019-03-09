@@ -1,5 +1,5 @@
 from django import forms
-from registration.models import Student,UserProfile,Class
+from registration.models import Student,UserProfile,Class,ElectionOfficer
 from django.contrib.auth.models import User,Group
 
 
@@ -20,7 +20,7 @@ class UserForm(forms.ModelForm):
     confirm_password=forms.CharField(widget=forms.PasswordInput())
     for_student = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,
                       choices=FOR_STUDENT_CHOICES, required=False)
-    student_lrn = forms.CharField(widget=forms.HiddenInput(), required=False,) 
+    student_lrn = forms.CharField(widget=forms.HiddenInput(), required=False,)
     other_groups = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,
                       choices=FOR_OTHER_GROUPS_CHOICES, required=False)
 
@@ -28,15 +28,52 @@ class UserForm(forms.ModelForm):
         model = User
         fields = ('username','password','confirm_password','last_name','first_name')
 
-    def clean(self):
+    def clean_username(self):
         cleaned_data = super(UserForm, self).clean()
+        username = cleaned_data['username']
+        if self.instance.pk == None: #for insert
+            if User.objects.filter(username__iexact=username).exists():
+                raise forms.ValidationError(
+                    username + " is already taken. Please use another username"
+                )
+        return username
+
+    def clean_confirm_password(self):
+        cleaned_data = super().clean()
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
-
         if password != confirm_password:
             raise forms.ValidationError(
-                "password and confirm_password does not match"
+                "password and Confirm Password does not match"
             )
+        return confirm_password
+
+    def my_check_student_in_election_officer(self, student_lrn):
+        student = Student.objects.filter(lrn__iexact=student_lrn).first()
+        election_officer = ElectionOfficer.objects.filter(student=student).first()
+        if election_officer:
+            raise forms.ValidationError(
+                "The selected student is already an election officer with a username " + str(election_officer.user) + ". Select another student"
+            )
+
+    def clean_student_lrn(self):
+        cleaned_data = super().clean()
+        for_student = cleaned_data['for_student']
+        student_lrn = cleaned_data['student_lrn']
+        if self.instance.pk == None: #for insert
+            if 'election_officer' in for_student: #election officer is checked
+                if  not student_lrn: #but student is not selected
+                    raise forms.ValidationError(
+                        "Please select Student"
+                    )
+                else: #lrn selected but check if the student is already an election officer
+                    self.my_check_student_in_election_officer(student_lrn)
+        else: #for update
+            #need to check user that is not election officer yet but if mapped to student
+            #that is election_officer already, raise an error
+            self.my_check_student_in_election_officer(student_lrn)
+        return student_lrn
+
 
 class UserProfileForm(forms.ModelForm):
     class Meta:
