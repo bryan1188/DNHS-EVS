@@ -58,6 +58,10 @@ $(function () {
     $('#user_list').on("click",".js-update-user",loadForm);
     $('#modal-user').on("submit",".js-user-update-form", saveForm);
 
+    //reset password
+    $('#user_list').on("click",".js-reset-password-user",loadForm);
+    $('#modal-user').on("submit",".js-user-reset-password-form", saveForm);
+
     //toggle User
     $('#user_list').on("click",".js-toggle-user",toggleUser);
 });

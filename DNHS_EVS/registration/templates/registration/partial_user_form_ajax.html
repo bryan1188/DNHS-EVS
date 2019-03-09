@@ -5,7 +5,9 @@
     {% for error in field.errors %}
       <p class="help-block"> {{ error }}</p>
     {% endfor %}
+      {% if field.label != 'Student lrn'%}
     <label for="{{field.id_for_label}}"> {{field.label}}</label>
+      {% endif %}
     {% render_field field  %}
   </div>
 {% endfor %}
