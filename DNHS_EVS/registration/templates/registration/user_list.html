@@ -5,6 +5,7 @@
 {% block heading  %}
 
   <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
+  <link rel="stylesheet" href="{% static 'registration/css/user_list.css' %}">
   <!-- <script src="{% static 'js/jquery.min.js' %}"></script> -->
   <!-- <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script> -->
   <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
@@ -99,7 +100,10 @@
                   "targets": -2
           },
           { "render": function ( data, type, row ) {
-                      return '<button type="button" class="btn btn-warning btn-sm js-update-user" data-url="/registration/ajax/user/update/' + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span> Edit </button>';
+                      return '<div class="btn-group"><button id="button-edit" type="button" class="btn btn-secondary btn-sm js-update-user" data-url="/registration/ajax/user/update/'
+                              + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
+                              + '<button id="button-change-password" type="button" class="btn btn-primary btn-sm js-reset-password-user" data-url="/registration/ajax/user/reset_password/'
+                                      + data  +'/">' +'<span class="glyphicon glyphicon-lock"></span></button></div>';
                   },
                   "targets": -1
           },

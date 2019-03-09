@@ -19,6 +19,7 @@ urlpatterns = [
     path('user/create/', create_user.UserCreate.as_view(mode="create user"), name='create_user'),
     # url(r'^user/update/(?P<pk>\d+)/',update_user.update_user_ajax, name='update_user'),
     path('ajax/user/update/<int:pk>/',update_user.update_user_ajax, name='update_user_ajax'),
+    path('ajax/user/reset_password/<int:pk>/',update_user.update_user_reset_password_ajax, name='update_user_reset_password_ajax'),
     path('ajax/user/deactivate_activate/<int:pk>/',update_user.deactivate_activate_ajax, name='deactivate_activate_ajax'),
     # path('user/update/<init:pk>/', create_user.UserCreate.as_view(mode="create user"), name='create_user'),
     path('users/', list_user.UserList.as_view(), name='list_user'),

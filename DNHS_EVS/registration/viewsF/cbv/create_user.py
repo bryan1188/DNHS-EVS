@@ -22,22 +22,23 @@ class UserCreate(TemplateView):
         else:
             user_form  = forms.UserForm(data=request.POST)
         profile_form = forms.UserProfileForm(data=request.POST)
-
         if user_form.is_valid() and profile_form.is_valid():
             user = user_form.save()
-            user.set_password(user.password)
-            user.save()
-
             profile = profile_form.save(commit=False)
             profile.user = user
+
+            if 'password' in user_form.cleaned_data:
+                profile.password_is_temp = True
+                user.set_password(user.password)
+                user.save()
+            else:
+                profile.password_is_temp = False
 
             if 'profile_pic' in request.FILES:
                 profile.profile_pic = request.FILES['profile_pic']
 
             #check if for_student checkbox is checkbox
             for_student = user_form.cleaned_data['for_student']
-            # print("Student LRN: " + str(user_form.cleaned_data['student_lrn']))
-            print("Student LRN: " + str(request.POST))
 
             if for_student:
                 #put a mechanism to check if user has already a record in election_officer table
