@@ -3,7 +3,11 @@ from django.contrib.auth import views as auth_views
 from . import views
 from django.urls import path
 from DNHS_EVS import views as MainViews
-from registration.viewsF.cbv import upload_students,update_student,list_student,create_student,delete_student,create_user,list_user
+from registration.viewsF.cbv import (
+                    upload_students,update_student,
+                    list_student,create_student,delete_student,create_user,
+                    list_user,election
+)
 from registration.viewsF.functionBV import update_user
 
 app_name = 'registration'
@@ -30,5 +34,12 @@ urlpatterns = [
     path('ajax/populate_table_upladed_students/', list_student.populate_table_upladed_students, name='populate_table_upladed_students_ajax'),
     path('ajax/populate_table_uploaded_students_2/', list_student.populate_table_uploaded_students_2, name='populate_table_uploaded_students_2_ajax'),
     path('ajax/get_filter_options_for_section/', list_student.get_filter_options_for_section, name='get_filter_options_for_section_ajax'),
-    path('ajax/user/populate_table_user_list_ajax/', list_user.populate_table_user_list_ajax, name='populate_table_user_list_ajax'),
+    path('ajax/user/populate_table_user_list_ajax/',
+        list_user.populate_table_user_list_ajax, name='populate_table_user_list_ajax'),
+    path('elections/', election.ElectionList.as_view(),name='list_election'),
+    path('ajax/elections/populate_table_election_list_ajax/',
+        election.populate_table_election_list_ajax,
+        name='populate_table_election_list_ajax'),
+    path('ajax/election/ceate/',election.create_election_ajax,
+        name='create_election_ajax'),
 ]

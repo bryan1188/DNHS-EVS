@@ -47,7 +47,7 @@
                   <a href="{%url 'registration:create_user' %}">Create User</a>
                   <a href="{%url 'registration:create_election_officer' %}">Create Election Officer</a>
                   <a href="{%url 'registration:list_user' %}">Update User</a>
-                  <a href="#">Update Election Officer</a>
+                  <!-- <a href="#">Update Election Officer</a> -->
                   <!-- <a href="#">Link 2</a>
                   <a href="#">Link 3</a> -->
                 </div>
@@ -58,7 +58,7 @@
           <div class="dropdown">
             <button class="dropbtn">Election Management</button>
             <div class="dropdown-content">
-              <a href="#">Create Election</a>
+              <a href="{%url 'registration:list_election' %}">Create Election</a>
               <a href="#">Update Election</a>
               <a href="#">Review List Voters and Candidates</a>
               <a href="#">Generate Voter's Token</a>

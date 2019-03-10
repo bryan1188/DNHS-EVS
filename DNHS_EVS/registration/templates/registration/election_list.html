@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block heading  %}
+
+  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
+  <link rel="stylesheet" href="{% static 'registration/css/user_list.css' %}">
+  <!-- <script src="{% static 'js/jquery.min.js' %}"></script> -->
+  <!-- <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script> -->
+  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+
+{% endblock %}
+<h3>Election Management</h3>
+{% block content %}
+  <form method="post">
+    {% csrf_token %}
+      {{ election_filter_form.as_p }}
+  </form>
+  <p>
+   <button type="button" class="btn btn-primary js-create-election" data-url="{% url 'registration:create_election_ajax' %}">
+     <span class="glyphicon glyphicon-plus"></span>
+     New Election
+   </button>
+ </p>
+ <table id="election_list" class="table table-bordered display">
+   <thead>
+     <tr>
+       <th>School Year</th>
+       <th>Name</th>
+       <th>Start Date</th>
+       <th>End Date</th>
+       <th>Action</th>
+     </tr>
+   </thead>
+   <tfoot>
+     <tr>
+       <th>School Year</th>
+       <th>Name</th>
+       <th>Start Date</th>
+       <th>End Date</th>
+       <th>Action</th>
+     </tr>
+   </tfoot>
+   <tbody>
+
+   </tbody>
+ </table>
+
+ <div class="modal fade" id="modal-section">
+   <div class="modal-dialog">
+     <div class="modal-content">
+     </div>
+   </div>
+ </div>
+
+ <script> //initialize script
+     $(document).ready( function () {
+       var table = $('#election_list').DataTable({
+         "processing": true,
+         "ajax": {
+             "processing": true,
+             "url": "{% url 'registration:populate_table_election_list_ajax' %}",
+             "data": function( d ) {
+                     d.school_year = $('#id_school_year').val();
+                   },
+             "dataSrc": ""
+         },
+         'columns': [
+           {"data": "fields.school_year"},
+           {"data": "fields.name"},
+           {"data": "fields.election_day_from"},
+           {"data": "fields.election_day_to"},
+           {"data": "pk"},
+         ],
+         // "columnDefs": [
+         //   { "render": function ( data, type, row ) {
+         //             if (data) {
+         //                 return '<button type="button" class="btn btn-danger btn-sm js-toggle-user" '
+         //                         +'data-url="/registration/ajax/user/deactivate_activate/' + row['pk']  +'/">'
+         //                         +'<span class="glyphicon glyphicon-remove-sign"></span> Deactivate </button>';
+         //             }
+         //             else
+         //                 return '<button type="button" class="btn btn-success btn-sm js-toggle-user" '
+         //                         +'data-url="/registration/ajax/user/deactivate_activate/' + row['pk']
+         //                         +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span> Activate </button>';
+         //           },
+         //           "targets": -2
+         //   },
+         //   { "render": function ( data, type, row ) {
+         //               return '<div class="btn-group"><button id="button-edit" type="button" '
+         //                       + 'class="btn btn-secondary btn-sm js-update-user" data-url="/registration/ajax/user/update/'
+         //                       + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
+         //                       + '<button id="button-change-password" type="button" '
+         //                       + 'class="btn btn-primary btn-sm js-reset-password-user" data-url="/registration/ajax/user/reset_password/'
+         //                       + data  +'/">' +'<span class="glyphicon glyphicon-lock"></span></button></div>';
+         //           },
+         //           "targets": -1
+         //   },
+         //   { "render": function ( data, type, row ) {
+         //             if ((row['fields']['is_active'])) {
+         //                 return data;
+         //             }
+         //             else
+         //                 return '<strike>' + data + '</strike>';
+         //           },
+         //           "targets": [0,1,2,3]
+         //   },
+         //
+         // ],
+         "order": [[ 0, "desc" ]]
+       });
+
+       $('#id_school_year').change( function(){
+         $('#election_list').DataTable().ajax.reload();
+       });
+     });
+ </script>
+
+ <script src="{% static 'registration/js/modal_ajax.js' %}"></script>
+
+{% endblock %}

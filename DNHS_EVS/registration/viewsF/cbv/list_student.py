@@ -23,7 +23,8 @@ class StudentsListView(ListView):
 
 def get_filter_options_for_level(request): # will be called by ajax request
     school_year = request.GET.get('school_year', None)
-    classes = models.Class.objects.filter(school_year__iexact=school_year).order_by('grade_level').values('grade_level').distinct('grade_level')
+    classes = models.Class.objects.filter(school_year__iexact=school_year)\
+                .order_by('grade_level').values('grade_level').distinct('grade_level')
     return render(request, 'registration/grade_level_dropdown_list_options.html',{'clasess': classes})
 
 def get_filter_options_for_section(request): # will be called by ajax request
