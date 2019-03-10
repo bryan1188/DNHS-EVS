@@ -26,30 +26,34 @@
           <li ><a class="navbar-brand" href="{%url 'home' %}">DNHS E-Voting</a></li>
           <!-- <li><a class="navbar-link" href="">Admin</a></li>
           <li><a class="navbar-link" href="">Other</a></li> -->
-          <li>
-            <div class="dropdown">
-              <button class="dropbtn">Student Management</button>
-              <div class="dropdown-content">
-                <a href="{%url 'registration:upload_students' %}">Upload Students</a>
-                <a href="{%url 'registration:add_student' %}">Add Student</a>
-                <a href="{%url 'registration:list_student' %}">Update Student</a>
-                  <a href="{%url 'registration:list_student' %}">List of Students</a>
+          {% if perms.user.can_add_user %}
+            <li>
+              <div class="dropdown">
+                <button class="dropbtn">Student Management</button>
+                <div class="dropdown-content">
+                  <a href="{%url 'registration:upload_students' %}">Upload Students</a>
+                  <a href="{%url 'registration:add_student' %}">Add Student</a>
+                  <a href="{%url 'registration:list_student' %}">Update Student</a>
+                    <a href="{%url 'registration:list_student' %}">List of Students</a>
+                </div>
               </div>
-          </div>
-        </li>
-        <li>
-          <div class="dropdown">
-            <button class="dropbtn">User Management</button>
-            <div class="dropdown-content">
-              <a href="{%url 'registration:create_user' %}">Create User</a>
-              <a href="{%url 'registration:create_election_officer' %}">Create Election Officer</a>
-              <a href="{%url 'registration:list_user' %}">Update User</a>
-              <a href="#">Update Election Officer</a>
-              <!-- <a href="#">Link 2</a>
-              <a href="#">Link 3</a> -->
-            </div>
-          </div>
-        </li>
+            </li>
+          {% endif %}
+          {% if perms.student.can_add_student %}
+            <li>
+              <div class="dropdown">
+                <button class="dropbtn">User Management</button>
+                <div class="dropdown-content">
+                  <a href="{%url 'registration:create_user' %}">Create User</a>
+                  <a href="{%url 'registration:create_election_officer' %}">Create Election Officer</a>
+                  <a href="{%url 'registration:list_user' %}">Update User</a>
+                  <a href="#">Update Election Officer</a>
+                  <!-- <a href="#">Link 2</a>
+                  <a href="#">Link 3</a> -->
+                </div>
+              </div>
+            </li>
+          {% endif %}
         <li>
           <div class="dropdown">
             <button class="dropbtn">Election Management</button>
@@ -68,9 +72,20 @@
         </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-         <li><a href="#"> Login</a>
+         <li>
+           {% if not user.is_authenticated %}
+           <a href="#" class="js-login" data-url="{% url 'login_ajax' %}">
+             <span class="glyphicon glyphicon-user"></span>
+             Login
+           </a>
+           {% else %}
+           <a href="#" class="js-logout" data-url="{% url 'logout_ajax' %}" redirect-url="{% url 'home' %}">
+             <span class="glyphicon glyphicon-off"></span>
+             Logout
+           </a>
+           {% endif %}
          </li>
-         <li><a href="#"> Review my Vote</a>
+         <li><a href="#"><span class="glyphicon glyphicon-ok"></span> Review my Vote</a>
          </li>
        </ul>
       </div>
@@ -84,11 +99,16 @@
     </div>
 
 
+    <div class="modal fade" id="modal-login">
+      <div class="modal-dialog">
+        <div class="modal-content">
+        </div>
+      </div>
+    </div>
+<script src="{% static 'base/js/base.js' %}"></script>
 
-    <!-- Latest compiled and minified JavaScript -->
-
-    {% block javascript %}
-    {% endblock %}
+  {% block javascript %}
+  {% endblock %}
 
   <!-- Copyright -->
   <div class="footer-copyright text-center py-3">© 2019 Copyright:
