@@ -26,7 +26,7 @@
           <li ><a class="navbar-brand" href="{%url 'home' %}">DNHS E-Voting</a></li>
           <!-- <li><a class="navbar-link" href="">Admin</a></li>
           <li><a class="navbar-link" href="">Other</a></li> -->
-          {% if perms.user.can_add_user %}
+          {% if  perms.auth.add_user %}
             <li>
               <div class="dropdown">
                 <button class="dropbtn">Student Management</button>
@@ -39,7 +39,7 @@
               </div>
             </li>
           {% endif %}
-          {% if perms.student.can_add_student %}
+          {% if perms.registration.add_student %}
             <li>
               <div class="dropdown">
                 <button class="dropbtn">User Management</button>
@@ -58,7 +58,9 @@
           <div class="dropdown">
             <button class="dropbtn">Election Management</button>
             <div class="dropdown-content">
+              {% if perms.registration.add_election %}
               <a href="{%url 'registration:list_election' %}">Create Election</a>
+              {% endif %}
               <a href="#">Update Election</a>
               <a href="#">Review List Voters and Candidates</a>
               <a href="#">Generate Voter's Token</a>
@@ -81,7 +83,7 @@
            {% else %}
            <a href="#" class="js-logout" data-url="{% url 'logout_ajax' %}" redirect-url="{% url 'home' %}">
              <span class="glyphicon glyphicon-off"></span>
-             Logout
+             Logout({{user}})
            </a>
            {% endif %}
          </li>
@@ -97,8 +99,9 @@
         {% endblock %}
       </div>
     </div>
-
-
+    <!-- {% if perms.registration.add_election %}
+      Student
+    {%endif%} -->
     <div class="modal fade" id="modal-login">
       <div class="modal-dialog">
         <div class="modal-content">

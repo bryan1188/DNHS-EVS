@@ -1,4 +1,5 @@
 from django.views.generic import TemplateView
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from registration import forms
 from registration.models import Election
 from django.core import serializers
@@ -7,8 +8,9 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 import json
 
-class ElectionList(TemplateView):
+class ElectionList(PermissionRequiredMixin,TemplateView):
     template_name = 'registration/election_list.html'
+    permission_required = 'registration.add_election'
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(**kwargs)

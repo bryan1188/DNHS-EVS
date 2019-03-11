@@ -40,7 +40,6 @@ $(function () {
               $("#modal-section").modal("hide");
               $('#election_list').DataTable().ajax.reload();
               $('#user_list').DataTable().ajax.reload();
-
           }
           else{
             $("#modal-section .modal-content").html(data.html_form);

@@ -1,6 +1,8 @@
 from django import forms
-from registration.models import Student,UserProfile,Class,ElectionOfficer,Election
+from registration.models import (Student,UserProfile,
+                            Class,ElectionOfficer,Election)
 from django.contrib.auth.models import User,Group
+from django.db.models import Q
 
 
 class UploadStudentsForm(forms.Form):
@@ -211,12 +213,27 @@ class ElectionForm(forms.ModelForm):
         cleaned_data = super().clean()
         election_day_from = cleaned_data['election_day_from']
         election_day_to = cleaned_data['election_day_to']
+        #from day should be less than
         if election_day_from > election_day_to:
                 raise forms.ValidationError(
-                    "Date range invalid. Start date should be less than end date. "
+                    "Date range invalid. Start date should not be greater than End date. "
                 )
-        else:
-            return election_day_to
+        #check for day overlap on existing object on the database
+        election_list = Election.objects.filter(
+                        Q(election_day_from__gte=election_day_from,
+                            election_day_to__lte=election_day_from)
+                        | Q(election_day_from__gte=election_day_to,
+                            election_day_to__lte=election_day_to)
+                        | Q(election_day_from__gte=election_day_from,
+                            election_day_from__lte=election_day_to)
+                        | Q(election_day_to__gte=election_day_from,
+                            election_day_to__lte=election_day_to)
+                        )
+        if election_list:
+            raise forms.ValidationError(
+                "An existing election exist that overlap the date specified."
+            )
+        return election_day_to
 
     def clean_school_year(self):
         cleaned_data = super().clean()
