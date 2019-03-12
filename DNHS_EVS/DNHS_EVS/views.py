@@ -4,9 +4,18 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
 class HomePage(TemplateView):
     template_name = 'home_page.html'
+
+    def get(self, request, *args, **kwargs):
+        # permissions_group =
+        return super().get(self)
+
+
+class LoginView(LoginView):
+    template_name = 'login.html'
 
 class LoginViewAjax(LoginView):
     template_name = 'partial_login_ajax.html.html'

@@ -1,6 +1,8 @@
 from django import forms
-from registration.models import Student,UserProfile,Class,ElectionOfficer
+from registration.models import (Student,UserProfile,
+                            Class,ElectionOfficer,Election)
 from django.contrib.auth.models import User,Group
+from django.db.models import Q
 
 
 class UploadStudentsForm(forms.Form):
@@ -148,15 +150,17 @@ class UserFormUpdatePassword(forms.ModelForm):
             )
         return confirm_password
 
-
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ('profile_pic',)
 
 class ClassFilterForm(forms.Form):
-    school_year = forms.ModelChoiceField( \
-        queryset=Class.objects.all().order_by('school_year').values_list('school_year', flat=True).distinct())
+    school_year_list = Class.objects.all().order_by('school_year')\
+                        .values_list('school_year',flat=True).distinct()
+    school_year = forms.ModelChoiceField(
+                queryset=school_year_list,
+                )
     grade_level = forms.ChoiceField()
     section =  forms.ChoiceField()
 
@@ -167,3 +171,90 @@ class UserFilterForm(forms.Form):
         empty_label=None)
     active = forms.BooleanField(initial=True)
     all_users = forms.BooleanField(initial=False)
+
+class ElectionFilterForm(forms.Form):
+    school_year = forms.ModelChoiceField(
+                queryset=Election
+
+
+                .objects.all().order_by('school_year')\
+                .values_list('school_year',flat=True).distinct()
+                )
+
+class ElectionForm(forms.ModelForm):
+    #get all distinct school year from class model
+    #create a list and convert to tuple
+    SCHOOL_YEAR_CHOICES = tuple(
+                [ (school_year,school_year) for school_year in Class.objects.all()\
+                .order_by('-school_year')\
+                .values_list('school_year',flat=True).distinct('school_year')
+                ]
+            )
+    school_year = forms.ChoiceField(
+                choices=SCHOOL_YEAR_CHOICES
+    )
+    # election_day_from = forms.DateField(input_formats=['%m/%d/%Y'])
+    # election_day_from = forms.DateField(input_formats=['%m/%d/%Y'],widget=forms.DateInput(format = '%m/%d/%Y'))
+
+    class Meta:
+        model = Election
+        fields = (
+                'school_year',
+                'name',
+                'description',
+                'election_day_from',
+                'election_day_to',
+        )
+        widgets = {
+            'election_day_from': forms.DateInput(format = '%m/%d/%Y',attrs={'class':'datepicker'}, ),
+            'election_day_to': forms.DateInput(format = '%m/%d/%Y',attrs={'class':'datepicker'}),
+            'description': forms.Textarea,
+        }
+
+    def clean_election_day_to(self):
+        cleaned_data = super().clean()
+        election_day_from = cleaned_data['election_day_from']
+        election_day_to = cleaned_data['election_day_to']
+        #from day should be less than
+        if election_day_from > election_day_to:
+                raise forms.ValidationError(
+                    "Date range invalid. Start date should not be greater than End date. "
+                )
+        #check for day overlap on existing object on the database
+        if self.instance.pk == None: #for insert
+            election_list = Election.objects.filter(
+                            Q(election_day_from__gte=election_day_from,
+                                election_day_to__lte=election_day_from)
+                            | Q(election_day_from__gte=election_day_to,
+                                election_day_to__lte=election_day_to)
+                            | Q(election_day_from__gte=election_day_from,
+                                election_day_from__lte=election_day_to)
+                            | Q(election_day_to__gte=election_day_from,
+                                election_day_to__lte=election_day_to)
+                            )
+        else: #for update
+            election_list = Election.objects.filter(
+                            Q(election_day_from__gte=election_day_from,
+                                election_day_to__lte=election_day_from)
+                            | Q(election_day_from__gte=election_day_to,
+                                election_day_to__lte=election_day_to)
+                            | Q(election_day_from__gte=election_day_from,
+                                election_day_from__lte=election_day_to)
+                            | Q(election_day_to__gte=election_day_from,
+                                election_day_to__lte=election_day_to),
+                                ~Q(id = self.instance.pk) #exclude instance to be updated
+                            )
+        if election_list:
+            raise forms.ValidationError(
+                "An existing election exist that overlap the date specified."
+            )
+        return election_day_to
+
+    def clean_school_year(self):
+        cleaned_data = super().clean()
+        school_year = cleaned_data['school_year']
+        if not school_year:
+            raise forms.ValidationError(
+                "Invalid School Year. "
+            )
+        return school_year

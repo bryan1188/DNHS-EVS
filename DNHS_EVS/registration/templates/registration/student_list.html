@@ -81,7 +81,13 @@
         { "render": function ( data, type, row ) {
                     return '<a href="/registration/student/update/' + data  +'">' +'<button class="btn btn-success">Edit</button>' +"</a>";
                 },
-          "targets": -1 }
+          "targets": -1 },
+          { "render": function ( data, type, row ) { //changing date format dd/mm/yyyy
+                      var dateAr = data.split('-');
+                      var newDate = dateAr[1] + '/' + dateAr[2] + '/' + dateAr[0];
+                      return newDate;
+                  },
+            "targets": -3 }
       ],
       "order": [[ 1, "asc" ]]
     });

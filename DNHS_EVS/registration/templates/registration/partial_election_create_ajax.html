@@ -1,0 +1,66 @@
+{% load widget_tweaks %}
+{% load staticfiles %}
+<script type="text/javascript" src="{% static 'js/bootstrap-datepicker.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/bootstrap-datepicker.css' %}">
+<script>
+  $(function() {
+    $( ".datepicker" ).datepicker();
+    $(".datepicker").attr("readonly","readonly");
+  });
+</script>
+
+<form method="post"
+  {% if mode == 'create' %}
+    action="{% url 'registration:create_election_ajax' %}"
+    class="js-election-create-form">
+  {% else %}
+    action="{% url 'registration:update_election_ajax' election_form.instance.pk  %}"
+    class="js-election-update-form">
+  {% endif %}
+  {% csrf_token %}
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
+      <span area-hidden="true">&times;</span>
+    </button>
+    <h4 class="modal-title">
+      {% if mode == 'create' %}
+          Create New Election
+      {% else %}
+          Update Election
+      {% endif %}
+
+    </h4>
+  </div>
+  <div class="modal-body">
+    {% for field in election_form %}
+      <div class="form-group {% if field.errors %} has-error {% endif%}">
+        {% for error in field.errors %}
+          <p class="help-block"> {{ error }}</p>
+        {% endfor %}
+        <label for="{{field.id_for_label}}"> {{field.label}}</label>
+        {% render_field field  %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-primary">
+      <span class="glyphicon glyphicon-plus"></span>
+      {% if mode == 'create' %}
+          Create Election
+      {% else %}
+          Update Election
+      {% endif %}
+    </button>
+  </div>
+</form>
+
+<script> //listener
+
+    $(document).ready( function () {
+        $('#id_election_day_from').change( function(){
+          $('#id_election_day_to').val($(this).val());
+        });
+    });
+
+</script>

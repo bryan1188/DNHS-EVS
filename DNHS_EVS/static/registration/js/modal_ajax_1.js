@@ -8,10 +8,10 @@ $(function () {
           type: 'get',
           dataType: 'json',
           beforeSend: function(){
-                        $("#modal-user").modal("show");
+                        $("#modal-section").modal("show");
                       },
           success: function(data){
-                      $("#modal-user .modal-content").html(data.html_form)
+                      $("#modal-section .modal-content").html(data.html_form);
                     },
       });
     };
@@ -37,11 +37,12 @@ $(function () {
         dataType: 'json',
         success: function(data){
           if (data.form_is_valid) {
-              $("#modal-user").modal("hide");
+              $("#modal-section").modal("hide");
+              $('#election_list').DataTable().ajax.reload();
               $('#user_list').DataTable().ajax.reload();
           }
           else{
-            $("#modal-user .modal-content").html(data.html_form);
+            $("#modal-section .modal-content").html(data.html_form);
           }
         }
       });
@@ -52,15 +53,23 @@ $(function () {
 
     //create User
     $('.js-create-user').click(loadForm);
-    $("#modal-user").on("submit", ".js-user-create-form", saveForm);
+    $("#modal-section").on("submit", ".js-user-create-form", saveForm);
+
+    //create Election
+    $('.js-create-election').click(loadForm);
+    $("#modal-section").on("submit", ".js-election-create-form", saveForm);
 
     //Update User
     $('#user_list').on("click",".js-update-user",loadForm);
-    $('#modal-user').on("submit",".js-user-update-form", saveForm);
+    $('#modal-section').on("submit",".js-user-update-form", saveForm);
+
+    //Update Election
+    $('#election_list').on("click",".js-update-election",loadForm);
+    $('#modal-section').on("submit",".js-election-update-form", saveForm);
 
     //reset password
     $('#user_list').on("click",".js-reset-password-user",loadForm);
-    $('#modal-user').on("submit",".js-user-reset-password-form", saveForm);
+    $('#modal-section').on("submit",".js-user-reset-password-form", saveForm);
 
     //toggle User
     $('#user_list').on("click",".js-toggle-user",toggleUser);

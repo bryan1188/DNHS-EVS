@@ -1,7 +1,7 @@
-# from django.shortcuts import render
+
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
-# from django.views.generic.list import ListView
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from registration.forms import UploadStudentsForm
 from django.shortcuts import render
 from django.core.files.storage import FileSystemStorage
@@ -15,10 +15,11 @@ from registration import forms
 import os
 
 
-class UploadStudents(FormView):
+class UploadStudents(PermissionRequiredMixin,FormView):
     form_class = UploadStudentsForm
     template_name = 'registration/upload_students.html'
     success_url = reverse_lazy('registration:list_student')
+    permission_required = 'registration.add_student'
 
 
     def post(self, request, *args, **kwargs):
