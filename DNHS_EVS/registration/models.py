@@ -251,7 +251,7 @@ class Student(BaseModel):
             return self.last_name + ", " + self.first_name + " " + self.middle_name[:1].upper() + "."
         else:
             return self.last_name + ", " + self.first_name
-            
+
 
 class ElectionOfficer(BaseModel):
     #null True to update later. editable to map

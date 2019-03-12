@@ -213,8 +213,15 @@ class ElectionForm(forms.ModelForm):
 
     def clean_election_day_to(self):
         cleaned_data = super().clean()
-        election_day_from = cleaned_data['election_day_from']
+        election_day_from = cleaned_data.get('election_day_from',None)
         election_day_to = cleaned_data['election_day_to']
+
+        #check if from is blank, raise error
+        if not election_day_from:
+            raise forms.ValidationError(
+                "Start Date should not be empty."
+            )
+
         #from day should be less than
         if election_day_from > election_day_to:
                 raise forms.ValidationError(
