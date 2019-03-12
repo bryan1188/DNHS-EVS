@@ -10,11 +10,8 @@ from django.template.loader import render_to_string
 def update_user_ajax(request, pk):
     user = get_object_or_404(User, pk=pk)
     if request.method == 'POST':
-        #if post, set the form the instance of the user
-        # user_form =  forms.UserForm(request.POST, instance=user)
         user_form =  forms.UserFormUpdate(request.POST, instance=user)
     else:
-        # user_form = forms.UserForm(instance=user)
         user_form = forms.UserFormUpdate(instance=user)
 
     #get user groups

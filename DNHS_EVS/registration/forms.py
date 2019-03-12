@@ -193,6 +193,8 @@ class ElectionForm(forms.ModelForm):
     school_year = forms.ChoiceField(
                 choices=SCHOOL_YEAR_CHOICES
     )
+    # election_day_from = forms.DateField(input_formats=['%m/%d/%Y'])
+    # election_day_from = forms.DateField(input_formats=['%m/%d/%Y'],widget=forms.DateInput(format = '%m/%d/%Y'))
 
     class Meta:
         model = Election
@@ -204,8 +206,8 @@ class ElectionForm(forms.ModelForm):
                 'election_day_to',
         )
         widgets = {
-            'election_day_from': forms.DateInput(attrs={'class':'datepicker'}),
-            'election_day_to': forms.DateInput(attrs={'class':'datepicker'}),
+            'election_day_from': forms.DateInput(format = '%m/%d/%Y',attrs={'class':'datepicker'}, ),
+            'election_day_to': forms.DateInput(format = '%m/%d/%Y',attrs={'class':'datepicker'}),
             'description': forms.Textarea,
         }
 
@@ -219,16 +221,29 @@ class ElectionForm(forms.ModelForm):
                     "Date range invalid. Start date should not be greater than End date. "
                 )
         #check for day overlap on existing object on the database
-        election_list = Election.objects.filter(
-                        Q(election_day_from__gte=election_day_from,
-                            election_day_to__lte=election_day_from)
-                        | Q(election_day_from__gte=election_day_to,
-                            election_day_to__lte=election_day_to)
-                        | Q(election_day_from__gte=election_day_from,
-                            election_day_from__lte=election_day_to)
-                        | Q(election_day_to__gte=election_day_from,
-                            election_day_to__lte=election_day_to)
-                        )
+        if self.instance.pk == None: #for insert
+            election_list = Election.objects.filter(
+                            Q(election_day_from__gte=election_day_from,
+                                election_day_to__lte=election_day_from)
+                            | Q(election_day_from__gte=election_day_to,
+                                election_day_to__lte=election_day_to)
+                            | Q(election_day_from__gte=election_day_from,
+                                election_day_from__lte=election_day_to)
+                            | Q(election_day_to__gte=election_day_from,
+                                election_day_to__lte=election_day_to)
+                            )
+        else: #for update
+            election_list = Election.objects.filter(
+                            Q(election_day_from__gte=election_day_from,
+                                election_day_to__lte=election_day_from)
+                            | Q(election_day_from__gte=election_day_to,
+                                election_day_to__lte=election_day_to)
+                            | Q(election_day_from__gte=election_day_from,
+                                election_day_from__lte=election_day_to)
+                            | Q(election_day_to__gte=election_day_from,
+                                election_day_to__lte=election_day_to),
+                                ~Q(id = self.instance.pk) #exclude instance to be updated
+                            )
         if election_list:
             raise forms.ValidationError(
                 "An existing election exist that overlap the date specified."

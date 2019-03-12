@@ -63,6 +63,10 @@ $(function () {
     $('#user_list').on("click",".js-update-user",loadForm);
     $('#modal-section').on("submit",".js-user-update-form", saveForm);
 
+    //Update Election
+    $('#election_list').on("click",".js-update-election",loadForm);
+    $('#modal-section').on("submit",".js-election-update-form", saveForm);
+
     //reset password
     $('#user_list').on("click",".js-reset-password-user",loadForm);
     $('#modal-section').on("submit",".js-user-reset-password-form", saveForm);

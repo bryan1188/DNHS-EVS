@@ -117,6 +117,10 @@ TIME_ZONE = 'Asia/Manila'
 
 DATE_FORMAT = 'm/d/Y'
 
+USE_L10N = True
+
+DATE_INPUT_FORMATS = ['%m-%d-%Y']
+
 USE_I18N = True
 
 USE_L10N = True

@@ -76,12 +76,19 @@
          "columnDefs": [
            { "render": function ( data, type, row ) {
              return '<div class="btn-group"><button id="button-edit" type="button" '
-                     + 'class="btn btn-secondary btn-sm js-update-user" data-url="/registration/ajax/user/update/'
+                     + 'class="btn btn-secondary btn-sm js-update-election" data-url="/registration/ajax/election/update/'
                      + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
                      + '<button id="button-change-password" type="button" '
                      + 'class="btn btn-primary btn-sm js-reset-password-user" data-url="/registration/ajax/user/reset_password/'
                      + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button></div>';},
                    "targets": -1
+           },
+           { "render": function ( data, type, row ) { //changing date format to dd/mm/yyyy
+                       var dateAr = data.split('-');
+                       var newDate = dateAr[1] + '/' + dateAr[2] + '/' + dateAr[0];
+                       return newDate;
+                   },
+             "targets": [-2, -3]
            },
          ],
          "order": [[ 0, "desc" ]]
@@ -93,6 +100,6 @@
      });
  </script>
 
- <script src="{% static 'registration/js/modal_ajax.js' %}"></script>
+ <script src="{% static 'registration/js/modal_ajax_1.js' %}"></script>
 
 {% endblock %}
