@@ -238,8 +238,9 @@ class Student(BaseModel):
     )
     classes = models.ManyToManyField(
                 Class,
-                verbose_name=('classes'),
+                verbose_name='classes',
                 blank=True,
+                related_name='students'
     )
 
     class Meta:
