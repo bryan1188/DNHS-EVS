@@ -57,15 +57,19 @@
 
 <script> //listener
 
-    $(document).ready( function () {
+    $(document).ready( function () { //add logic to the date fields
         $('#id_election_day_from').change( function(){
-          if($('#id_election_day_to').val() == '' || new Date($('#id_election_day_to').val()) < new Date($(this).val())){  //if to is blank or to is less than from
+          if($('#id_election_day_to').val() == '' ||
+                new Date($('#id_election_day_to').val()) < new Date($(this).val())){
+                    //if to is blank or to is less than from
             $('#id_election_day_to').val($(this).val());
           }
         });
 
         $('#id_election_day_to').change( function(){
-          if($('#id_election_day_from').val() == '' || new Date($(this).val()) < new Date($('#id_election_day_from').val())){  //if to is blank or to is less than from
+          if($('#id_election_day_from').val() == '' ||
+                new Date($(this).val()) <new Date($('#id_election_day_from').val())){
+                    //if to is blank or to is less than from
             $('#id_election_day_from').val($(this).val());
           }
         });
