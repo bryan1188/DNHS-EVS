@@ -4,6 +4,7 @@ from registration import forms
 from registration.models import Election
 from django.core import serializers
 from django.http import HttpResponse
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.http import JsonResponse
@@ -17,6 +18,7 @@ class ElectionList(PermissionRequiredMixin,TemplateView):
         context = super().get_context_data(**kwargs)
         election_filter_form =  forms.ElectionFilterForm()
         context['election_filter_form'] = election_filter_form
+        context['modal_ajax_location'] = settings.MODAL_AJAX_LOCATION
         return context
 
 def populate_table_election_list_ajax(request):

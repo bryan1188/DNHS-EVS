@@ -3,6 +3,7 @@ from registration import forms
 from django.contrib.auth.models import User,Group
 from django.core import serializers
 from django.http import HttpResponse
+from django.conf import settings
 import json
 
 class UserList(TemplateView):
@@ -12,6 +13,7 @@ class UserList(TemplateView):
         context = super().get_context_data(**kwargs)
         user_filter_form = forms.UserFilterForm()
         context['user_filter_form'] = user_filter_form
+        context['modal_ajax_location'] = settings.MODAL_AJAX_LOCATION
         return context
 
 def populate_table_user_list_ajax(request):
@@ -31,7 +33,7 @@ def populate_table_user_list_ajax(request):
     if select_all_users == "true":
         user_list = User.objects.all()
 
-    user_list = user_list.distinct('username')    
+    user_list = user_list.distinct('username')
 
     return_list = []
     for user in user_list:

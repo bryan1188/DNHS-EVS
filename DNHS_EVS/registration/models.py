@@ -1,19 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from registration.models_base import BaseModel
 
-# Create your models here.
-class BaseModel(models.Model): #base model for all my models. This will have the column create_date, last_update_date, Created_by, last_updated_by
-    created_date = models.DateTimeField(
-                auto_now_add=True,
-                null=True
-    )
-    modified_date = models.DateTimeField(
-                auto_now=True,
-                null=True
-    )
-
-    class Meta:
-        abstract = True
+#other models outside models.py
+from registration.models_election import Position
 
 class School(BaseModel):
     school_id = models.CharField(max_length=10, verbose_name="School ID", default="")
@@ -306,7 +296,7 @@ class Election(BaseModel):
                 on_delete=models.SET_NULL,
                 null=True,
                 verbose_name="Created by",
-                related_name="created_by",
+                related_name="election_created_by",
                 related_query_name='elections created'
     )
     last_updated_by = models.ForeignKey(
@@ -314,7 +304,7 @@ class Election(BaseModel):
                 on_delete=models.SET_NULL,
                 null=True,
                 verbose_name="Last Updated by",
-                related_name="updated_by",
+                related_name="election_updated_by",
                 related_query_name='elections last updated'
     )
 

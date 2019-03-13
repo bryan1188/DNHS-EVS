@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block heading  %}
+
+  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
+  <link rel="stylesheet" href="{% static 'registration/css/user_list.css' %}">
+  <!-- <script src="{% static 'js/jquery.min.js' %}"></script> -->
+  <!-- <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script> -->
+  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+<h2>Position Management</h2>
+<p>
+ <button type="button" class="btn btn-primary js-create-position"
+    data-url="{% url 'registration:create_position_ajax' %}">
+   <span class="glyphicon glyphicon-plus"></span>
+   New Position
+ </button>
+</p>
+<table id="position_list" class="table table-bordered display">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Number of Slots</th>
+      <th>Grade Level</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tfoot>
+    <tr>
+      <th>Title</th>
+      <th>Number of Slots</th>
+      <th>Grade Level</th>
+      <th>Action</th>
+    </tr>
+  </tfoot>
+  <tbody>
+
+  </tbody>
+</table>
+
+<div class="modal fade" id="modal-section">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<script> //initialize script
+    $(document).ready( function () {
+      var table = $('#position_list').DataTable({
+        "processing": true,
+        "ajax": {
+            "processing": true,
+            "url": "{% url 'registration:populate_table_position_list_ajax' %}",
+            "data": "",
+            "dataSrc": ""
+        },
+        'columns': [
+          {"data": "fields.title"},
+          {"data": "fields.number_of_slots"},
+          {"data": "fields.grade_level"},
+          {"data": "pk"},
+        ],
+        fixedColumns: false,
+        'columnDefs': [
+            {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                "targets": [1,-1],
+                "className": "text-center",
+                // "width": "4%"
+           },
+           { "render": function ( data, type, row ) {
+             return '<div class="btn-group"><button id="button-edit" type="button" '
+                     + 'class="btn btn-secondary btn-sm js-update-position" data-url="/registration/ajax/position/update/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
+                     + '<button id="button-change-password" type="button" '
+                     + 'class="btn btn-primary btn-sm js-reset-password-user" data-url="/registration/ajax/user/reset_password/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button></div>';},
+                   "targets": -1
+           },
+           ],
+        // "columnDefs": [
+        //   { "render": function ( data, type, row ) {
+        //     return '<div class="btn-group"><button id="button-edit" type="button" '
+        //             + 'class="btn btn-secondary btn-sm js-update-election" data-url="/registration/ajax/election/update/'
+        //             + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
+        //             + '<button id="button-change-password" type="button" '
+        //             + 'class="btn btn-primary btn-sm js-reset-password-user" data-url="/registration/ajax/user/reset_password/'
+        //             + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button></div>';},
+        //           "targets": -1
+        //   },
+        //   { "render": function ( data, type, row ) { //changing date format to dd/mm/yyyy
+        //               var dateAr = data.split('-');
+        //               var newDate = dateAr[1] + '/' + dateAr[2] + '/' + dateAr[0];
+        //               return newDate;
+        //           },
+        //     "targets": [-2, -3]
+        //   },
+        // ],
+        "order": [[ 0, "desc" ]]
+      });
+    });
+</script>
+
+ <script src="{% static modal_ajax_location %}"></script>
+{% endblock %}

@@ -59,7 +59,8 @@
             <button class="dropbtn">Election Management</button>
             <div class="dropdown-content">
               {% if perms.registration.add_election %}
-              <a href="{%url 'registration:list_election' %}">Create Election</a>
+              <a href="{%url 'registration:list_election' %}">Election Management</a>
+              <a href="{%url 'registration:position' %}">Position Management</a>
               {% endif %}
               <a href="#">Update Election</a>
               <a href="#">Review List Voters and Candidates</a>

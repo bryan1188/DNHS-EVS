@@ -1,6 +1,7 @@
 from django import forms
 from registration.models import (Student,UserProfile,
                             Class,ElectionOfficer,Election)
+from registration.models_election import Position
 from django.contrib.auth.models import User,Group
 from django.db.models import Q
 
@@ -193,8 +194,6 @@ class ElectionForm(forms.ModelForm):
     school_year = forms.ChoiceField(
                 choices=SCHOOL_YEAR_CHOICES
     )
-    # election_day_from = forms.DateField(input_formats=['%m/%d/%Y'])
-    # election_day_from = forms.DateField(input_formats=['%m/%d/%Y'],widget=forms.DateInput(format = '%m/%d/%Y'))
 
     class Meta:
         model = Election
@@ -265,3 +264,54 @@ class ElectionForm(forms.ModelForm):
                 "Invalid School Year. "
             )
         return school_year
+
+class PositionForm(forms.ModelForm):
+    #get all distinct grade_level from class model
+    #create a list and convert to tuple
+    GRADE_LEVEL_CHOICES = tuple(
+                [ (grade_level,grade_level) for grade_level in Class.objects.all()\
+                .order_by('grade_level')\
+                .values_list('grade_level',flat=True).distinct('grade_level')
+                ]
+    )
+    grade_level = forms.MultipleChoiceField(
+                widget=forms.SelectMultiple,
+                choices=GRADE_LEVEL_CHOICES,
+                initial=[choice[0] for choice in GRADE_LEVEL_CHOICES] #select all
+    )
+    field_order = [
+                'title',
+                'number_of_slots',
+                'description',
+                'grade_level'
+    ]
+
+    class Meta:
+        model = Position
+        fields = (
+                'title',
+                'number_of_slots',
+                'description',
+        )
+        widgets = {
+            'description': forms.Textarea,
+        }
+
+    def clean_number_of_slots(self):
+        cleaned_data = super().clean()
+        number_of_slots = cleaned_data['number_of_slots']
+        if number_of_slots < 1:
+            raise forms.ValidationError(
+            "Number of slots should not be less than 1."
+            )
+        return number_of_slots
+
+    def clean_title(self):
+        cleaned_data = super().clean()
+        title = cleaned_data['title']
+        if self.instance.pk == None: #for insert
+            if Position.objects.filter(title__iexact=title).exists():
+                raise forms.ValidationError(
+                "Title " + title + " already exist."
+                )
+        return title

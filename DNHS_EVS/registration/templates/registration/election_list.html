@@ -11,8 +11,9 @@
   <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
 
 {% endblock %}
-<h3>Election Management</h3>
+
 {% block content %}
+<h2>Election Management</h2>
   <form method="post">
     {% csrf_token %}
       {{ election_filter_form.as_p }}
@@ -90,6 +91,11 @@
                    },
              "targets": [-2, -3]
            },
+           { //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+               "targets": -1,
+               "className": "text-center",
+               // "width": "4%"
+           }
          ],
          "order": [[ 0, "desc" ]]
        });
@@ -100,6 +106,6 @@
      });
  </script>
 
- <script src="{% static 'registration/js/modal_ajax_1.js' %}"></script>
+ <script src="{% static modal_ajax_location %}"></script>
 
 {% endblock %}
