@@ -109,4 +109,12 @@ urlpatterns = [
         position.update_position_ajax,
         name='update_position_ajax'
     ),
+    path('ajax/position/toggle_status/<int:pk>/',
+        position.toggle_position_status_ajax,
+        name='toggle_position_status_ajax'
+    ),
+    path('ajax/position/more_details/<int:pk>/',
+        position.show_more_details_ajax,
+        name='show_more_details_ajax'
+    ),
 ]

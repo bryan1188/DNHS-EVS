@@ -6,6 +6,7 @@ from registration import forms
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from registration.management.helpers.db_object_helpers import toggle_object_status
 
 def update_user_ajax(request, pk):
     user = get_object_or_404(User, pk=pk)
@@ -55,14 +56,5 @@ def update_user_reset_password_ajax(request,pk):
     return JsonResponse(data)
 
 def deactivate_activate_ajax(request, pk):
-    user = get_object_or_404(User, pk=pk)
-    data = dict()
-    if (user.is_active):
-        user.is_active = False
-        data['message'] = 'User Deactivated!'
-    else:
-        user.is_active = True
-        data['message'] = 'User Activated!'
-    user.save()
-
+    data = toggle_object_status(object=User, pk=pk)
     return JsonResponse(data)

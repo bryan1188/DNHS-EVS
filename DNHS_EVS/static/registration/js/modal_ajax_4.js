@@ -24,6 +24,7 @@ $(function () {
           dataType: 'json',
           success: function(data){
                       $('#user_list').DataTable().ajax.reload();
+                      $('#position_list').DataTable().ajax.reload();
                     },
       });
     };
@@ -74,7 +75,7 @@ $(function () {
 
     //Update Position
     $('#position_list').on("click",".js-update-position",loadForm);
-    $('#modal-section').on("submit",".js-election-update-form", saveForm);
+    $('#modal-section').on("submit",".js-position-update-form", saveForm);
 
     //reset password
     $('#user_list').on("click",".js-reset-password-user",loadForm);
@@ -82,4 +83,11 @@ $(function () {
 
     //toggle User
     $('#user_list').on("click",".js-toggle-user",toggleUser);
+
+    //toggle Position
+    $('#position_list').on("click",".js-toggle-position",toggleUser);
+
+    //show more details of position
+    $('#position_list').on("click",".js-show-more-details-position",loadForm);
+
 });

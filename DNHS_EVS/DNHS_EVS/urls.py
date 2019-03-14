@@ -30,6 +30,10 @@ urlpatterns = [
     path('registration/',include('registration.urls',namespace='registration')),
     path('accounts/login/', views.LoginView.as_view(),
         name='login'),
+    path('test/',
+        views.TestPage.as_view(),
+        name='test'
+    ),
 ]
 
 if settings.DEBUG:

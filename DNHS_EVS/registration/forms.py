@@ -285,22 +285,22 @@ class PositionForm(forms.ModelForm):
                 'description',
                 'grade_level'
     ]
+    number_of_slots = forms.CharField(initial=1, help_text='A valid email address, please.')
 
-    class Meta:
-        model = Position
-        fields = (
-                'title',
-                'number_of_slots',
-                'description',
-        )
-        widgets = {
-            'description': forms.Textarea,
-        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk: #for update
+            # https://stackoverflow.com/questions/34270099/django-modelform-overriding-init
+            self.fields['grade_level'].initial = [
+                            grade_level for grade_level in self.instance.grade_levels.all()
+                            ]
+        else:
+            self.fields['number_of_slots'].initial = 1
 
     def clean_number_of_slots(self):
         cleaned_data = super().clean()
         number_of_slots = cleaned_data['number_of_slots']
-        if number_of_slots < 1:
+        if int(number_of_slots) < 1:
             raise forms.ValidationError(
             "Number of slots should not be less than 1."
             )
@@ -315,3 +315,40 @@ class PositionForm(forms.ModelForm):
                 "Title " + title + " already exist."
                 )
         return title
+
+    class Meta:
+        model = Position
+        fields = (
+                'title',
+                'number_of_slots',
+                'description',
+        )
+        widgets = {
+            'description': forms.Textarea,
+        }
+
+class PositionFormMoreDetails(PositionForm):
+    # created = forms.DateField(widget = forms.DateTimeInput(
+    #     attrs={'readonly':'readonly'}
+    # ))
+    created_by = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly':'readonly'})
+    )
+    # last_modified = forms.DateField(widget = forms.DateTimeInput(
+    #     attrs={'readonly':'readonly'}
+    # ))
+    last_updated_by = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly':'readonly'})
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['created_by'].initial = self.instance.created_by
+            self.fields['last_updated_by'].initial = self.instance.last_updated_by
+            # self.fields['created'].initial = self.instance.created_date
+            # self.fields['last_modified'].initial = self.instance.modified_date
+            for key in self.fields.items(): #set all field as readonly
+                self.fields[key[0]].widget.attrs['readonly'] = True
+
+            self.fields['grade_level'].widget.attrs['disabled'] = True    

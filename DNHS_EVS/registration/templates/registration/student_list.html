@@ -53,8 +53,25 @@
 <script >
   $(document).ready( function () {
     var form = $('#id_school_year').closest("form");
+    //
+    // $('#uploaded_students thead tr').clone(true).appendTo( '#uploaded_students thead' );
+    // $('#uploaded_students thead tr:eq(1) th').each( function (i) {
+    //     var title = $(this).text();
+    //     $(this).html( '<input type="text" placeholder="Search" />' );
+    //
+    //     $( 'input', this ).on( 'keyup change', function () {
+    //         if ( table.column(i).search() !== this.value ) {
+    //             table
+    //                 .column(i)
+    //                 .search( this.value )
+    //                 .draw();
+    //         }
+    //     } );
+    // } );
 
     var table = $('#uploaded_students').DataTable( {
+      // orderCellsTop: true,
+      //  fixedHeader: true,
       "processing": true,
       "ajax": {
           "processing": true,

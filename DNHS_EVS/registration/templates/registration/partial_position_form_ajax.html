@@ -6,7 +6,8 @@
   {% if mode == 'create' %}
     action="{% url 'registration:create_position_ajax' %}"
     class="js-{{object_name}}-create-form">
-  {% else %}
+  {% endif%}
+  {% if mode == 'update' %}
     action="{% url 'registration:update_position_ajax' form.instance.pk  %}"
     class="js-{{object_name}}-update-form">
   {% endif %}
@@ -18,8 +19,13 @@
     <h4 class="modal-title">
       {% if mode == 'create' %}
           Create New {{object_name|title}}
-      {% else %}
+      {% endif %}
+      {% if mode == 'update' %}
           Update {{object_name|title}}
+      {% endif %}
+
+      {% if mode == 'view' %}
+          More Details
       {% endif %}
 
     </h4>
@@ -37,13 +43,17 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-    <button type="submit" class="btn btn-primary">
-      <span class="glyphicon glyphicon-plus"></span>
-      {% if mode == 'create' %}
+    {% if mode != 'view' %}
+      <button type="submit" class="btn btn-primary">
+        {% if mode == 'create' %}
+          <span class="glyphicon glyphicon-plus"></span>
           Create {{object_name|title}}
-      {% else %}
-          Update {{object_name|title}}
-      {% endif %}
-    </button>
+        {% endif %}
+        {% if mode == 'update' %}
+          <span class="glyphicon glyphicon-pencil"></span>
+            Update {{object_name|title}}
+        {% endif %}
+      </button>
+    {% endif %}
   </div>
 </form>

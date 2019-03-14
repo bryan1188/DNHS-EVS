@@ -136,4 +136,4 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')]
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 MEDIA_URL = '/media/'
 UPLOAD_DIR = os.path.join(MEDIA_ROOT,'uploaded_files')
-MODAL_AJAX_LOCATION = 'registration/js/modal_ajax_3.js'
+MODAL_AJAX_LOCATION = 'registration/js/modal_ajax_4.js'

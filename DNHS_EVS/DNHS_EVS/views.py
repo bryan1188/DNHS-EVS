@@ -13,6 +13,8 @@ class HomePage(TemplateView):
         # permissions_group =
         return super().get(self)
 
+class TestPage(TemplateView):
+    template_name = 'test.html'
 
 class LoginView(LoginView):
     template_name = 'login.html'
