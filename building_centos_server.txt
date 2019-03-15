@@ -1,0 +1,122 @@
+https://support.rackspace.com/how-to/centos-hostname-change/
+
+https://www.serverlab.ca/tutorials/linux/administration-linux/configure-centos-6-network-settings/
+
+https://www.youtube.com/watch?v=DzXCHAuHf0I&t=351s
+https://www.digitalocean.com/community/tutorials/how-to-install-python-3-and-set-up-a-local-programming-environment-on-centos-7
+root:
+sudo yum -y update
+
+django:
+sudo yum -y install yum-utils
+
+sudo yum -y groupinstall development
+
+sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+
+sudo yum -y install python36u
+
+sudo yum -y install python36u-pip
+
+sudo yum -y install python36u-devel
+
+
+https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-uwsgi-and-nginx-on-centos-7
+
+source ~/environments/dev/bin/activate
+
+ pip install --upgrade pip
+ 
+ pip install django
+ 
+ root:
+ firewall-cmd --add-port=8000/tcp
+ 
+ uwsgi
+ django:
+ sudo yum install python-devel gcc
+ 
+sudo yum -y install uwsgi
+ 
+ sudo mkdir -p /etc/uwsgi/sites
+cd /etc/uwsgi/sites
+ sudo vi testProject.ini
+ 
+[uwsgi]
+project = testProject
+username = django
+base = /home/%(username)
+
+chdir = %(base)/%(project)
+home = %(base)/environments/dev
+module = %(project).wsgi:application
+
+
+master = true
+processes = 5
+
+uid = %(username)
+socket = /run/uwsgi/%(project).sock
+chown-socket = %(username):nginx
+chmod-socket = 660
+vacuum = true
+
+
+sudo vi /etc/systemd/system/uwsgi.service
+[Unit]
+Description=uWSGI Emperor service
+
+[Service]
+ExecStartPre=/usr/bin/bash -c 'mkdir -p /run/uwsgi; chown django:nginx /run/uwsgi'
+ExecStart=/usr/bin/uwsgi --emperor /etc/uwsgi/sites
+Restart=always
+KillSignal=SIGQUIT
+Type=notify
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
+
+
+sudo yum install nginx
+sudo vi /etc/nginx/nginx.conf
+
+  server {
+        listen       80 ;
+        server_name  http://192.168.43.186;
+
+         location = favicon.ico { access_log off; log_not_found off; }
+        location /static/ {
+                 root /home/django/testProject;
+        }
+        location / {
+                include uwsgi_params;
+                 uwsgi_pass unix:/run/uwsgi/testProject.sock;
+        }
+
+        error_page 404 /404.html;
+            location = /40x.html {
+        }
+
+        error_page 500 502 503 504 /50x.html;
+            location = /50x.html {
+        }
+    }
+
+sudo nginx -t
+	
+ sudo usermod -a -G django nginx
+ chmod 710 /home/django/
+	
+sudo systemctl start nginx
+sudo systemctl start uwsgi
+
+sudo systemctl enable nginx
+sudo systemctl enable uwsgi
+
+ firewall-cmd --add-port=80/tcp
+ sudo firewall-cmd --zone=public --permanent --add-port=80/tcp
+
+uwsgi --http :80 --home /home/django/environments/dev --chdir /home/django/testProject/ -w testProject.wsgi -p 5
+
+
