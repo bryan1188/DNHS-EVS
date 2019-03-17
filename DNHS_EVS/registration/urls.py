@@ -97,6 +97,14 @@ urlpatterns = [
         election.update_election_ajax,
         name='update_election_ajax'
         ),
+    path('ajax/election/toggle_status/<int:pk>/',
+        election.toggle_election_status_ajax,
+        name='toggle_election_status_ajax'
+    ),
+    path('ajax/election/more_details/<int:pk>/',
+        election.show_more_details_ajax,
+        name='election_show_more_details_ajax'
+    ),
     path('positions/', position.PositionList.as_view(), name='position'),
     path('ajax/positions/populate_table_election_list_ajax/',
         position.populate_table_position_list_ajax,

@@ -4,6 +4,7 @@ from registration import forms
 from django.shortcuts import render
 from django.core import serializers
 from django.http import HttpResponse
+from django.conf import settings
 import json
 # from django.http import JsonResponse
 # import os
@@ -19,6 +20,7 @@ class StudentsListView(ListView):
         session['update_student_prev_url'] = 'registration:list_student' #get the prev url. this will be used as success url on update_student.py
         class_filter_form = forms.ClassFilterForm()
         context['class_filter_form'] = class_filter_form
+        context['modal_ajax_location'] = settings.MODAL_AJAX_LOCATION
         return context
 
 def get_filter_options_for_level(request): # will be called by ajax request

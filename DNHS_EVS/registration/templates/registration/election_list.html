@@ -17,9 +17,12 @@
   <form method="post">
     {% csrf_token %}
       {{ election_filter_form.as_p }}
+      {{ show_all_filter_form.as_p }}
   </form>
   <p>
-   <button type="button" class="btn btn-primary js-create-election" data-url="{% url 'registration:create_election_ajax' %}">
+   <button type="button" class="btn btn-primary js-create-election"
+      data-toggle="tooltip" data-placement="right" title="Create new election"
+      data-url="{% url 'registration:create_election_ajax' %}">
      <span class="glyphicon glyphicon-plus"></span>
      New Election
    </button>
@@ -56,14 +59,27 @@
  </div>
 
  <script> //initialize script
+
+   function get_all_checkbox(){
+     if ($('#id_show_all').prop('checked'))
+       return true;
+     else
+       return false;
+   }
+
      $(document).ready( function () {
        var table = $('#election_list').DataTable({
+         "drawCallback": function( settings ) {
+             //https://stackoverflow.com/questions/39240361/datatables-and-bootstrap-tooltips
+                 $('[data-toggle="tooltip"]').tooltip();
+                 },
          "processing": true,
          "ajax": {
              "processing": true,
              "url": "{% url 'registration:populate_table_election_list_ajax' %}",
              "data": function( d ) {
                      d.school_year = $('#id_school_year').val();
+                     d.select_all = get_all_checkbox();
                    },
              "dataSrc": ""
          },
@@ -76,20 +92,54 @@
          ],
          "columnDefs": [
            { "render": function ( data, type, row ) {
-             return '<div class="btn-group"><button id="button-edit" type="button" '
-                     + 'class="btn btn-secondary btn-sm js-update-election" data-url="/registration/ajax/election/update/'
-                     + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
+                 var toggleButton = ""
+                 if (row['fields']['is_active']) {
+                  toggleButton = '<button id="button-change-password" type="button" '
+                        + 'class="btn btn-danger btn-sm js-toggle-election"'
+                        + 'data-toggle="tooltip" data-placement="right" title="Deactivate" '
+                        + 'data-url="/registration/ajax/election/toggle_status/'
+                        + row['pk']  +'/">' +'<span class="glyphicon glyphicon-remove-sign"></span></button></div>';
+                  }
+                  else {
+                    toggleButton = '<button  type="button" class="btn btn-success btn-sm js-toggle-election"'
+                        + 'data-toggle="tooltip" data-placement="right" title="Activate" '
+                        + 'data-url="/registration/ajax/election/toggle_status/'
+                        + row['pk']  +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span></button></div>';
+                  }
+                  return '<div class="btn-group"><button id="button-edit" type="button" '
+                     + 'class="btn btn-secondary btn-sm js-update-election" '
+                     + 'data-toggle="tooltip" data-placement="left" title="Edit" '
+                     + 'data-url="/registration/ajax/election/update/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-pencil">'
+                     + '</span></button>'
                      + '<button id="button-change-password" type="button" '
-                     + 'class="btn btn-primary btn-sm js-reset-password-user" data-url="/registration/ajax/user/reset_password/'
-                     + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button></div>';},
+                     + 'class="btn btn-primary btn-sm js-show-more-details-election" '
+                     + 'data-toggle="tooltip" data-placement="top" title="Show More Details" '
+                     + 'data-url="/registration/ajax/election/more_details/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-list-alt">'
+                     + '</span></button>'
+                     + toggleButton ;
+                   },
                    "targets": -1
            },
            { "render": function ( data, type, row ) { //changing date format to dd/mm/yyyy
                        var dateAr = data.split('-');
                        var newDate = dateAr[1] + '/' + dateAr[2] + '/' + dateAr[0];
-                       return newDate;
+                       if ((row['fields']['is_active']))
+                          return newDate;
+                        else
+                          return '<strike>' + newDate + '</strike>';
                    },
              "targets": [-2, -3]
+           },
+           { "render": function ( data, type, row ) {
+                     if ((row['fields']['is_active'])) {
+                         return data;
+                     }
+                     else
+                         return '<strike>' + data + '</strike>';
+                   },
+             "targets": [0,1,2,3]
            },
            { //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
                "targets": -1,
@@ -100,9 +150,14 @@
          "order": [[ 0, "desc" ]]
        });
 
+       //listener
+       $(':checkbox').change( function(){
+           $('#election_list').DataTable().ajax.reload();
+       });
        $('#id_school_year').change( function(){
          $('#election_list').DataTable().ajax.reload();
        });
+
      });
  </script>
 

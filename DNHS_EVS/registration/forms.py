@@ -161,25 +161,68 @@ class ClassFilterForm(forms.Form):
                         .values_list('school_year',flat=True).distinct()
     school_year = forms.ModelChoiceField(
                 queryset=school_year_list,
+                widget = forms.Select(
+                    attrs = {
+                        'data-toggle': 'tooltip',
+                        'data-placement': 'right',
+                        'title': 'Apply filter by school year'
+                        }
                 )
-    grade_level = forms.ChoiceField()
-    section =  forms.ChoiceField()
+                )
+    grade_level = forms.ChoiceField(widget = forms.Select(
+                attrs = {
+                    'data-toggle': 'tooltip',
+                    'data-placement': 'right',
+                    'title': 'Apply filter by grade level'
+                    }
+    ))
+    section =  forms.ChoiceField(widget = forms.Select(
+                attrs = {
+                    'data-toggle': 'tooltip',
+                    'data-placement': 'right',
+                    'title': 'Apply filter by section'
+                    }
+    ))
 
 class UserFilterForm(forms.Form):
     queryset_ =  Group.objects.all().order_by('name').values_list('name', flat=True).distinct()
-    group = forms.ModelChoiceField(widget=forms.CheckboxSelectMultiple, \
+    group = forms.ModelChoiceField(widget=forms.CheckboxSelectMultiple(
+        attrs = {
+            'data-toggle': 'tooltip',
+            'data-placement': 'right',
+            'title': 'Check/uncheck to show specific user group'
+            }
+        ),
         queryset=queryset_,\
-        empty_label=None)
-    active = forms.BooleanField(initial=True)
-    all_users = forms.BooleanField(initial=False)
+        empty_label=None
+    )
+    active = forms.BooleanField(initial=True, widget=forms.CheckboxInput(
+            attrs = {
+                'data-toggle': 'tooltip',
+                'data-placement': 'right',
+                'title': 'Apply filter for active or inactive users'
+                }
+    ))
+    all_users = forms.BooleanField(initial=False, widget=forms.CheckboxInput(
+            attrs = {
+                'data-toggle': 'tooltip',
+                'data-placement': 'right',
+                'title': 'Toggle to show all users'
+                }
+    ))
 
 class ElectionFilterForm(forms.Form):
     school_year = forms.ModelChoiceField(
                 queryset=Election
-
-
                 .objects.all().order_by('school_year')\
-                .values_list('school_year',flat=True).distinct()
+                .values_list('school_year',flat=True).distinct(),
+                widget=forms.Select(
+                attrs = {
+                    'data-toggle': 'tooltip',
+                    'data-placement': 'right',
+                    'title': 'Apply filter by school year'
+                    }
+                    )
                 )
 
 class ElectionForm(forms.ModelForm):
@@ -194,6 +237,14 @@ class ElectionForm(forms.ModelForm):
     school_year = forms.ChoiceField(
                 choices=SCHOOL_YEAR_CHOICES
     )
+    field_order = [
+                'school_year',
+                'name',
+                'description',
+                'positions',
+                'election_day_from',
+                'election_day_to',
+    ]
 
     class Meta:
         model = Election
@@ -201,13 +252,14 @@ class ElectionForm(forms.ModelForm):
                 'school_year',
                 'name',
                 'description',
+                'positions',
                 'election_day_from',
                 'election_day_to',
         )
         widgets = {
             'election_day_from': forms.DateInput(format = '%m/%d/%Y',attrs={'class':'datepicker'}, ),
             'election_day_to': forms.DateInput(format = '%m/%d/%Y',attrs={'class':'datepicker'}),
-            'description': forms.Textarea,
+            'description': forms.Textarea(),
         }
 
     def clean_election_day_to(self):
@@ -265,6 +317,23 @@ class ElectionForm(forms.ModelForm):
             )
         return school_year
 
+class ElectionFormMoreDetails(ElectionForm):
+    created_by = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly':'readonly'})
+    )
+    last_updated_by = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly':'readonly'})
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['created_by'].initial = self.instance.created_by
+        self.fields['last_updated_by'].initial = self.instance.last_updated_by
+        for key in self.fields.items(): #set all field as readonly
+            self.fields[key[0]].widget.attrs['disabled'] = True
+        self.fields['positions'].widget.attrs['disabled'] = True
+        self.fields['school_year'].widget.attrs['disabled'] = True
+
 class PositionForm(forms.ModelForm):
     #get all distinct grade_level from class model
     #create a list and convert to tuple
@@ -285,7 +354,7 @@ class PositionForm(forms.ModelForm):
                 'description',
                 'grade_level'
     ]
-    number_of_slots = forms.CharField(initial=1, help_text='A valid email address, please.')
+    number_of_slots = forms.CharField(initial=1, help_text='A valid number, please.')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -328,15 +397,10 @@ class PositionForm(forms.ModelForm):
         }
 
 class PositionFormMoreDetails(PositionForm):
-    # created = forms.DateField(widget = forms.DateTimeInput(
-    #     attrs={'readonly':'readonly'}
-    # ))
+
     created_by = forms.CharField(
         widget=forms.TextInput(attrs={'readonly':'readonly'})
     )
-    # last_modified = forms.DateField(widget = forms.DateTimeInput(
-    #     attrs={'readonly':'readonly'}
-    # ))
     last_updated_by = forms.CharField(
         widget=forms.TextInput(attrs={'readonly':'readonly'})
         )
@@ -346,9 +410,16 @@ class PositionFormMoreDetails(PositionForm):
         if self.instance.pk:
             self.fields['created_by'].initial = self.instance.created_by
             self.fields['last_updated_by'].initial = self.instance.last_updated_by
-            # self.fields['created'].initial = self.instance.created_date
-            # self.fields['last_modified'].initial = self.instance.modified_date
             for key in self.fields.items(): #set all field as readonly
-                self.fields[key[0]].widget.attrs['readonly'] = True
+                self.fields[key[0]].widget.attrs['disabled'] = True
 
-            self.fields['grade_level'].widget.attrs['disabled'] = True    
+            self.fields['grade_level'].widget.attrs['disabled'] = True
+
+class GenericFilterForm(forms.Form):
+    show_all = forms.BooleanField(initial=False, widget=forms.CheckboxInput(
+            attrs = {
+                'data-toggle': 'tooltip',
+                'data-placement': 'right',
+                'title': 'Toggle to show or hide inactive'
+                }
+    ))

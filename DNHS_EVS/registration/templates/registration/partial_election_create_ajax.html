@@ -13,7 +13,8 @@
   {% if mode == 'create' %}
     action="{% url 'registration:create_election_ajax' %}"
     class="js-election-create-form">
-  {% else %}
+  {% endif %}
+  {% if mode == 'update' %}
     action="{% url 'registration:update_election_ajax' election_form.instance.pk  %}"
     class="js-election-update-form">
   {% endif %}
@@ -25,8 +26,12 @@
     <h4 class="modal-title">
       {% if mode == 'create' %}
           Create New Election
-      {% else %}
+      {% endif %}
+      {% if mode == 'update' %}
           Update Election
+      {% endif %}
+      {% if mode == 'view' %}
+          More Details
       {% endif %}
 
     </h4>
@@ -44,16 +49,31 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-    <button type="submit" class="btn btn-primary">
-      <span class="glyphicon glyphicon-plus"></span>
-      {% if mode == 'create' %}
-          Create Election
-      {% else %}
-          Update Election
-      {% endif %}
-    </button>
+    {% if mode != 'view' %}
+      <button type="submit" class="btn btn-primary">
+        {% if mode == 'create' %}
+          <span class="glyphicon glyphicon-plus"></span>
+            Create Election
+        {% endif %}
+        {% if mode == 'update' %}
+          <span class="glyphicon glyphicon-pencil"></span>
+            Update Election
+        {% endif %}
+      </button>
+    {% endif %}
   </div>
 </form>
+
+{% if mode == 'create' %}
+<script> //set default to position select box as select all
+
+    $(document).ready( function () { 
+      $('#id_positions option').prop('selected', true);
+      });
+
+</script>
+
+{% endif %}
 
 <script> //listener
 

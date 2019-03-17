@@ -2,6 +2,14 @@ from django.db import models
 from django.contrib.auth.models import User
 from registration.models_base import BaseModel
 
+class PositionManagerActive(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_active = True)
+
+class PositionManagerAll(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().all()
+
 class Position(BaseModel):
     title = models.CharField(
             max_length=100,
@@ -42,8 +50,17 @@ class Position(BaseModel):
                 related_query_name='position_last_updated'
     )
 
+    #overriding objects so that it's the active will only show on the form ElectionForm
+    #or any other form that call position
+    objects = PositionManagerActive()
+
+    all_objects = PositionManagerAll()
+
+    class Meta:
+        ordering = ['title']
+
     def __str__(self):
-        return self.title    
+        return self.title
 
 class PositionGradeLevel(models.Model):
     grade_level = models.CharField(

@@ -14,6 +14,10 @@
 
 {% block content %}
 <h2>Position Management</h2>
+<form method="post">
+  {% csrf_token %}
+    {{ filter_form.as_p }}
+</form>
 <p>
  <button type="button" class="btn btn-primary js-create-position"
   data-toggle="tooltip" data-placement="right" title="Create new position"
@@ -55,37 +59,46 @@
 
 <script> //initialize script
 
+  function get_all_checkbox(){
+    if ($('#id_show_all').prop('checked'))
+      return true;
+    else
+      return false;
+  }
+
     $(document).ready( function () {
       var table = $('#position_list').DataTable({
         "drawCallback": function( settings ) {
             //https://stackoverflow.com/questions/39240361/datatables-and-bootstrap-tooltips
                 $('[data-toggle="tooltip"]').tooltip();
                 },
-        initComplete: function () { //https://www.datatables.net/examples/api/multi_filter_select.html
-            this.api().columns().every( function () {
-                var column = this;
-                var select = $('<select><option value=""></option></select>')
-                    .appendTo( $(column.footer()).empty() )
-                    .on( 'change', function () {
-                        var val = $.fn.dataTable.util.escapeRegex(
-                            $(this).val()
-                        );
-
-                        column
-                            .search( val ? '^'+val+'$' : '', true, false )
-                            .draw();
-                    } );
-
-                column.data().unique().sort().each( function ( d, j ) {
-                    select.append( '<option value="'+d+'">'+d+'</option>' )
-                } );
-            } );
-        },
+        // initComplete: function () { //https://www.datatables.net/examples/api/multi_filter_select.html
+        //     this.api().columns().every( function () {
+        //         var column = this;
+        //         var select = $('<select><option value=""></option></select>')
+        //             .appendTo( $(column.footer()).empty() )
+        //             .on( 'change', function () {
+        //                 var val = $.fn.dataTable.util.escapeRegex(
+        //                     $(this).val()
+        //                 );
+        //
+        //                 column
+        //                     .search( val ? '^'+val+'$' : '', true, false )
+        //                     .draw();
+        //             } );
+        //
+        //         column.data().unique().sort().each( function ( d, j ) {
+        //             select.append( '<option value="'+d+'">'+d+'</option>' )
+        //         } );
+        //     } );
+        // },
         "processing": true,
         "ajax": {
             "processing": true,
             "url": "{% url 'registration:populate_table_position_list_ajax' %}",
-            "data": "",
+            "data": function( d ) {
+                    d.select_all = get_all_checkbox();
+                  },
             "dataSrc": ""
         },
         'columns': [
@@ -144,14 +157,12 @@
         "order": [[ 0, "desc" ]]
       });
 
-    });
-</script>
+      //listener
+      $(':checkbox').change( function(){
+          $('#position_list').DataTable().ajax.reload();
+      });
 
-<script>
-$(document).ready(function(){
-  $('[data-toggle="tooltip"]').tooltip();
-  $('#position_lis').tooltip({selector: '[data-toggle="tooltip"]'});
-});
+    });
 </script>
 
  <script src="{% static modal_ajax_location %}"></script>

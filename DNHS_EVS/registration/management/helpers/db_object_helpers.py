@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from registration.models_election import Position
 
 class DatabaseObjectHelps():
     pass
@@ -8,7 +9,11 @@ def toggle_object_status(*args, **kwargs):
     Object = kwargs.get('object', None)
     pk = kwargs.get('pk',None)
     if Object and pk:
-        object = get_object_or_404(Object, pk=pk)
+        if Object.__name__ == 'Position':
+            #special case for position since we are overriding the objects attribute
+            object = get_object_or_404(Object.all_objects.all(), pk = pk)
+        else:
+            object = get_object_or_404(Object, pk = pk)
         try:
             if object.is_active:
                 object.is_active = False

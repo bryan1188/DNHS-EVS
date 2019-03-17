@@ -1,4 +1,5 @@
 from django.db import models
+from registration.models_election import Position
 from django.contrib.auth.models import User
 from registration.models_base import BaseModel
 
@@ -243,7 +244,6 @@ class Student(BaseModel):
         else:
             return self.last_name + ", " + self.first_name
 
-
 class ElectionOfficer(BaseModel):
     #null True to update later. editable to map
     student = models.OneToOneField(Student, on_delete=models.CASCADE, verbose_name="Student", related_query_name='student')
@@ -306,6 +306,16 @@ class Election(BaseModel):
                 verbose_name="Last Updated by",
                 related_name="election_updated_by",
                 related_query_name='elections last updated'
+    )
+    is_active = models.BooleanField(
+            default=True,
+            verbose_name="Is Active?"
+    )
+    positions = models.ManyToManyField(
+            Position,
+            verbose_name = 'Positions',
+            blank = True,
+            related_name = 'elections'
     )
 
     class Meta:

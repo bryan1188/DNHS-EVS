@@ -19,10 +19,18 @@ class PositionList(PermissionRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         context =  super().get_context_data(**kwargs)
         context['modal_ajax_location'] = settings.MODAL_AJAX_LOCATION
+        filter_form = forms.GenericFilterForm()
+        context['filter_form'] = filter_form
         return context
 
 def populate_table_position_list_ajax(request):
-    position_list = Position.objects.all()
+    select_all = request.GET.get('select_all')
+
+    if select_all == "true":
+        position_list = Position.all_objects.all()
+    else:
+        position_list = Position.objects.all()
+
     return_list = []
     for position in position_list: #create my own json object
         position_json ={}
