@@ -1,6 +1,6 @@
 from django import forms
 from registration.models import (Student,UserProfile,
-                            Class,ElectionOfficer,Election)
+                            Class,ElectionOfficer,Election,Party)
 from registration.models_election import Position
 from django.contrib.auth.models import User,Group
 from django.db.models import Q
@@ -423,3 +423,36 @@ class GenericFilterForm(forms.Form):
                 'title': 'Toggle to show or hide inactive'
                 }
     ))
+
+class PartyForm(forms.ModelForm):
+    class Meta:
+        model = Party
+        fields = (
+                'name',
+        )
+
+    def clean_name(self):
+        cleaned_data = super().clean()
+        name = cleaned_data['name']
+        if self.instance.pk == None: #for insert
+            if Party.objects.filter(name__iexact=name).exists():
+                raise forms.ValidationError(
+                "Party " + name + " already exist."
+                )
+        return name
+
+class PartyFormMoreDetails(PartyForm):
+    created_by = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly':'readonly'})
+    )
+    last_updated_by = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly':'readonly'})
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['created_by'].initial = self.instance.created_by
+            self.fields['last_updated_by'].initial = self.instance.last_updated_by
+            for key in self.fields.items(): #set all field as disabled
+                self.fields[key[0]].widget.attrs['disabled'] = True

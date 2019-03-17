@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from registration.models_base import BaseModel
 
 #other models outside models.py
-from registration.models_election import Position
 
 class School(BaseModel):
     school_id = models.CharField(max_length=10, verbose_name="School ID", default="")
@@ -126,7 +125,8 @@ class Student(BaseModel):
                 blank=True,
                 null=True,
                 verbose_name="Sex",
-                related_query_name='students'
+                related_query_name='students',
+                related_name = 'students'
     )
     birth_date = models.DateField(
                 verbose_name="Birth Date",
@@ -244,6 +244,7 @@ class Student(BaseModel):
         else:
             return self.last_name + ", " + self.first_name
 
+#related to users ##############################
 class ElectionOfficer(BaseModel):
     #null True to update later. editable to map
     student = models.OneToOneField(Student, on_delete=models.CASCADE, verbose_name="Student", related_query_name='student')
@@ -261,7 +262,10 @@ class UserProfile(BaseModel):
 
     def __str__(self):
         return self.user.username
+#end of related to users ########################
 
+
+#related to election#############################
 class Election(BaseModel):
     name = models.CharField(
                 max_length=255,
@@ -324,3 +328,107 @@ class Election(BaseModel):
 
     def __str__(self):
         return self.name + '(' + self.school_year  + ')'
+
+class ObjectManagerActive(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_active = True)
+
+class ObjectManagerAll(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().all()
+
+class Party(BaseModel):
+    name = models.CharField(
+                max_length=255,
+                null=False,
+                blank=False,
+                unique=True,
+                verbose_name="Name",
+    )
+    created_by = models.ForeignKey(
+            User,
+            on_delete=models.SET_NULL,
+            null=True,
+            verbose_name="Created by",
+            related_name="party_created_by",
+            related_query_name='elections created'
+    )
+    last_updated_by = models.ForeignKey(
+            User,
+            on_delete=models.SET_NULL,
+            null=True,
+            verbose_name="Last Updated by",
+            related_name="party_updated_by",
+            related_query_name='elections last updated'
+    )
+    is_active = models.BooleanField(
+            default=True,
+            verbose_name="Is Active?"
+    )
+
+    #overriding objects so that the actives will only show on the form that will consume this model
+    #or any other form that call this model
+    objects = ObjectManagerActive()
+
+    all_objects = ObjectManagerAll()
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+class Candidate(BaseModel):
+    student = models.ForeignKey(
+            Student,
+            on_delete = models.SET_NULL,
+            blank = True,
+            null = True,
+            verbose_name = "Student",
+            related_name = 'candidates'
+    )
+    party = models.ForeignKey(
+            Party,
+            on_delete = models.SET_NULL,
+            blank = True,
+            null = True,
+            verbose_name = "Party",
+            related_name = 'candidates'
+    )
+    election = models.ForeignKey(
+            Election,
+            on_delete = models.SET_NULL,
+            blank = True,
+            null = True,
+            verbose_name = 'Election',
+            related_name = 'candidates'
+    )
+    position = models.ForeignKey(
+            Position,
+            on_delete = models.SET_NULL,
+            blank = True,
+            null = True,
+            verbose_name = 'Position',
+            related_name = 'candidates'
+    )
+    created_by = models.ForeignKey(
+            User,
+            on_delete=models.SET_NULL,
+            null=True,
+            verbose_name="Created by",
+            related_name="candidates_created",
+            related_query_name='position_created'
+    )
+    last_updated_by = models.ForeignKey(
+            User,
+            on_delete=models.SET_NULL,
+            null=True,
+            verbose_name="Last Updated by",
+            related_name="candidates_last_updated",
+            related_query_name='position_last_updated'
+    )
+    is_active = models.BooleanField(
+            default=True,
+            verbose_name="Is Active?"
+    )
+#end of related to election ########################

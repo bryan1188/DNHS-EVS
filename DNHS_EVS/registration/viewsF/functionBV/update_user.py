@@ -7,7 +7,9 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from registration.management.helpers.db_object_helpers import toggle_object_status
+from django.contrib.auth.decorators import permission_required
 
+@permission_required('auth.add_user', raise_exception=True)
 def update_user_ajax(request, pk):
     user = get_object_or_404(User, pk=pk)
     if request.method == 'POST':
@@ -28,6 +30,7 @@ def update_user_ajax(request, pk):
     return create_user.create_user_ajax(request, election_officer_flag=election_officer_flag, \
             groups=groups, user_form=user_form, template='registration/partial_user_update_ajax.html')
 
+@permission_required('auth.add_user', raise_exception=True)
 def update_user_reset_password_ajax(request,pk):
     context = dict()
     data = dict()
@@ -55,6 +58,7 @@ def update_user_reset_password_ajax(request,pk):
                 )
     return JsonResponse(data)
 
+@permission_required('auth.add_user', raise_exception=True)
 def deactivate_activate_ajax(request, pk):
     data = toggle_object_status(object=User, pk=pk)
     return JsonResponse(data)

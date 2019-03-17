@@ -1,5 +1,6 @@
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.decorators import permission_required
 from registration import forms
 from registration.models import Election
 from registration.models_election import Position,PositionGradeLevel
@@ -23,6 +24,7 @@ class PositionList(PermissionRequiredMixin, TemplateView):
         context['filter_form'] = filter_form
         return context
 
+@permission_required('registration.add_election', raise_exception=True)
 def populate_table_position_list_ajax(request):
     select_all = request.GET.get('select_all')
 
@@ -50,6 +52,7 @@ def populate_table_position_list_ajax(request):
 
     return HttpResponse(json.dumps(return_list), content_type='application/json')
 
+@permission_required('registration.add_election', raise_exception=True)
 def process_post_request(request, position_form, is_create):
     position = position_form.save(commit=False)
     if is_create:
@@ -65,6 +68,7 @@ def process_post_request(request, position_form, is_create):
                 position=position) for grade_level_ in grade_level_list ]
     PositionGradeLevel.objects.bulk_create(position_grade_level_list)
 
+@permission_required('registration.add_election', raise_exception=True)
 def create_position_ajax(request, *args, **kwargs):
     data = dict()
     context = dict()
@@ -90,10 +94,11 @@ def create_position_ajax(request, *args, **kwargs):
     )
     return JsonResponse(data)
 
+@permission_required('registration.add_election', raise_exception=True)
 def update_position_ajax(request, pk):
     data = dict()
     context = dict()
-    position = get_object_or_404(Position, pk=pk)
+    position = get_object_or_404(Position.all_objects.all(), pk=pk)
     if request.method == 'POST':
         position_form = forms.PositionForm(request.POST, instance=position)
         if position_form.is_valid():
@@ -117,14 +122,16 @@ def update_position_ajax(request, pk):
     )
     return JsonResponse(data)
 
+@permission_required('registration.add_election', raise_exception=True)
 def toggle_position_status_ajax(request,pk):
     data = toggle_object_status(object=Position, pk=pk)
     return JsonResponse(data)
 
+@permission_required('registration.add_election', raise_exception=True)
 def show_more_details_ajax(request, pk):
     data = dict()
     context = dict()
-    position = get_object_or_404(Position, pk=pk)
+    position = get_object_or_404(Position.all_objects.all(), pk=pk)
     form = forms.PositionFormMoreDetails(instance=position)
 
     context['mode'] = 'view'

@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block heading  %}
+
+  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
+  <link rel="stylesheet" href="{% static 'registration/css/user_list.css' %}">
+  <!-- <script src="{% static 'js/jquery.min.js' %}"></script> -->
+  <!-- <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script> -->
+  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+<h2>Party Management</h2>
+<form method="post">
+  {% csrf_token %}
+    {{ filter_form.as_p }}
+</form>
+<p>
+ <button type="button" class="btn btn-primary js-create-party"
+  data-toggle="tooltip" data-placement="right" title="Create new party"
+    data-url="{% url 'registration:create_party_ajax' %}">
+   <span class="glyphicon glyphicon-plus"></span>
+   New Party
+ </button>
+</p>
+<table id="party_list" class="table table-bordered display">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tfoot>
+    <tr>
+      <th>Name</th>
+      <th>Action</th>
+    </tr>
+  </tfoot>
+  <tbody>
+
+  </tbody>
+</table>
+
+<div class="modal fade" id="modal-section">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<script> //initialize script
+
+  function get_all_checkbox(){
+    if ($('#id_show_all').prop('checked'))
+      return true;
+    else
+      return false;
+  }
+
+    $(document).ready( function () {
+      var table = $('#party_list').DataTable({
+        "drawCallback": function( settings ) {
+            //https://stackoverflow.com/questions/39240361/datatables-and-bootstrap-tooltips
+                $('[data-toggle="tooltip"]').tooltip();
+                },
+        "processing": true,
+        "ajax": {
+            "processing": true,
+            "url": "{% url 'registration:populate_table_party_list_ajax' %}",
+            "data": function( d ) {
+                    d.select_all = get_all_checkbox();
+                  },
+            "dataSrc": ""
+        },
+        'columns': [
+          {"data": "fields.name"},
+          {"data": "pk"},
+        ],
+        fixedColumns: false,
+        'columnDefs': [
+            {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                "targets": [-1],
+                "className": "text-center",
+                // "width": "4%"
+           },
+           { "render": function ( data, type, row ) {
+             var toggleButton = ""
+             if (row['fields']['is_active']) {
+              toggleButton = '<button id="button-change-password" type="button" '
+                    + 'class="btn btn-danger btn-sm js-toggle-party"'
+                    + 'data-toggle="tooltip" data-placement="right" title="Deactivate" '
+                    + 'data-url="/registration/ajax/party/toggle_status/'
+                    + row['pk']  +'/">' +'<span class="glyphicon glyphicon-remove-sign"></span></button></div>';
+              }
+              else {
+                toggleButton = '<button  type="button" class="btn btn-success btn-sm js-toggle-party"'
+                    + 'data-toggle="tooltip" data-placement="right" title="Activate" '
+                    + 'data-url="/registration/ajax/party/toggle_status/'
+                    + row['pk']  +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span></button></div>';
+              }
+             return '<div class="btn-group"><button id="button-edit" type="button" '
+                     + 'data-toggle="tooltip" data-placement="left" title="Edit" '
+                     + 'class="btn btn-secondary btn-sm js-update-party" '
+                     + 'data-url="/registration/ajax/party/update/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
+                     + '<button type="button" '
+                     + 'data-toggle="tooltip" data-placement="top" title="Show More Details" '
+                     + 'class="btn btn-primary btn-sm js-show-more-details-party" '
+                     + 'data-url="/registration/ajax/party/more_details/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button>'
+                     + toggleButton ;
+                   },
+             "targets": -1
+           },
+           { "render": function ( data, type, row ) {
+                     if ((row['fields']['is_active'])) {
+                         return data;
+                     }
+                     else
+                         return '<strike>' + data + '</strike>';
+                   },
+             "targets": [0]
+           },
+           ],
+        "order": [[ 0, "asc" ]]
+      });
+
+      //listener
+      $(':checkbox').change( function(){
+          $('#party_list').DataTable().ajax.reload();
+      });
+
+    });
+</script>
+
+ <script src="{% static modal_ajax_location %}"></script>
+{% endblock %}

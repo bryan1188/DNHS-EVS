@@ -6,7 +6,7 @@ from DNHS_EVS import views as MainViews
 from registration.viewsF.cbv import (
                     upload_students,update_student,
                     list_student,create_student,delete_student,create_user,
-                    list_user,election,position
+                    list_user,election,position,party
 )
 from registration.viewsF.functionBV import update_user
 
@@ -124,5 +124,25 @@ urlpatterns = [
     path('ajax/position/more_details/<int:pk>/',
         position.show_more_details_ajax,
         name='show_more_details_ajax'
+    ),
+    path('parties/', party.PartyList.as_view(), name='party'),
+    path('ajax/parties/populate_table_party_list_ajax/',
+        party.populate_table_party_list_ajax,
+        name='populate_table_party_list_ajax'
+        ),
+    path('ajax/party/create/', party.create_ajax,
+        name='create_party_ajax'
+    ),
+    path('ajax/party/update/<int:pk>/',
+        party.update_ajax,
+        name='update_party_ajax'
+    ),
+    path('ajax/party/more_details/<int:pk>/',
+        party.show_more_details_ajax,
+        name='part_more_details_ajax'
+    ),
+    path('ajax/party/toggle_status/<int:pk>/',
+        party.toggle_status_ajax,
+        name='party_toggle_status_ajax'
     ),
 ]
