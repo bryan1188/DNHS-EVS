@@ -26,7 +26,7 @@
           <li ><a class="navbar-brand" href="{%url 'home' %}">DNHS E-Voting</a></li>
           <!-- <li><a class="navbar-link" href="">Admin</a></li>
           <li><a class="navbar-link" href="">Other</a></li> -->
-          {% if  perms.auth.add_user %}
+          {% if  perms.registration.add_student %}
             <li>
               <div class="dropdown">
                 <button class="dropbtn">Student</button>
@@ -39,7 +39,7 @@
               </div>
             </li>
           {% endif %}
-          {% if perms.registration.add_student %}
+          {% if perms.auth.add_user %}
             <li>
               <div class="dropdown">
                 <button class="dropbtn">User</button>
@@ -63,7 +63,7 @@
                 <a href="{%url 'registration:position' %}">Position Management</a>
                 <a href="{%url 'registration:list_election' %}">Election Management</a>
                 <a href="{%url 'registration:party' %}">Party Management</a>
-                <a href="#">Update Election</a>
+                <a href="{%url 'registration:candidate' %}">Candidate Management</a>
                 <a href="#">Review List Voters and Candidates</a>
                 <a href="#">Generate Voter's Token</a>
                 <a href="#">Add Candidate</a>

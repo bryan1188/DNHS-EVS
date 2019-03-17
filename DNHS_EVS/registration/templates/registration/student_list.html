@@ -4,7 +4,7 @@
 
 {% block heading  %}
   <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
-  <!-- <script src="{% static 'js/jquery.min.js' %}"></script> -->
+  <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
   <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
 
 {% endblock %}
@@ -134,11 +134,13 @@
       var form = $(this).closest("form");
       clear_grade_level();
       clear_section();
-      $.ajax({  //populate other drop down
+      $.ajax({  //populate other drop downs
         url: '{% url "registration:get_filter_options_for_level_ajax" %}',
         data: form.serialize(),
         success: function(data){
           $('#id_grade_level').html(data);
+          $('#id_grade_level').selectpicker('refresh');
+          $('#id_section').selectpicker('refresh');
         }
         });
 
@@ -152,6 +154,7 @@
         data: form.serialize(),
         success: function(data){
           $('#id_section').html(data);
+          $('#id_section').selectpicker('refresh');
         }
         });
 
@@ -162,9 +165,15 @@
     $('#id_section').change( function(){
       $('#uploaded_students').DataTable().ajax.reload();
     });
+
+    $('#id_grade_level').attr('data-live-search',"true");
+    $('#id_grade_level').selectpicker('render');
+
+    $('#id_section').attr('data-live-search',"true");
+    $('#id_section').selectpicker('render');
   });
 </script>
 
 <script src="{% static modal_ajax_location %}"></script>
-
+<script src="{% static 'js/bootstrap-select.min.js' %}"></script>
 {% endblock %}

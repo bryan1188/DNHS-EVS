@@ -1,9 +1,10 @@
 from django import forms
 from registration.models import (Student,UserProfile,
-                            Class,ElectionOfficer,Election,Party)
+                            Class,ElectionOfficer,Election,Party,Candidate)
 from registration.models_election import Position
 from django.contrib.auth.models import User,Group
 from django.db.models import Q
+from searchableselect.widgets import SearchableSelect
 
 
 class UploadStudentsForm(forms.Form):
@@ -171,17 +172,20 @@ class ClassFilterForm(forms.Form):
                 )
     grade_level = forms.ChoiceField(widget = forms.Select(
                 attrs = {
-                    'data-toggle': 'tooltip',
-                    'data-placement': 'right',
-                    'title': 'Apply filter by grade level'
+                    #removed, got crazy whene applying selectpicker
+                    # 'data-toggle': 'tooltip',
+                    # 'data-placement': 'right',
+                    # 'title': 'Apply filter by grade level',
                     }
     ))
     section =  forms.ChoiceField(widget = forms.Select(
                 attrs = {
-                    'data-toggle': 'tooltip',
-                    'data-placement': 'right',
-                    'title': 'Apply filter by section'
-                    }
+                    #removed, got crazy whene applying selectpicker
+                    # 'data-toggle': 'tooltip',
+                    # 'data-placement': 'right',
+                    # 'title': 'Apply filter by section'
+                    },
+                    # initial = '---------'
     ))
 
 class UserFilterForm(forms.Form):
@@ -214,7 +218,7 @@ class UserFilterForm(forms.Form):
 class ElectionFilterForm(forms.Form):
     school_year = forms.ModelChoiceField(
                 queryset=Election
-                .objects.all().order_by('school_year')\
+                .all_objects.all().order_by('school_year')\
                 .values_list('school_year',flat=True).distinct(),
                 widget=forms.Select(
                 attrs = {
@@ -456,3 +460,28 @@ class PartyFormMoreDetails(PartyForm):
             self.fields['last_updated_by'].initial = self.instance.last_updated_by
             for key in self.fields.items(): #set all field as disabled
                 self.fields[key[0]].widget.attrs['disabled'] = True
+
+class CandidateForm(forms.ModelForm):
+    student =  forms.ChoiceField(widget = forms.Select(
+                attrs = {
+                    # 'data-toggle': 'tooltip',
+                    # 'data-placement': 'right',
+                    # 'title': 'Select the candidate from the list of students. Options will show after selecting Election.'
+                    }
+    ))
+    position =  forms.ChoiceField(widget = forms.Select(
+                attrs = {
+                    # 'data-toggle': 'tooltip',
+                    # 'data-placement': 'right',
+                    # 'title': 'Select position. Options will show after selecting Election.'
+                    }
+    ))
+
+    class Meta:
+        model = Candidate
+        fields = (
+                'election',
+                'position',
+                'student',
+                'party',
+        )

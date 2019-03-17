@@ -39,8 +39,11 @@ class Class(BaseModel):
     def __str__(self):
         return self.grade_level + " - " + self.section + "(" + self.school_year + ")"
 
-#lookup tables for Student Table
+    @property
+    def grade_level_section(self):
+        return self.grade_level + " - " + self.section
 
+#lookup tables for Student Table################
 class SexManager(models.Manager):
     def get_by_natural_key(self, sex):
         return self.get(first_name=sex)
@@ -90,8 +93,7 @@ class AddressProvince(BaseModel):
 
     def __str__(self):
         return self.address_province
-
-#end of lookup tables for Student Table
+#end of lookup tables for Student Table#########
 
 class Student(BaseModel):
     lrn = models.CharField(
@@ -266,6 +268,14 @@ class UserProfile(BaseModel):
 
 
 #related to election#############################
+class ObjectManagerActive(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_active = True)
+
+class ObjectManagerAll(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().all()
+
 class Election(BaseModel):
     name = models.CharField(
                 max_length=255,
@@ -322,20 +332,16 @@ class Election(BaseModel):
             related_name = 'elections'
     )
 
+    objects = ObjectManagerActive()
+
+    all_objects = ObjectManagerAll()
+
     class Meta:
         ordering = ('-school_year', '-election_day_from')
         unique_together = (('school_year', 'election_day_from','election_day_to'),)
 
     def __str__(self):
         return self.name + '(' + self.school_year  + ')'
-
-class ObjectManagerActive(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(is_active = True)
-
-class ObjectManagerAll(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().all()
 
 class Party(BaseModel):
     name = models.CharField(
@@ -382,7 +388,7 @@ class Candidate(BaseModel):
     student = models.ForeignKey(
             Student,
             on_delete = models.SET_NULL,
-            blank = True,
+            blank = False,
             null = True,
             verbose_name = "Student",
             related_name = 'candidates'
@@ -390,7 +396,7 @@ class Candidate(BaseModel):
     party = models.ForeignKey(
             Party,
             on_delete = models.SET_NULL,
-            blank = True,
+            blank = False,
             null = True,
             verbose_name = "Party",
             related_name = 'candidates'
@@ -398,7 +404,7 @@ class Candidate(BaseModel):
     election = models.ForeignKey(
             Election,
             on_delete = models.SET_NULL,
-            blank = True,
+            blank = False,
             null = True,
             verbose_name = 'Election',
             related_name = 'candidates'
@@ -406,7 +412,7 @@ class Candidate(BaseModel):
     position = models.ForeignKey(
             Position,
             on_delete = models.SET_NULL,
-            blank = True,
+            blank = False,
             null = True,
             verbose_name = 'Position',
             related_name = 'candidates'
@@ -431,4 +437,10 @@ class Candidate(BaseModel):
             default=True,
             verbose_name="Is Active?"
     )
+
+    #overriding objects so that the actives will only show on the form that will consume this model
+    #or any other form that call this model
+    objects = ObjectManagerActive()
+
+    all_objects = ObjectManagerAll()
 #end of related to election ########################

@@ -1,0 +1,7 @@
+<option value="">---------</option>
+{% for object in objects %}
+<option value="{{ object.id }}"
+    data-subtext="{{ object.current_class }}">
+  {{ object.name }}
+</option>
+{% endfor %}

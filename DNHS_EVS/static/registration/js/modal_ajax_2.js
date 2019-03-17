@@ -72,6 +72,10 @@ $(function () {
     $('.js-create-party').click(loadForm);
     $("#modal-section").on("submit", ".js-party-create-form", saveForm);
 
+    //create Candidate
+    $('.js-create-candidate').click(loadForm);
+    $("#modal-section").on("submit", ".js-candidate-create-form", saveForm);
+
     //Update User
     $('#user_list').on("click",".js-update-user",loadForm);
     $('#modal-section').on("submit",".js-user-update-form", saveForm);

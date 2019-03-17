@@ -27,17 +27,16 @@ def populate_table_election_list_ajax(request):
     school_year = request.GET.get('school_year', None)
     if school_year:
         if select_all == "true":
-            election_list = Election.objects.filter(school_year__iexact = school_year)
+            election_list = Election.all_objects.filter(school_year__iexact = school_year)
         else:
             election_list = Election.objects.filter(
-                        school_year__iexact = school_year,
-                        is_active = True
+                        school_year__iexact = school_year
                         )
     else:
         if select_all == "true":
-            election_list = Election.objects.all()
+            election_list = Election.all_objects.all()
         else:
-            election_list = Election.objects.filter(is_active = True)
+            election_list = Election.objects.all()
     json = serializers.serialize('json', election_list)
     return HttpResponse(json, content_type='application/json')
 
@@ -70,7 +69,7 @@ def create_election_ajax(request, *args, **kwargs):
 def update_election_ajax(request, pk):
     data = dict()
     context = dict()
-    election = get_object_or_404(Election, pk=pk)
+    election = get_object_or_404(Election.all_objects.all(), pk=pk)
     if request.method == 'POST':
         election_form = forms.ElectionForm(request.POST, instance=election)
         if election_form.is_valid():
@@ -99,7 +98,7 @@ def toggle_election_status_ajax(request,pk):
 def show_more_details_ajax(request, pk):
     data = dict()
     context =  dict()
-    position = get_object_or_404(Election, pk = pk)
+    position = get_object_or_404(Election.all_objects.all(), pk = pk)
     form = forms.ElectionFormMoreDetails(instance = position)
     context['mode'] = 'view'
     context['election_form'] = form

@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block heading  %}
+
+  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
+  <link rel="stylesheet" href="{% static 'registration/css/user_list.css' %}">
+  <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
+  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+<h2>{{ object_name|title }} Management</h2>
+<form method="post">
+  {% csrf_token %}
+    {{ filter_form.as_p }}
+</form>
+<p>
+ <button type="button" class="btn btn-primary js-create-candidate"
+  data-toggle="tooltip" data-placement="right" title="Create new {{object_name}}"
+    data-url="{% url 'registration:create_candidate_ajax' %}">
+   <span class="glyphicon glyphicon-plus"></span>
+   New {{ object_name|title }}
+ </button>
+</p>
+<table id="position_list" class="table table-bordered display">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Number of Slots</th>
+      <th>Grade Level</th>
+      <th>Active</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tfoot>
+    <tr>
+      <th>Title</th>
+      <th>Number of Slots</th>
+      <th>Grade Level</th>
+      <th>Active</th>
+      <th>Action</th>
+    </tr>
+  </tfoot>
+  <tbody>
+
+  </tbody>
+</table>
+
+<div class="modal fade" id="modal-section">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<script> //initialize script
+
+  function get_all_checkbox(){
+    if ($('#id_show_all').prop('checked'))
+      return true;
+    else
+      return false;
+  }
+
+    $(document).ready( function () {
+      var table = $('#position_list').DataTable({
+        "drawCallback": function( settings ) {
+            //https://stackoverflow.com/questions/39240361/datatables-and-bootstrap-tooltips
+                $('[data-toggle="tooltip"]').tooltip();
+                },
+        // initComplete: function () { //https://www.datatables.net/examples/api/multi_filter_select.html
+        //     this.api().columns().every( function () {
+        //         var column = this;
+        //         var select = $('<select><option value=""></option></select>')
+        //             .appendTo( $(column.footer()).empty() )
+        //             .on( 'change', function () {
+        //                 var val = $.fn.dataTable.util.escapeRegex(
+        //                     $(this).val()
+        //                 );
+        //
+        //                 column
+        //                     .search( val ? '^'+val+'$' : '', true, false )
+        //                     .draw();
+        //             } );
+        //
+        //         column.data().unique().sort().each( function ( d, j ) {
+        //             select.append( '<option value="'+d+'">'+d+'</option>' )
+        //         } );
+        //     } );
+        // },
+        "processing": true,
+        "ajax": {
+            "processing": true,
+            "url": "{% url 'registration:populate_table_position_list_ajax' %}",
+            "data": function( d ) {
+                    d.select_all = get_all_checkbox();
+                  },
+            "dataSrc": ""
+        },
+        'columns': [
+          {"data": "fields.title"},
+          {"data": "fields.number_of_slots"},
+          {"data": "fields.grade_level"},
+          {"data": "fields.is_active"},
+          {"data": "pk"},
+        ],
+        fixedColumns: false,
+        'columnDefs': [
+            {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                "targets": [1,-1,-2],
+                "className": "text-center",
+                // "width": "4%"
+           },
+           { "render": function ( data, type, row ) {
+             var toggleButton = ""
+             if (row['fields']['is_active'] == 'Active') {
+              toggleButton = '<button id="button-change-password" type="button" '
+                    + 'class="btn btn-danger btn-sm js-toggle-position"'
+                    + 'data-toggle="tooltip" data-placement="right" title="Deactivate" '
+                    + 'data-url="/registration/ajax/position/toggle_status/'
+                    + row['pk']  +'/">' +'<span class="glyphicon glyphicon-remove-sign"></span></button></div>';
+              }
+              else {
+                toggleButton = '<button  type="button" class="btn btn-success btn-sm js-toggle-position"'
+                    + 'data-toggle="tooltip" data-placement="right" title="Activate" '
+                    + 'data-url="/registration/ajax/position/toggle_status/'
+                    + row['pk']  +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span></button></div>';
+              }
+             return '<div class="btn-group"><button id="button-edit" type="button" '
+                     + 'data-toggle="tooltip" data-placement="left" title="Edit" '
+                     + 'class="btn btn-secondary btn-sm js-update-position" '
+                     + 'data-url="/registration/ajax/position/update/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
+                     + '<button id="button-show-more-details-position" type="button" '
+                     + 'data-toggle="tooltip" data-placement="top" title="Show More Details" '
+                     + 'class="btn btn-primary btn-sm js-show-more-details-position" '
+                     + 'data-url="/registration/ajax/position/more_details/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button>'
+                     + toggleButton ;
+                   },
+             "targets": -1
+           },
+           { "render": function ( data, type, row ) {
+                     if ((row['fields']['is_active']) == 'Active') {
+                         return data;
+                     }
+                     else
+                         return '<strike>' + data + '</strike>';
+                   },
+             "targets": [0,1,2,3]
+           },
+           ],
+        "order": [[ 0, "desc" ]]
+      });
+
+      //listener
+      $(':checkbox').change( function(){
+          $('#position_list').DataTable().ajax.reload();
+      });
+
+    });
+</script>
+
+ <script src="{% static modal_ajax_location %}"></script>
+ <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+{% endblock %}

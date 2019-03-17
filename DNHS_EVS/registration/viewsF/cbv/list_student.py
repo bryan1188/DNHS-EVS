@@ -1,4 +1,6 @@
 from django.views.generic.list import ListView
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.decorators import permission_required
 from registration import models
 from registration import forms
 from django.shortcuts import render
@@ -11,8 +13,9 @@ import json
 
 # Create your views here.
 
-class StudentsListView(ListView):
+class StudentsListView(PermissionRequiredMixin, ListView):
     model = models.Student
+    permission_required = 'registration.add_student'
 
     def get_context_data(self, *args, **kwargs):
         session = self.request.session
@@ -23,25 +26,31 @@ class StudentsListView(ListView):
         context['modal_ajax_location'] = settings.MODAL_AJAX_LOCATION
         return context
 
+@permission_required('registration.add_student', raise_exception=True)
 def get_filter_options_for_level(request): # will be called by ajax request
     school_year = request.GET.get('school_year', None)
     classes = models.Class.objects.filter(school_year__iexact=school_year)\
                 .order_by('grade_level').values('grade_level').distinct('grade_level')
     return render(request, 'registration/grade_level_dropdown_list_options.html',{'clasess': classes})
 
+@permission_required('registration.add_student', raise_exception=True)
 def get_filter_options_for_section(request): # will be called by ajax request
     grade_level = request.GET.get('grade_level', None)
     school_year = request.GET.get('school_year', None)
     classes = models.Class.objects.filter(grade_level__iexact=grade_level,school_year__iexact=school_year).order_by('section').values('section').distinct('section')
     return render(request, 'registration/section_dropdown_list_options.html',{'clasess': classes})
 
+@permission_required('registration.add_student', raise_exception=True)
 def populate_table_upladed_students(request): # will be called by ajax request
     school_year =  request.GET.get('school_year', None)
     grade_level = request.GET.get('grade_level', None)
     section = request.GET.get('section', None)
     student_list = models.Student.objects.filter(classes__school_year=school_year)
-    return render(request, 'registration/table_upladed_students.html',{'student_list': student_list})
+    return render(request, 'registration/table_upladed_students.html',
+        {'student_list': student_list}
+    )
 
+@permission_required('registration.add_student', raise_exception=True)
 def populate_table_uploaded_students_2(request): # will be called by ajax request
     school_year =  request.GET.get('school_year', None)
     grade_level = request.GET.get('grade_level', None)

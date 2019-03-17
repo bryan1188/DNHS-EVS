@@ -1,21 +1,55 @@
-{% extends 'base.html'%}
+{% extends 'base.html' %}
+{% load staticfiles %}
+  {% block heading %}
+      <!-- <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}"> -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
+  {% endblock %}
 
-{%block content%}
-<div class="container">
-  <h3>Tooltip Example</h3>
-  <p>The data-placement attribute specifies the tooltip position.</p>
-  <ul class="list-inline">
-    <li><a href="#" data-toggle="tooltip" data-placement="top" title="Hooray!">Top</a></li>
-    <li><a href="#" data-toggle="tooltip" data-placement="bottom" title="Hooray!">Bottom</a></li>
-    <li><a href="#" data-toggle="tooltip" data-placement="left" title="Hooray!">Left</a></li>
-    <li><a href="#" data-toggle="tooltip" data-placement="right" title="Hooray!">Right</a></li>
-  </ul>
-</div>
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <h2>Bootstrap-select example</h2>
+    </div>
 
-<script>
-$(document).ready(function(){
-  $('[data-toggle="tooltip"]').tooltip();
-});
-</script>
+    <!-- <div class="row-fluid"> -->
+      <!-- <select id="testClass" data-show-subtext="true" data-live-search="true">
+        <option >Tom Foolery</option>
+        <option data-subtext="Sen California">Bill Gordon</option>
+        <option data-subtext="Sen Massacusetts">Elizabeth Warren</option>
+        <option data-subtext="Rep Alabama">Mario Flores</option>
+        <option data-subtext="Rep Alaska">Don Young</option>
+        <option data-subtext="Rep California" disabled="disabled">Marvin Martinez</option>
+      </select> -->
+    <!-- </div> -->
+    <select name="grade_level" id="id_grade_level"><option value="">---------</option>
 
-{%endblock%}
+        <option value="Grade 7">Grade 7</option>
+
+        <option value="Grade 8">Grade 8</option>
+
+    </select>
+  </div>
+
+  <button type="button" id="id_activate" name="button">Activate</button>
+  <button type="button" id="id_destroy" name="button">Destroy</button>
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script> "{% static 'css/bootstrap-select.min.css' %}" -->
+  <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+
+  <script> //test
+
+    $(document).ready( function () {
+
+      $('#id_activate').click(function(){
+        $('#id_grade_level').selectpicker('render');
+      });
+
+      $('#id_destroy').click(function(){
+        $('#id_grade_level').selectpicker('destroy');
+      });
+      //test
+      // $('#id_grade_level').selectpicker('render');
+    });
+  </script>
+
+{% endblock %}
