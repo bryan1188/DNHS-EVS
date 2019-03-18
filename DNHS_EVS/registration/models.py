@@ -46,11 +46,11 @@ class Class(BaseModel):
 #lookup tables for Student Table################
 class SexManager(models.Manager):
     def get_by_natural_key(self, sex):
-        return self.get(first_name=sex)
+        return self.get(sex=sex)
 
 class Sex(BaseModel):
     sex = models.CharField(max_length=1,verbose_name="Sex")
-    objects = SexManager()
+    # objects = SexManager()
 
     def natural_key(self):
         return (self.sex)
@@ -239,12 +239,14 @@ class Student(BaseModel):
     class Meta:
         ordering = ('last_name', 'first_name',
                     'middle_name')
-
     def __str__(self):
         if (self.middle_name != ""):
             return self.last_name + ", " + self.first_name + " " + self.middle_name[:1].upper() + "."
         else:
             return self.last_name + ", " + self.first_name
+
+    def natural_key(self):
+        return self.__str__()
 
 #related to users ##############################
 class ElectionOfficer(BaseModel):
@@ -343,6 +345,9 @@ class Election(BaseModel):
     def __str__(self):
         return self.name + '(' + self.school_year  + ')'
 
+    def natural_key(self):
+        return self.__str__()
+
 class Party(BaseModel):
     name = models.CharField(
                 max_length=255,
@@ -383,6 +388,9 @@ class Party(BaseModel):
 
     def __str__(self):
         return self.name
+
+    def natural_key(self):
+        return self.__str__()
 
 class Candidate(BaseModel):
     student = models.ForeignKey(

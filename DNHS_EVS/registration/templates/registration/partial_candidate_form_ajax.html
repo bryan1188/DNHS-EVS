@@ -4,7 +4,7 @@
 
 <form method="post"
   {% if mode == 'create' %}
-    action="{% url 'registration:create_party_ajax' %}"
+    action="{% url 'registration:create_candidate_ajax' %}"
     class="js-{{object_name}}-create-form">
   {% endif%}
   {% if mode == 'update' %}

@@ -462,21 +462,6 @@ class PartyFormMoreDetails(PartyForm):
                 self.fields[key[0]].widget.attrs['disabled'] = True
 
 class CandidateForm(forms.ModelForm):
-    student =  forms.ChoiceField(widget = forms.Select(
-                attrs = {
-                    # 'data-toggle': 'tooltip',
-                    # 'data-placement': 'right',
-                    # 'title': 'Select the candidate from the list of students. Options will show after selecting Election.'
-                    }
-    ))
-    position =  forms.ChoiceField(widget = forms.Select(
-                attrs = {
-                    # 'data-toggle': 'tooltip',
-                    # 'data-placement': 'right',
-                    # 'title': 'Select position. Options will show after selecting Election.'
-                    }
-    ))
-
     class Meta:
         model = Candidate
         fields = (

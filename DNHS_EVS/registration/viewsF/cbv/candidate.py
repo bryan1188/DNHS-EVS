@@ -30,16 +30,37 @@ def populate_table_list_ajax(request):
     select_all = request.GET.get('select_all')
 
     if select_all == "true":
-        position_list = Candidate.all_objects.all()
+        object_list = Candidate.all_objects.all()
     else:
-        position_list = Candidate.objects.all()
+        object_list = Candidate.objects.all()
+    json = serializers.serialize('json', object_list,
+            use_natural_foreign_keys=True,
+            use_natural_primary_keys=True,
+        )
+    return HttpResponse(json, content_type='application/json')
+
+def process_post_request(request, form, is_create):
+    object = form.save()
+    if is_create:
+        object.created_by = request.user
+    object.last_updated_by = request.user
+    object.save()
 
 @permission_required('registration.add_election', raise_exception=True)
 def create_ajax(request, *args, **kwargs):
     data = dict()
     context = dict()
 
-    form = forms.CandidateForm()
+    if request.method =='POST':
+        form = forms.CandidateForm(data = request.POST)
+        if form.is_valid():
+            is_create = True
+            process_post_request(request, form, is_create)
+            data['form_is_valid'] = True
+        else:
+            data['form_is_valid'] = False
+    else:
+        form = forms.CandidateForm()
     context['mode'] = 'create'
     context['form'] = form
     context['object_name'] = 'candidate'

@@ -28,19 +28,19 @@
 <table id="position_list" class="table table-bordered display">
   <thead>
     <tr>
-      <th>Title</th>
-      <th>Number of Slots</th>
-      <th>Grade Level</th>
-      <th>Active</th>
+      <th>Election</th>
+      <th>Position</th>
+      <th>Candidate</th>
+      <th>Party</th>
       <th>Action</th>
     </tr>
   </thead>
   <tfoot>
     <tr>
-      <th>Title</th>
-      <th>Number of Slots</th>
-      <th>Grade Level</th>
-      <th>Active</th>
+      <th>Election</th>
+      <th>Position</th>
+      <th>Candidate</th>
+      <th>Party</th>
       <th>Action</th>
     </tr>
   </tfoot>
@@ -94,17 +94,17 @@
         "processing": true,
         "ajax": {
             "processing": true,
-            "url": "{% url 'registration:populate_table_position_list_ajax' %}",
+            "url": "{% url 'registration:populate_table_candidate_list_ajax' %}",
             "data": function( d ) {
                     d.select_all = get_all_checkbox();
                   },
             "dataSrc": ""
         },
         'columns': [
-          {"data": "fields.title"},
-          {"data": "fields.number_of_slots"},
-          {"data": "fields.grade_level"},
-          {"data": "fields.is_active"},
+          {"data": "fields.election"},
+          {"data": "fields.position"},
+          {"data": "fields.student"},
+          {"data": "fields.party"},
           {"data": "pk"},
         ],
         fixedColumns: false,
@@ -116,7 +116,7 @@
            },
            { "render": function ( data, type, row ) {
              var toggleButton = ""
-             if (row['fields']['is_active'] == 'Active') {
+             if (row['fields']['is_active']) {
               toggleButton = '<button id="button-change-password" type="button" '
                     + 'class="btn btn-danger btn-sm js-toggle-position"'
                     + 'data-toggle="tooltip" data-placement="right" title="Deactivate" '
@@ -144,7 +144,7 @@
              "targets": -1
            },
            { "render": function ( data, type, row ) {
-                     if ((row['fields']['is_active']) == 'Active') {
+                     if ((row['fields']['is_active'])) {
                          return data;
                      }
                      else

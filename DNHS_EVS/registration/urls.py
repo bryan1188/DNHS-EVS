@@ -146,6 +146,10 @@ urlpatterns = [
         name='party_toggle_status_ajax'
     ),
     path('candidates/', candidate.CandidateList.as_view(), name='candidate'),
+    path('ajax/candidates/populate_table_candidate_list_ajax/',
+        candidate.populate_table_list_ajax,
+        name='populate_table_candidate_list_ajax'
+        ),
     path('ajax/candidate/create/', candidate.create_ajax,
         name='create_candidate_ajax'
     ),

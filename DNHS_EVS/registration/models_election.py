@@ -62,6 +62,9 @@ class Position(BaseModel):
     def __str__(self):
         return self.title
 
+    def natural_key(self):
+        return self.__str__()
+
 class PositionGradeLevel(models.Model):
     grade_level = models.CharField(
             max_length=20,
