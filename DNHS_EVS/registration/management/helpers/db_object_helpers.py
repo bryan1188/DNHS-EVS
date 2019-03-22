@@ -9,7 +9,7 @@ def toggle_object_status(*args, **kwargs):
     Object = kwargs.get('object', None)
     pk = kwargs.get('pk',None)
     if Object and pk:
-        if Object.__name__ in ['Position','Party','Election']:
+        if Object.__name__ in ['Position','Party','Election','Candidate']:
             #special case for position since we are overriding the objects attribute
             object = get_object_or_404(Object.all_objects.all(), pk = pk)
         else:

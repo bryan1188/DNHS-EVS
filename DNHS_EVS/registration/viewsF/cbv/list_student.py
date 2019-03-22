@@ -64,7 +64,7 @@ def populate_table_uploaded_students_2(request): # will be called by ajax reques
     else: #no filter
         student_list = models.Student.objects.all() #filter(classes__school_year=school_year)
 
-    #
+    #add def natural_key() method on Sex Object
     json = serializers.serialize('json', student_list, use_natural_foreign_keys=True, use_natural_primary_keys=True, \
         fields=('id','lrn','last_name','first_name','middle_name','sex','birth_date','age','father_name','mother_name'))
     return HttpResponse(json, content_type='application/json')

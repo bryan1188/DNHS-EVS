@@ -16,7 +16,8 @@ class Position(BaseModel):
             verbose_name="Title",
             null=False,
             blank=False,
-            unique=True,
+            unique=True,            
+            db_index= True
     )
     number_of_slots = models.PositiveSmallIntegerField(
             verbose_name="Number of Slot",

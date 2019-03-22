@@ -25,10 +25,11 @@
    New {{ object_name|title }}
  </button>
 </p>
-<table id="position_list" class="table table-bordered display">
+<table id="candidate_list" class="table table-bordered display">
   <thead>
     <tr>
       <th>Election</th>
+      <th>School Year</th>
       <th>Position</th>
       <th>Candidate</th>
       <th>Party</th>
@@ -38,6 +39,7 @@
   <tfoot>
     <tr>
       <th>Election</th>
+      <th>School Year</th>
       <th>Position</th>
       <th>Candidate</th>
       <th>Party</th>
@@ -66,31 +68,11 @@
   }
 
     $(document).ready( function () {
-      var table = $('#position_list').DataTable({
+      var table = $('#candidate_list').DataTable({
         "drawCallback": function( settings ) {
             //https://stackoverflow.com/questions/39240361/datatables-and-bootstrap-tooltips
                 $('[data-toggle="tooltip"]').tooltip();
                 },
-        // initComplete: function () { //https://www.datatables.net/examples/api/multi_filter_select.html
-        //     this.api().columns().every( function () {
-        //         var column = this;
-        //         var select = $('<select><option value=""></option></select>')
-        //             .appendTo( $(column.footer()).empty() )
-        //             .on( 'change', function () {
-        //                 var val = $.fn.dataTable.util.escapeRegex(
-        //                     $(this).val()
-        //                 );
-        //
-        //                 column
-        //                     .search( val ? '^'+val+'$' : '', true, false )
-        //                     .draw();
-        //             } );
-        //
-        //         column.data().unique().sort().each( function ( d, j ) {
-        //             select.append( '<option value="'+d+'">'+d+'</option>' )
-        //         } );
-        //     } );
-        // },
         "processing": true,
         "ajax": {
             "processing": true,
@@ -102,6 +84,7 @@
         },
         'columns': [
           {"data": "fields.election"},
+          {"data": "fields.school_year"},
           {"data": "fields.position"},
           {"data": "fields.student"},
           {"data": "fields.party"},
@@ -118,26 +101,26 @@
              var toggleButton = ""
              if (row['fields']['is_active']) {
               toggleButton = '<button id="button-change-password" type="button" '
-                    + 'class="btn btn-danger btn-sm js-toggle-position"'
+                    + 'class="btn btn-danger btn-sm js-toggle-candidate"'
                     + 'data-toggle="tooltip" data-placement="right" title="Deactivate" '
-                    + 'data-url="/registration/ajax/position/toggle_status/'
+                    + 'data-url="/registration/ajax/candidate/toggle_status/'
                     + row['pk']  +'/">' +'<span class="glyphicon glyphicon-remove-sign"></span></button></div>';
               }
               else {
-                toggleButton = '<button  type="button" class="btn btn-success btn-sm js-toggle-position"'
+                toggleButton = '<button  type="button" class="btn btn-success btn-sm js-toggle-candidate"'
                     + 'data-toggle="tooltip" data-placement="right" title="Activate" '
-                    + 'data-url="/registration/ajax/position/toggle_status/'
+                    + 'data-url="/registration/ajax/candidate/toggle_status/'
                     + row['pk']  +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span></button></div>';
               }
              return '<div class="btn-group"><button id="button-edit" type="button" '
                      + 'data-toggle="tooltip" data-placement="left" title="Edit" '
-                     + 'class="btn btn-secondary btn-sm js-update-position" '
-                     + 'data-url="/registration/ajax/position/update/'
+                     + 'class="btn btn-secondary btn-sm js-update-candidate" '
+                     + 'data-url="/registration/ajax/candidate/update/'
                      + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
-                     + '<button id="button-show-more-details-position" type="button" '
+                     + '<button type="button" '
                      + 'data-toggle="tooltip" data-placement="top" title="Show More Details" '
-                     + 'class="btn btn-primary btn-sm js-show-more-details-position" '
-                     + 'data-url="/registration/ajax/position/more_details/'
+                     + 'class="btn btn-primary btn-sm js-show-more-details-candidate" '
+                     + 'data-url="/registration/ajax/candidate/more_details/'
                      + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button>'
                      + toggleButton ;
                    },
@@ -153,12 +136,12 @@
              "targets": [0,1,2,3]
            },
            ],
-        "order": [[ 0, "desc" ]]
+        "order": [[ 1, "desc" ], [0, 'asc']]
       });
 
       //listener
       $(':checkbox').change( function(){
-          $('#position_list').DataTable().ajax.reload();
+          $('#candidate_list').DataTable().ajax.reload();
       });
 
     });

@@ -27,6 +27,7 @@ $(function () {
                       $('#position_list').DataTable().ajax.reload();
                       $('#election_list').DataTable().ajax.reload();
                       $('#party_list').DataTable().ajax.reload();
+                      $('#candidate_list').DataTable().ajax.reload();
                     },
       });
     };
@@ -45,6 +46,7 @@ $(function () {
               $('#user_list').DataTable().ajax.reload();
               $('#position_list').DataTable().ajax.reload();
               $('#party_list').DataTable().ajax.reload();
+              $('#candidate_list').DataTable().ajax.reload();
           }
           else{
             $("#modal-section .modal-content").html(data.html_form);
@@ -92,6 +94,10 @@ $(function () {
     $('#party_list').on("click",".js-update-party",loadForm);
     $('#modal-section').on("submit",".js-party-update-form", saveForm);
 
+    //Update Candidate
+    $('#candidate_list').on("click",".js-update-candidate",loadForm);
+    $('#modal-section').on("submit",".js-candidate-update-form", saveForm);
+
     //reset password
     $('#user_list').on("click",".js-reset-password-user",loadForm);
     $('#modal-section').on("submit",".js-user-reset-password-form", saveForm);
@@ -108,14 +114,20 @@ $(function () {
     //toggle Party
     $('#party_list').on("click",".js-toggle-party",toggleObject);
 
+    //toggle canidate
+    $('#candidate_list').on("click",".js-toggle-candidate",toggleObject);
+
     //show more details of position
     $('#position_list').on("click",".js-show-more-details-position",loadForm);
 
     //show more details of election
     $('#election_list').on("click",".js-show-more-details-election",loadForm);
 
-    //show more details of election
+    //show more details of party
     $('#party_list').on("click",".js-show-more-details-party",loadForm);
+
+    //show more details of election
+    $('#candidate_list').on("click",".js-show-more-details-candidate",loadForm);
 
     //tooltip
     $('[data-toggle="tooltip"]').tooltip();

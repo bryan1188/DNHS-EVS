@@ -1,5 +1,6 @@
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.decorators import permission_required
 from registration import forms
 from registration.models import Election
 from registration.management.helpers.db_object_helpers import toggle_object_status
@@ -22,6 +23,7 @@ class ElectionList(PermissionRequiredMixin,TemplateView):
         context['modal_ajax_location'] = settings.MODAL_AJAX_LOCATION
         return context
 
+@permission_required('registration.add_election', raise_exception=True)
 def populate_table_election_list_ajax(request):
     select_all = request.GET.get('select_all')
     school_year = request.GET.get('school_year', None)
@@ -40,6 +42,7 @@ def populate_table_election_list_ajax(request):
     json = serializers.serialize('json', election_list)
     return HttpResponse(json, content_type='application/json')
 
+@permission_required('registration.add_election', raise_exception=True)
 def create_election_ajax(request, *args, **kwargs):
     data = dict()
     context = dict()
@@ -66,6 +69,7 @@ def create_election_ajax(request, *args, **kwargs):
     )
     return JsonResponse(data)
 
+@permission_required('registration.add_election', raise_exception=True)
 def update_election_ajax(request, pk):
     data = dict()
     context = dict()
@@ -91,10 +95,12 @@ def update_election_ajax(request, pk):
     )
     return JsonResponse(data)
 
+@permission_required('registration.add_election', raise_exception=True)
 def toggle_election_status_ajax(request,pk):
     data = toggle_object_status(object=Election, pk=pk)
     return JsonResponse(data)
 
+@permission_required('registration.add_election', raise_exception=True)
 def show_more_details_ajax(request, pk):
     data = dict()
     context =  dict()

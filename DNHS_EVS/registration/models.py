@@ -3,7 +3,21 @@ from registration.models_election import Position
 from django.contrib.auth.models import User
 from registration.models_base import BaseModel
 
-#other models outside models.py
+
+#Model Managers###############################################
+class ObjectManagerActive(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_active = True)
+
+class ObjectManagerAll(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().all()
+
+class ClassSchoolYearManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by('-school_year')\
+        .values_list('school_year',flat=True).distinct()
+#end of Model Managers ########################################
 
 class School(BaseModel):
     school_id = models.CharField(max_length=10, verbose_name="School ID", default="")
@@ -20,7 +34,7 @@ class School(BaseModel):
 
 class Class(BaseModel):
     school = models.ForeignKey(School, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="School", related_name='classes')
-    school_year = models.CharField(max_length=15, verbose_name="School Year", null=True)
+    school_year = models.CharField(max_length=15, verbose_name="School Year", null=True, db_index= True)
     grade_level = models.CharField(max_length=20, verbose_name="Grade Level", null=True)
     section = models.CharField(max_length=20, verbose_name="Section", null=True)
     registered_male_bosy = models.PositiveSmallIntegerField(verbose_name="Registered Male BoSY", null=True)
@@ -30,6 +44,8 @@ class Class(BaseModel):
     registered_female_eosy = models.PositiveSmallIntegerField(verbose_name="Registered Female EoSY", null=True)
     registered_total_eosy = models.PositiveSmallIntegerField(verbose_name="Registered Total EoSY", null=True)
     adviser = models.CharField(max_length=150, verbose_name='Adviser', null=True)
+    objects = ObjectManagerAll()
+    school_year_distinct = ClassSchoolYearManager()
 
     class Meta:
         unique_together = (('school_year', 'grade_level','section'),)
@@ -270,14 +286,6 @@ class UserProfile(BaseModel):
 
 
 #related to election#############################
-class ObjectManagerActive(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(is_active = True)
-
-class ObjectManagerAll(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().all()
-
 class Election(BaseModel):
     name = models.CharField(
                 max_length=255,
@@ -451,4 +459,7 @@ class Candidate(BaseModel):
     objects = ObjectManagerActive()
 
     all_objects = ObjectManagerAll()
+
+    class Meta:
+        unique_together = (('student', 'election'),)
 #end of related to election ########################

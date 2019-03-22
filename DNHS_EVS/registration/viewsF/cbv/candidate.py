@@ -13,32 +13,49 @@ from django.http import JsonResponse
 from django.conf import settings
 import json
 
+Object = Candidate
+Form = forms.CandidateForm
+Form_more_details = forms.CandidateFormMoreDetails
+_permission_required = 'registration.add_election'
+
 class CandidateList(PermissionRequiredMixin, TemplateView):
-    template_name = 'registration/candidate.html'
-    permission_required = 'registration.add_election'
+    template_name = 'registration/{}.html'.format(Object.__name__.lower())
+    permission_required = _permission_required
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(**kwargs)
         context['modal_ajax_location'] = settings.MODAL_AJAX_LOCATION
         filter_form = forms.GenericFilterForm()
         context['filter_form'] = filter_form
-        context['object_name'] = 'candidate'
+        context['object_name'] = Object.__name__.lower()
         return context
 
-@permission_required('registration.add_election', raise_exception=True)
+@permission_required(_permission_required, raise_exception=True)
 def populate_table_list_ajax(request):
     select_all = request.GET.get('select_all')
 
     if select_all == "true":
-        object_list = Candidate.all_objects.all()
+        object_list = Object.all_objects.all()
     else:
-        object_list = Candidate.objects.all()
-    json = serializers.serialize('json', object_list,
-            use_natural_foreign_keys=True,
-            use_natural_primary_keys=True,
-        )
-    return HttpResponse(json, content_type='application/json')
+        object_list = Object.objects.all()
+    return_list = []
+    for object in object_list: #create my own json object
+        object_json ={}
+        object_ = {}
+        object_['election'] = object.election.name
+        object_['school_year'] = object.election.school_year
+        object_['position'] = object.position.__str__()
+        object_['student'] = object.student.__str__()
+        object_['party'] = object.party.__str__()
+        object_['is_active'] = object.is_active
+        object_['pk'] = object.id
+        object_json['pk'] = object.id
+        object_json['fields'] = object_
+        return_list.append(object_json)
 
+    return HttpResponse(json.dumps(return_list), content_type='application/json')
+
+@permission_required(_permission_required, raise_exception=True)
 def process_post_request(request, form, is_create):
     object = form.save()
     if is_create:
@@ -46,13 +63,13 @@ def process_post_request(request, form, is_create):
     object.last_updated_by = request.user
     object.save()
 
-@permission_required('registration.add_election', raise_exception=True)
+@permission_required(_permission_required, raise_exception=True)
 def create_ajax(request, *args, **kwargs):
     data = dict()
     context = dict()
 
     if request.method =='POST':
-        form = forms.CandidateForm(data = request.POST)
+        form = Form(data = request.POST)
         if form.is_valid():
             is_create = True
             process_post_request(request, form, is_create)
@@ -60,18 +77,44 @@ def create_ajax(request, *args, **kwargs):
         else:
             data['form_is_valid'] = False
     else:
-        form = forms.CandidateForm()
+        form = Form()
     context['mode'] = 'create'
     context['form'] = form
-    context['object_name'] = 'candidate'
+    context['object_name'] = Object.__name__.lower()
     data['html_form'] = render_to_string(
-        'registration/partial_candidate_form_ajax.html',
+        'registration/partial_{}_form_ajax.html'.format(Object.__name__.lower()),
         context,
         request = request
     )
     return JsonResponse(data)
 
-@permission_required('registration.add_election', raise_exception=True)
+@permission_required(_permission_required, raise_exception=True)
+def update_ajax(request, pk):
+    data = dict()
+    context = dict()
+    object = get_object_or_404(Object.all_objects.all(), pk = pk)
+    if request.method == 'POST':
+        form = Form(request.POST, instance = object)
+        if form.is_valid():
+            is_create = False
+            process_post_request(request, form, is_create)
+            data['form_is_valid'] = True
+        else:
+            data['form_is_valid'] = False
+    else:
+        form = Form(instance = object)
+
+    context['mode'] = 'update'
+    context['form'] = form
+    context['object_name'] = Object.__name__.lower()
+    data['html_form'] = render_to_string(
+        'registration/partial_{}_form_ajax.html'.format(Object.__name__.lower()),
+        context,
+        request=request
+    )
+    return JsonResponse(data)
+
+@permission_required(_permission_required, raise_exception=True)
 def populate_options_for_student_ajax(request):
     data = dict()
     context = dict()
@@ -110,5 +153,27 @@ def populate_options_for_student_ajax(request):
         'objects': position_list
         },
         request = request,
+    )
+    return JsonResponse(data)
+
+@permission_required(_permission_required, raise_exception=True)
+def toggle_status_ajax(request,pk):
+    data = toggle_object_status(object = Object, pk = pk)
+    return JsonResponse(data)
+
+@permission_required(_permission_required, raise_exception=True)
+def show_more_details_ajax(request, pk):
+    data = dict()
+    context = dict()
+    object = get_object_or_404(Object.all_objects.all(), pk=pk)
+    form = Form_more_details(instance=object)
+
+    context['mode'] = 'view'
+    context['form'] = form
+    context['object_name'] = Object.__name__.lower()
+    data['html_form'] = render_to_string(
+        'registration/partial_{}_form_ajax.html'.format(Object.__name__.lower()),
+        context,
+        request=request
     )
     return JsonResponse(data)

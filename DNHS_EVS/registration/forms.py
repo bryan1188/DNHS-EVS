@@ -218,7 +218,7 @@ class UserFilterForm(forms.Form):
 class ElectionFilterForm(forms.Form):
     school_year = forms.ModelChoiceField(
                 queryset=Election
-                .all_objects.all().order_by('school_year')\
+                .all_objects.all().order_by('-school_year')\
                 .values_list('school_year',flat=True).distinct(),
                 widget=forms.Select(
                 attrs = {
@@ -470,3 +470,39 @@ class CandidateForm(forms.ModelForm):
                 'student',
                 'party',
         )
+
+    def clean_student(self):
+        cleaned_data = super().clean()
+        student = cleaned_data.get('student', None)
+        election  = cleaned_data.get('election', None)
+        if self.instance.pk == None: #for inserrt
+            candidate_list = Candidate.objects.filter(
+                    student = student,
+                    election = election
+            )
+        else:
+            candidate_list = Candidate.objects.filter(
+                    student = student,
+                    election = election
+            ).exclude(pk = self.instance.pk)
+        if candidate_list:
+            raise forms.ValidationError(
+                "This student is already a candidate of the selected election."
+            )
+        return student
+
+class CandidateFormMoreDetails(CandidateForm):
+    created_by = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly':'readonly'})
+    )
+    last_updated_by = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly':'readonly'})
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['created_by'].initial = self.instance.created_by
+            self.fields['last_updated_by'].initial = self.instance.last_updated_by
+            for key in self.fields.items(): #set all field as disabled
+                self.fields[key[0]].widget.attrs['disabled'] = True

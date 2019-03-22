@@ -157,4 +157,16 @@ urlpatterns = [
         candidate.populate_options_for_student_ajax,
         name='candidate_populate_options_for_student_ajax'
         ),
+    path('ajax/candidate/update/<int:pk>/',
+        candidate.update_ajax,
+        name='candidate_update_ajax'
+    ),
+    path('ajax/candidate/toggle_status/<int:pk>/',
+        candidate.toggle_status_ajax,
+        name='candidate_toggle_status_ajax'
+    ),
+    path('ajax/candidate/more_details/<int:pk>/',
+        candidate.show_more_details_ajax,
+        name='candidate_more_details_ajax'
+    ),
 ]

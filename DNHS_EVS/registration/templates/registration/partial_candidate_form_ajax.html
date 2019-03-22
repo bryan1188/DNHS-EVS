@@ -2,13 +2,13 @@
 {% load staticfiles %}
 
 
-<form method="post"
+<form method="post" id="id_form"
   {% if mode == 'create' %}
     action="{% url 'registration:create_candidate_ajax' %}"
     class="js-{{object_name}}-create-form">
   {% endif%}
   {% if mode == 'update' %}
-    action="{% url 'registration:update_party_ajax' form.instance.pk  %}"
+    action="{% url 'registration:candidate_update_ajax' form.instance.pk  %}"
     class="js-{{object_name}}-update-form">
   {% endif %}
   {% csrf_token %}
@@ -76,26 +76,25 @@
       .append('<option value="">---------</option>')
   }
 
-  $(document).ready(function() {
-    //tooltip
-    // $('[data-toggle="tooltip"]').tooltip();
-    // $('#position_list').tooltip({selector: '[data-toggle="tooltip"]'});
-
-    $('#id_election').change( function(){
-      var form = $(this).closest("form");
-      clear_student();
-      clear_position()
-      $.ajax({  //populate other drop downs
-        url: '{% url "registration:candidate_populate_options_for_student_ajax" %}',
-        data: form.serialize(),
-        success: function(data){
-          $('#id_student').html(data['student_list_html']);
-          $('#id_position').html(data['position_list_html']);
-          $('#id_student').selectpicker('refresh');
-          $('#id_position').selectpicker('refresh');
-        }
-        });
+  function update_drop_downs(){
+    var form = $("#id_form");
+    $.ajax({  //populate other drop downs
+      url: '{% url "registration:candidate_populate_options_for_student_ajax" %}',
+      data: form.serialize(),
+      success: function(data){
+        $('#id_student').html(data['student_list_html']);
+        $('#id_position').html(data['position_list_html']);
+        $('#id_student').selectpicker('refresh');
+        $('#id_position').selectpicker('refresh');
+      }
       });
+      clear_student();
+      clear_position();
+  }
+
+  $(document).ready(function() {
+
+    $('#id_election').change(update_drop_downs);
 
       $('#id_election').attr('data-live-search',"true");
       $('#id_election').selectpicker('render');
@@ -111,3 +110,9 @@
 
   });
 </script>
+
+{% if mode == 'update' %}
+  <script>
+
+  </script>
+{% endif %}
