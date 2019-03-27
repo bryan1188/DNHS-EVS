@@ -32,6 +32,82 @@ $(function () {
       });
     };
 
+    var saveFormWithImage = function() {
+      var form = $(this);
+      var formData = new FormData();
+      $(this).serializeArray().forEach(function (element) {
+      formData.append(element["name"], element["value"]);
+      });
+      formData.append("profile_pic", $("#id_profile_pic")[0].files[0]);
+      try {
+        $.ajax({
+          url: form.attr("action"),
+          data: formData,
+          cache: false,
+          contentType: false,
+          processData: false,
+          type: form.attr("method"),
+          dataType: 'json',
+          success: function(data){
+            if (data.form_is_valid) {
+               alert("I'm here");
+                $("#modal-section").modal("hide");
+                 alert("I'm here2");
+                $('#candidate_list').DataTable().ajax.reload();
+                 alert("I'm here3");
+                 alert("form is valid: " + data.form_is_valid);
+                 $("#modal-section .modal-content").html(data.html_form);
+            }
+            else{
+              alert('In Else');
+              $("#modal-section .modal-content").html(data.html_form);
+            }
+          },
+          error: function (request, status, error) {
+             alert('In Error');
+             console.log(request.responseText);
+         }
+        });
+    }
+    catch(err){
+      alert("In catch");
+      console.log(err.message);
+    }
+
+    };
+
+    var saveFormWithImage2 = function() {
+      var form = $(this);
+      var formData = new FormData();
+      $(this).serializeArray().forEach(function (element) {
+      formData.append(element["name"], element["value"]);
+      });
+      formData.append("profile_pic", $("#id_profile_pic")[0].files[0]);
+      $.ajax({
+        url: form.attr("action"),
+        data: formData,
+        type: form.attr("method"),
+        dataType: 'json',
+        success: function(data){
+          if (data.form_is_valid) {
+              $("#modal-section").modal("hide");
+              $('#election_list').DataTable().ajax.reload();
+              $('#user_list').DataTable().ajax.reload();
+              $('#position_list').DataTable().ajax.reload();
+              $('#party_list').DataTable().ajax.reload();
+              $('#candidate_list').DataTable().ajax.reload();
+          }
+          else{
+            $("#modal-section .modal-content").html(data.html_form);
+          }
+        },
+      done: function(e, data){
+          $("#modal-section").modal("hide");
+      }
+      });
+    return false;
+    };
+
     var saveForm = function() {
       var form = $(this);
       $.ajax({
@@ -126,8 +202,13 @@ $(function () {
     //show more details of party
     $('#party_list').on("click",".js-show-more-details-party",loadForm);
 
-    //show more details of election
+    //show more details of candidate
     $('#candidate_list').on("click",".js-show-more-details-candidate",loadForm);
+
+    //reset modal
+    $(".modal").on("hidden.bs.modal", function(){
+        $(".modal-content").html("");
+    });
 
     //tooltip
     $('[data-toggle="tooltip"]').tooltip();

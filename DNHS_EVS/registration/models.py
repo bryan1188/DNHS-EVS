@@ -453,7 +453,9 @@ class Candidate(BaseModel):
             default=True,
             verbose_name="Is Active?"
     )
-
+    profile_pic = models.ImageField(
+            upload_to='candidate_pics/',
+            blank=True, default='candidate_pics/avatar.png')
     #overriding objects so that the actives will only show on the form that will consume this model
     #or any other form that call this model
     objects = ObjectManagerActive()
@@ -462,4 +464,7 @@ class Candidate(BaseModel):
 
     class Meta:
         unique_together = (('student', 'election'),)
+
+    def __str__(self):
+        return self.student
 #end of related to election ########################

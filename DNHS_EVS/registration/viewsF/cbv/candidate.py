@@ -58,6 +58,8 @@ def populate_table_list_ajax(request):
 @permission_required(_permission_required, raise_exception=True)
 def process_post_request(request, form, is_create):
     object = form.save()
+    # print(request.POST)
+    print(request.FILES)
     if is_create:
         object.created_by = request.user
     object.last_updated_by = request.user
@@ -69,7 +71,7 @@ def create_ajax(request, *args, **kwargs):
     context = dict()
 
     if request.method =='POST':
-        form = Form(data = request.POST)
+        form = Form(request.POST, request.FILES)
         if form.is_valid():
             is_create = True
             process_post_request(request, form, is_create)
@@ -94,7 +96,7 @@ def update_ajax(request, pk):
     context = dict()
     object = get_object_or_404(Object.all_objects.all(), pk = pk)
     if request.method == 'POST':
-        form = Form(request.POST, instance = object)
+        form = Form(request.POST, request.FILES, instance = object)
         if form.is_valid():
             is_create = False
             process_post_request(request, form, is_create)

@@ -469,6 +469,7 @@ class CandidateForm(forms.ModelForm):
                 'position',
                 'student',
                 'party',
+                # 'profile_pic',
         )
 
     def clean_student(self):

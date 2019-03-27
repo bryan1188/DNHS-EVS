@@ -3,9 +3,15 @@
 
 {% block content %}
   <h1>Upload Students Page</h1>
+  <div class="well text-muted text-center" style="padding-top: 4rem; padding-bottom: 4rem;">
+  <span class="glyphicon glyphicon-arrow-down" style="font-size: 4rem;"></span>
+  <h3>Drop Excel Files Here to Upload</h3>
+</div>
   <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {% bootstrap_form form %}
     <input type="submit" class="btn btn-default" value="Upload">
   </form>
+<!-- https://simpleisbetterthancomplex.com/tutorial/2016/11/22/django-multiple-file-upload-using-ajax.html?fbclid=IwAR1x3TEu4UntIZcePcwzIP5d2bB6GqQZsNpQC54cGdw1rla5Q9Ksmddg1Xw -->
+
 {% endblock %}
