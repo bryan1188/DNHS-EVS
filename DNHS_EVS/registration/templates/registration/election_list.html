@@ -27,13 +27,14 @@
      New Election
    </button>
  </p>
- <table id="election_list" class="table table-bordered display">
+ <table id="election_list" class="table table-bordered display table-responsive">
    <thead>
      <tr>
        <th>School Year</th>
        <th>Name</th>
        <th>Start Date</th>
        <th>End Date</th>
+       <th>Status</th>
        <th>Action</th>
      </tr>
    </thead>
@@ -43,6 +44,7 @@
        <th>Name</th>
        <th>Start Date</th>
        <th>End Date</th>
+       <th>Status</th>
        <th>Action</th>
      </tr>
    </tfoot>
@@ -88,6 +90,7 @@
            {"data": "fields.name"},
            {"data": "fields.election_day_from"},
            {"data": "fields.election_day_to"},
+           {"data": "fields.status"},
            {"data": "pk"},
          ],
          "columnDefs": [
@@ -130,7 +133,19 @@
                         else
                           return '<strike>' + newDate + '</strike>';
                    },
-             "targets": [-2, -3]
+             "targets": [2, 3]
+           },
+           { "render": function ( data, type, row ) { //add link to detailed view
+                    var pre_text = '<a target="_blank" rel="noopener noreferrer" href="/registration/election/'
+                    var mid_text = '/">'
+                    var post_text = '</a>'
+                       if ((row['fields']['is_active'])) {
+                           return pre_text + row['pk'] + mid_text + data + post_text;
+                       }
+                       else
+                           return '<strike>' + data +'</strike>'; //no detailed view for inactive
+                     },
+             "targets": 1
            },
            { "render": function ( data, type, row ) {
                      if ((row['fields']['is_active'])) {

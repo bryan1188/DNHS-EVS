@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+{% load widget_tweaks %}
+
+{% block heading  %}
+
+  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
+  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+
+{% endblock %}
+
+
+{% block content %}
+
+<!-- show elections details -->
+<div class="panel panel-info">
+  <div class="panel-heading">
+       <a data-toggle="collapse" href="#collapseDetails"><h2>Election Details</h2></a>
+  </div>
+  <div id="collapseDetails" class="panel-collapse collapse in">
+    <div class="panel-body">
+        <div class="panel panel-success">
+           <div class="panel-heading">
+             Name
+           </div>
+           <div class="panel-body">
+             {{object.name}}
+           </div>
+         </div>
+        <div class="panel panel-success">
+            <div class="panel-heading">
+              School Year
+            </div>
+            <div class="panel-body">
+              {{object.school_year}}
+            </div>
+          </div>
+          <div class="panel panel-success">
+            <div class="panel-heading">
+              Status
+            </div>
+            <div class="panel-body">
+               {{object.status}}
+            </div>
+          </div>
+          <div class="panel panel-success">
+            <div class="panel-heading">
+              Description
+            </div>
+            <div class="panel-body">
+               {{object.description}}
+            </div>
+          </div>
+          <div class="panel panel-success">
+            <div class="panel-heading">
+              Schedule
+            </div>
+            <div class="panel-body">
+               {{object.election_day_from}} - {{object.election_day_to}}
+            </div>
+          </div>
+          <div class="panel panel-success">
+            <div class="panel-heading">
+               <a data-toggle="collapse" href="#collapsePosition">Positions</a>
+            </div>
+            <div id="collapsePosition" class="panel-collapse collapse in">
+              <ul class='list-group'>
+                {% for position in object.positions.all %}
+                 <li class="list-group-item"> {{position}} </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+    </div>
+  </div>
+</div>
+
+<!-- show candidates -->
+<div class="panel panel-info">
+  <div class="panel-heading">
+   <a data-toggle="collapse" href="#collapseCanidates"><h2>List of Canidates</h2></a>
+  </div>
+  <div id="collapseCanidates" class="panel-collapse collapse in">
+    <div class="panel-body">
+      <form method="post">
+        {% csrf_token %}
+          {{ filter_form.as_p }}
+      </form>
+      <p>
+       <button type="button" class="btn btn-primary js-create-candidate"
+        data-toggle="tooltip" data-placement="right" title="Create new Candidate"
+          data-url="{% url 'registration:create_candidate_ajax' %}">
+         <span class="glyphicon glyphicon-plus"></span>
+         New Canidate
+       </button>
+      </p>
+      <div class="table-responsive">
+        <table id="candidate_list" class="table table-bordered display">
+          <thead>
+            <tr>
+              <th>Election</th>
+              <th>School Year</th>
+              <th>Position</th>
+              <th>Candidate</th>
+              <th>Party</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <th>Election</th>
+              <th>School Year</th>
+              <th>Position</th>
+              <th>Candidate</th>
+              <th>Party</th>
+              <th>Action</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- show voters -->
+<div class="panel panel-info">
+  <div class="panel-heading">
+   <a data-toggle="collapse" href="#collapseVoters"><h2>List of all Voters</h2></a>
+  </div>
+  <div id="collapseVoters" class="panel-collapse collapse in">
+    <div class="panel-body">
+      <div class="panel panel-success">
+         <div class="panel-heading">
+           <a data-toggle="collapse" href="#collapseVotersSummary">Summary</a>
+         </div>
+         <div id="collapseVotersSummary" class="panel-collapse collapse in">
+           <div class="panel-body">
+             <div class="table-responsive">
+               <table id="voters_sumarry_table" class="table table-hover display">
+                 <thead class='thead-dark'>
+                   <tr>
+                     <th>Grade Level</th>
+                     <th>Section</th>
+                     <th>M</th>
+                     <th>F</th>
+                     <th>Total</th>
+                   </tr>
+                 </thead>
+                 <tbody id='voters_summary_table_body'>
+
+                 </tbody>
+                 <tfoot>
+                   <tr>
+                     <th colspan="2"><h4><b>TOTAL</b></h4></th>
+                     <th id='male_total'></th>
+                     <th id='female_total'></th>
+                     <th id='grand_total'></th>
+                   </tr>
+                 </tfoot>
+               </table>
+             </div>
+           </div>
+         </div>
+       </div>
+       <div class="panel panel-success">
+          <div class="panel-heading">
+            <a data-toggle="collapse" href="#collapseVotersList">List</a>
+          </div>
+          <div id="collapseVotersList" class="panel-collapse collapse in">
+            <div class="panel-body">
+             <div class="table-responsive">
+               <table id="voter_list" class="table table-bordered display">
+                 <thead>
+                   <tr>
+                     <th>Name</th>
+                     <th>Sex</th>
+                     <th>Grade Level</th>
+                     <th>Section</th>
+                   </tr>
+                 </thead>
+                 <tfoot>
+                   <tr>
+                     <th>Name</th>
+                     <th>Sex</th>
+                     <th>Grade Level</th>
+                     <th>Section</th>
+                   </tr>
+                 </tfoot>
+               </table>
+             </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-section">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<script> //initialize script
+  function get_all_checkbox(){
+    if ($('#id_show_all').prop('checked'))
+      return true;
+    else
+      return false;
+    }
+
+    $(document).ready( function () {
+      var table = $('#candidate_list').DataTable({
+        "drawCallback": function( settings ) {
+            //https://stackoverflow.com/questions/39240361/datatables-and-bootstrap-tooltips
+                $('[data-toggle="tooltip"]').tooltip();
+                },
+        "processing": true,
+        "ajax": {
+            "processing": true,
+            "url": "{% url 'registration:populate_table_candidate_list_ajax' %}",
+            "data": function( d ) {
+                    d.select_all = get_all_checkbox();
+                    d.election = "{{ object.id }}"; //filter for this election.
+                                            //get candidates for this election only
+                  },
+            "dataSrc": ""
+        },
+        'columns': [
+          {"data": "fields.election"},
+          {"data": "fields.school_year"},
+          {"data": "fields.position"},
+          {"data": "fields.student"},
+          {"data": "fields.party"},
+          {"data": "pk"},
+        ],
+        fixedColumns: false,
+        'columnDefs': [
+            {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                "targets": [1,-1,-2],
+                "className": "text-center",
+                // "width": "4%"
+           },
+           { "render": function ( data, type, row ) {
+             var toggleButton = ""
+             if (row['fields']['is_active']) {
+              toggleButton = '<button id="button-change-password" type="button" '
+                    + 'class="btn btn-danger btn-sm js-toggle-candidate"'
+                    + 'data-toggle="tooltip" data-placement="right" title="Deactivate" '
+                    + 'data-url="/registration/ajax/candidate/toggle_status/'
+                    + row['pk']  +'/">' +'<span class="glyphicon glyphicon-remove-sign"></span></button></div>';
+              }
+              else {
+                toggleButton = '<button  type="button" class="btn btn-success btn-sm js-toggle-candidate"'
+                    + 'data-toggle="tooltip" data-placement="right" title="Activate" '
+                    + 'data-url="/registration/ajax/candidate/toggle_status/'
+                    + row['pk']  +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span></button></div>';
+              }
+             return '<div class="btn-group"><button id="button-edit" type="button" '
+                     + 'data-toggle="tooltip" data-placement="left" title="Edit" '
+                     + 'class="btn btn-secondary btn-sm js-update-candidate" '
+                     + 'data-url="/registration/ajax/candidate/update/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
+                     + '<button type="button" '
+                     + 'data-toggle="tooltip" data-placement="top" title="Show More Details" '
+                     + 'class="btn btn-primary btn-sm js-show-more-details-candidate" '
+                     + 'data-url="/registration/ajax/candidate/more_details/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button>'
+                     + '<button type="button" '
+                     + 'data-toggle="tooltip" data-placement="top" title="Show List of Voters" '
+                     + 'class="btn btn-primary btn-sm js-show-more-voters" '
+                     + 'data-url="/registration/ajax/candidate/more_details/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-th-list"></span></button>'
+                     + toggleButton ;
+                   },
+             "targets": -1
+           },
+           { "render": function ( data, type, row ) {
+                     if ((row['fields']['is_active'])) {
+                         return data;
+                     }
+                     else
+                         return '<strike>' + data + '</strike>';
+                   },
+             "targets": [0,1,2,3]
+           },
+           ],
+        "order": [[ 1, "desc" ], [0, 'asc']]
+      });
+
+      $(document).ready( function () {
+        var table = $('#voter_list').DataTable({
+          "processing": true,
+          "ajax": {
+              "processing": true,
+              "url": "{% url 'registration:populate_table_voters_list_ajax' object.id %}",
+              "data": function( d ) {
+                      d.select_all = get_all_checkbox();
+                      d.election = "{{ object.id }}"; //filter for this election.
+                                              //get candidates for this election only
+                    },
+              "dataSrc": ""
+          },
+          'columns': [
+            {"data": "fields.name"},
+            {"data": "fields.sex"},
+            {"data": "fields.grade_level"},
+            {"data": "fields.section"},
+          ],
+          fixedColumns: false,
+          'columnDefs': [
+              {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                  "targets": [1,-1,-2],
+                  "className": "text-center",
+                  // "width": "4%"
+             },
+             ],
+          "order": [[ 2, "asc" ], [3, 'asc']]
+          });
+        });
+
+        $(document).ready( function () {
+          $.ajax({
+              url: "{% url 'registration:populate_table_voters_summary_ajax' object.id %}",
+              type: 'get',
+              dataType: 'json',
+              success: function(data){
+                        $.each(data.rows, function(key, value){ //popuplate summary body
+                          var append_html = "<tr>";
+                          append_html += "<td>" + value.grade_level + "</td>" ;
+                          append_html += "<td>" + value.section + "</td>" ;
+                          append_html += "<td>" + value.male_count + "</td>" ;
+                          append_html += "<td>" + value.female_count + "</td>" ;
+                          append_html += "<td>" + value.total + "</td>" ;
+                          append_html += "</tr>";
+                          $('#voters_summary_table_body').append(append_html);
+                        });
+
+                        //populate summary Total
+                        $('#male_total').html("<h4><b>" + data.summary.male_count +"</b></h4>");
+                        $('#female_total').html("<h4><b>" + data.summary.female_count +"</b></h4>");
+                        $('#grand_total').html("<h4><b>" + data.summary.grand_total +"</b></h4>");
+                        },
+          });
+        });
+
+      //listener
+      $(':checkbox').change( function(){
+          $('#candidate_list').DataTable().ajax.reload();
+      });
+
+      //test
+      // $('#grand_total').html('20');
+
+    });
+</script>
+
+<script src="{% static modal_ajax_location %}"></script>
+<script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+
+{% endblock %}

@@ -287,6 +287,13 @@ class UserProfile(BaseModel):
 
 #related to election#############################
 class Election(BaseModel):
+
+    STATUS_CHOICES = (
+        ('NEW', 'NEW'),
+        ('FINALIZED','FINALIZED'),
+        ('COMPLETED','COMPLETED'),
+        ('CANCELED','CANCELED')
+    )
     name = models.CharField(
                 max_length=255,
                 null=False,
@@ -341,13 +348,18 @@ class Election(BaseModel):
             blank = True,
             related_name = 'elections'
     )
+    status = models.CharField(
+            max_length = 20,
+            choices = STATUS_CHOICES,
+            default = 'NEW'
+    )
 
     objects = ObjectManagerActive()
 
     all_objects = ObjectManagerAll()
 
     class Meta:
-        ordering = ('-school_year', '-election_day_from')
+        ordering = ( '-election_day_from',)
         unique_together = (('school_year', 'election_day_from','election_day_to'),)
 
     def __str__(self):
@@ -466,5 +478,5 @@ class Candidate(BaseModel):
         unique_together = (('student', 'election'),)
 
     def __str__(self):
-        return self.student
+        return self.student.__str__()
 #end of related to election ########################

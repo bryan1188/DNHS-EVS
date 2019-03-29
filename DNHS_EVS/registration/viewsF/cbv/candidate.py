@@ -33,11 +33,14 @@ class CandidateList(PermissionRequiredMixin, TemplateView):
 @permission_required(_permission_required, raise_exception=True)
 def populate_table_list_ajax(request):
     select_all = request.GET.get('select_all')
-
+    election_id = request.GET.get('election', None)
     if select_all == "true":
         object_list = Object.all_objects.all()
     else:
         object_list = Object.objects.all()
+    if election_id:
+        object_list = object_list.filter(election_id = election_id)
+        
     return_list = []
     for object in object_list: #create my own json object
         object_json ={}

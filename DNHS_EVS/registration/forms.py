@@ -259,6 +259,7 @@ class ElectionForm(forms.ModelForm):
                 'positions',
                 'election_day_from',
                 'election_day_to',
+                # 'status'
         )
         widgets = {
             'election_day_from': forms.DateInput(format = '%m/%d/%Y',attrs={'class':'datepicker'}, ),

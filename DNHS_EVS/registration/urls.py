@@ -86,6 +86,10 @@ urlpatterns = [
         name='populate_table_user_list_ajax'
         ),
     path('elections/', election.ElectionList.as_view(),name='list_election'),
+    path('election/<int:pk>/',
+        election.ElectionDetail.as_view(),
+        name='detail_election'
+        ),
     path('ajax/elections/populate_table_election_list_ajax/',
         election.populate_table_election_list_ajax,
         name='populate_table_election_list_ajax'
@@ -105,6 +109,14 @@ urlpatterns = [
         election.show_more_details_ajax,
         name='election_show_more_details_ajax'
     ),
+    path('ajax/election/populate_table_voters_list_ajax/<int:election_id>/',
+        election.populate_table_voters_list_ajax,
+        name='populate_table_voters_list_ajax'
+        ),
+    path('ajax/election/populate_table_voters_summary_ajax/<int:election_id>/',
+        election.populate_table_voters_summary_ajax,
+        name='populate_table_voters_summary_ajax'
+        ),
     path('positions/', position.PositionList.as_view(), name='position'),
     path('ajax/positions/populate_table_election_list_ajax/',
         position.populate_table_position_list_ajax,
