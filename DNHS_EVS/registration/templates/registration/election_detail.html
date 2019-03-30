@@ -4,16 +4,19 @@
 {% load widget_tweaks %}
 
 {% block heading  %}
+  <!-- For confirm dialog -->
+  <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
 
-  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
-  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/buttons.dataTables.min.css' %}">
+
+  <!-- for more datatables buttons -->
+  <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
 
 {% endblock %}
 
-
 {% block content %}
-
 <!-- show elections details -->
 <div class="panel panel-info">
   <div class="panel-heading">
@@ -174,18 +177,18 @@
                <table id="voter_list" class="table table-bordered display">
                  <thead>
                    <tr>
-                     <th>Name</th>
-                     <th>Sex</th>
                      <th>Grade Level</th>
                      <th>Section</th>
+                     <th>Name</th>
+                     <th>Sex</th>
                    </tr>
                  </thead>
                  <tfoot>
                    <tr>
-                     <th>Name</th>
-                     <th>Sex</th>
                      <th>Grade Level</th>
                      <th>Section</th>
+                     <th>Name</th>
+                     <th>Sex</th>
                    </tr>
                  </tfoot>
                </table>
@@ -197,12 +200,113 @@
   </div>
 </div>
 
+{% if  perms.registration.add_student %}
+  <!-- show voters' token -->
+  <div class="panel panel-info">
+    <div class="panel-heading">
+      <a data-toggle="collapse"  href="#collapseTokens"><h2>Voters' Token</h2></a>
+    </div>
+    <div id="collapseTokens" class="panel-collapse collapse in">
+      <div class="panel-body">
+          {% if not object.is_token_generated %}
+          <div id="generate_button">
+            <p>
+             <button type="button" class="btn btn-primary js-generate-token"
+              data-toggle="tooltip" data-placement="right" title="Click to generate voters' tokens"
+                data-url="{% url 'registration:create_candidate_ajax' %}">
+               <span class="glyphicon glyphicon-qrcode"></span>
+               Generate Token
+             </button>
+            </p>
+          </div>
+          {% endif %}
+        <div class="table-responsive">
+          <table id="tokens_list" class="table table-bordered display">
+            <thead>
+              <tr>
+                <th>Grade Level</th>
+                <th>Section</th>
+                <th>Name</th>
+                <th>Sex</th>
+                <th>Token</th>
+              </tr>
+            </thead>
+            <tfoot>
+              <tr>
+                <th>Grade Level</th>
+                <th>Section</th>
+                <th>Name</th>
+                <th>Sex</th>
+                <th>Token</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog -->
+  <div id="dialog-confirm" title="Generate Voters' token for this election?">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+      This action will generate the token for all the voters listed above and will make this election as 'FINALIZED'. Do you want to proceed?
+    </p>
+  </div>
+
+{% endif %}
+
+<!-- Modal -->
 <div class="modal fade" id="modal-section">
   <div class="modal-dialog">
     <div class="modal-content">
     </div>
   </div>
 </div>
+
+
+
+<!-- script for show dialog -->
+<!-- https://jqueryui.com/dialog/#animated -->
+
+<script>
+  $( function() {
+    $( "#dialog-confirm" ).dialog({
+      resizable: false,
+      height: "auto",
+      width: 400,
+      modal: true,
+      autoOpen: false,
+      buttons: {
+        "Confirm": function() {
+          $( this ).dialog( "close" );
+          $.ajax({
+              url: "{% url 'registration:generate_batch_token_ajax' object.id %}",
+              type: 'get',
+              dataType: 'json',
+              beforeSend: function(){
+                          $('#generate_button').remove();
+                          $('#loader').show();
+                          },
+              complete: function(){
+                        $('#loader').hide();
+              },
+              success: function(data){
+                      location.reload(); //refresh current page
+                        },
+          });
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+        }
+      }
+    });
+
+    $( ".js-generate-token" ).on( "click", function() {
+      $( "#dialog-confirm" ).dialog( "open" );
+    });
+
+  } );
+</script>
 
 <script> //initialize script
   function get_all_checkbox(){
@@ -294,41 +398,85 @@
       $(document).ready( function () {
         var table = $('#voter_list').DataTable({
           "processing": true,
+          // "buttons": [ 'copy', 'excel', 'pdf', 'colvis' ],
+          "dom":  "<'row'<'col-md-6'l><'col-md-6'f>><'row'<'col-md-6'B><'col-md-6'p>><'row'<'col-md-12't>><'row'<'col-md-12'i>>",
+        "buttons": [
+              'print','copy', 'excel', 'pdf', 'colvis'
+                ],
+        lengthChange: true,
           "ajax": {
               "processing": true,
               "url": "{% url 'registration:populate_table_voters_list_ajax' object.id %}",
               "data": function( d ) {
                       d.select_all = get_all_checkbox();
                       d.election = "{{ object.id }}"; //filter for this election.
-                                              //get candidates for this election only
+                                              //get students for this election only
                     },
               "dataSrc": ""
           },
           'columns': [
-            {"data": "fields.name"},
-            {"data": "fields.sex"},
             {"data": "fields.grade_level"},
             {"data": "fields.section"},
+            {"data": "fields.name"},
+            {"data": "fields.sex"},
           ],
           fixedColumns: false,
           'columnDefs': [
               {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
-                  "targets": [1,-1,-2],
+                  "targets": [0,1,-1],
                   "className": "text-center",
-                  // "width": "4%"
+                  "width": "15%"
              },
              ],
-          "order": [[ 2, "asc" ], [3, 'asc']]
+          "order":  [[ 0, "asc" ], [1, 'asc'], [3, 'desc'], [2, 'asc']]
           });
+
+          table.buttons().container().appendTo('#voter_list_wrapper .col-sm-6:eq(0)' );
         });
 
         $(document).ready( function () {
+          var table = $('#tokens_list').DataTable({
+            "processing": true,
+            // "buttons": [ 'copy', 'excel', 'pdf', 'colvis' ],
+            "dom":  "<'row'<'col-md-6'l><'col-md-6'f>><'row'<'col-md-6'B><'col-md-6'p>><'row'<'col-md-12't>><'row'<'col-md-12'i>>",
+          "buttons": [
+                'print','copy', 'excel', 'pdf', 'colvis'
+                  ],
+          lengthChange: true,
+            "ajax": {
+                "processing": true,
+                "url": "{% url 'registration:populate_voters_token_table_ajax' object.id %}",
+                "data":"",
+                "dataSrc": ""
+            },
+            'columns': [
+              {"data": "grade_level"},
+              {"data": "section"},
+              {"data": "name"},
+              {"data": "sex"},
+              {"data": "token"},
+            ],
+            fixedColumns: false,
+            'columnDefs': [
+                {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                    "targets": [0,1,-2],
+                    "className": "text-center",
+                    "width": "13%"
+               },
+               ],
+            "order":  [[ 0, "asc" ], [1, 'asc'], [3, 'desc'], [2, 'asc']]
+            });
+
+            table.buttons().container().appendTo('#tokens_list_wrapper .col-sm-6:eq(0)' );
+          });
+
+        $(document).ready( function () { //popuplate summary body
           $.ajax({
               url: "{% url 'registration:populate_table_voters_summary_ajax' object.id %}",
               type: 'get',
               dataType: 'json',
               success: function(data){
-                        $.each(data.rows, function(key, value){ //popuplate summary body
+                        $.each(data.rows, function(key, value){
                           var append_html = "<tr>";
                           append_html += "<td>" + value.grade_level + "</td>" ;
                           append_html += "<td>" + value.section + "</td>" ;
@@ -357,6 +505,22 @@
 
     });
 </script>
+
+<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'js/buttons.print.min.js' %}"></script>
+
+<!-- for other buttons of datatables -->
+<script src="{% static 'js/dataTables.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/buttons.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/jszip.min.js' %}"></script>
+<script src="{% static 'js/pdfmake.min.js' %}"></script>
+<script src="{% static 'js/vfs_fonts.js' %}"></script>
+<script src="{% static 'js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'js/buttons.colVis.min.js' %}"></script>
+
+<!-- For confirm dialog -->
+<script src="{% static 'js/jquery-ui.js' %}"></script>
 
 <script src="{% static modal_ajax_location %}"></script>
 <script src="{% static 'js/bootstrap-select.min.js' %}"></script>

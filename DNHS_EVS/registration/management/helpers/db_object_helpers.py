@@ -23,7 +23,6 @@ def get_student_summary_data(*args, **kwargs):
         #https://stackoverflow.com/questions/716477/join-list-of-lists-in-python
         grade_levels = set(list(itertools.chain.from_iterable(grade_levels))) #merge all items and remove duplicates
 
-        print(grade_levels)
         sql_query = "select grade_level, section, sex, count(*) \
                     from registration_student a , registration_student_classes b, \
                         registration_class c, registration_sex d \

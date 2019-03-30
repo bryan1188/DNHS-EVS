@@ -113,12 +113,20 @@ urlpatterns = [
         election.populate_table_voters_list_ajax,
         name='populate_table_voters_list_ajax'
         ),
+    path('ajax/election/generate_batch_token_ajax/<int:election_id>/',
+        election.generate_batch_token_ajax,
+        name='generate_batch_token_ajax'
+        ),
     path('ajax/election/populate_table_voters_summary_ajax/<int:election_id>/',
         election.populate_table_voters_summary_ajax,
         name='populate_table_voters_summary_ajax'
         ),
+    path('ajax/election/populate_voters_token_table_ajax/<int:election_id>/',
+        election.populate_voters_token_table_ajax,
+        name='populate_voters_token_table_ajax'
+        ),
     path('positions/', position.PositionList.as_view(), name='position'),
-    path('ajax/positions/populate_table_election_list_ajax/',
+    path('ajax/positions/populate_table_position_list_ajax/',
         position.populate_table_position_list_ajax,
         name='populate_table_position_list_ajax'
     ),

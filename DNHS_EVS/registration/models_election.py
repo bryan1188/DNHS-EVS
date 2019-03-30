@@ -16,7 +16,7 @@ class Position(BaseModel):
             verbose_name="Title",
             null=False,
             blank=False,
-            unique=True,            
+            unique=True,
             db_index= True
     )
     number_of_slots = models.PositiveSmallIntegerField(
@@ -50,6 +50,12 @@ class Position(BaseModel):
                 related_name="position_updated_by",
                 related_query_name='position_last_updated'
     )
+    priority = models.PositiveSmallIntegerField(
+                verbose_name="Priority",
+                blank=False,
+                null=False,
+                default = 0,
+    )
 
     #overriding objects so that it's the active will only show on the form ElectionForm
     #or any other form that call position
@@ -58,7 +64,7 @@ class Position(BaseModel):
     all_objects = PositionManagerAll()
 
     class Meta:
-        ordering = ['title']
+        ordering = ['priority','title']
 
     def __str__(self):
         return self.title

@@ -46,6 +46,7 @@ def populate_table_position_list_ajax(request):
                                     )
         position_['grade_level'] = [grade_level for grade_level in grade_levels]
         position_['is_active'] = 'Active' if position.is_active else 'Inactive'
+        position_['priority'] = position.priority
         position_json['pk'] = position.id
         position_json['fields'] = position_
         return_list.append(position_json)

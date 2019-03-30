@@ -355,6 +355,7 @@ class PositionForm(forms.ModelForm):
     )
     field_order = [
                 'title',
+                'priority',
                 'number_of_slots',
                 'description',
                 'grade_level'
@@ -394,6 +395,7 @@ class PositionForm(forms.ModelForm):
         model = Position
         fields = (
                 'title',
+                'priority',
                 'number_of_slots',
                 'description',
         )

@@ -29,19 +29,19 @@
 <table id="position_list" class="table table-bordered display">
   <thead>
     <tr>
+      <th>Priority</th>
       <th>Title</th>
       <th>Number of Slots</th>
       <th>Grade Level</th>
-      <th>Active</th>
       <th>Action</th>
     </tr>
   </thead>
   <tfoot>
     <tr>
+      <th>Priority</th>
       <th>Title</th>
       <th>Number of Slots</th>
       <th>Grade Level</th>
-      <th>Active</th>
       <th>Action</th>
     </tr>
   </tfoot>
@@ -102,18 +102,22 @@
             "dataSrc": ""
         },
         'columns': [
+          {"data": "fields.priority"},
           {"data": "fields.title"},
           {"data": "fields.number_of_slots"},
           {"data": "fields.grade_level"},
-          {"data": "fields.is_active"},
           {"data": "pk"},
         ],
         fixedColumns: false,
         'columnDefs': [
             {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
-                "targets": [1,-1,-2],
+                "targets": [0,-1,2],
                 "className": "text-center",
                 // "width": "4%"
+           },
+           {
+               "targets": [0,2],
+                "width": "4%",
            },
            { "render": function ( data, type, row ) {
              var toggleButton = ""
@@ -154,7 +158,7 @@
              "targets": [0,1,2,3]
            },
            ],
-        "order": [[ 0, "desc" ]]
+        "order": [[ 0, "asc" ]]
       });
 
       //listener

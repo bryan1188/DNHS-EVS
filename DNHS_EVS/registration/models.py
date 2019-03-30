@@ -9,6 +9,17 @@ class ObjectManagerActive(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(is_active = True)
 
+    def get_candidate_of_voter(self, election, grade_level):
+        '''
+            Given an election and grade level, it will return a list of candidate
+            Will be used in generating a list of candidate per student
+            Use in Candidat model
+        '''
+        return super().get_queryset().all().filter(
+                election = election,
+                position__grade_levels__grade_level = grade_level
+        )
+
 class ObjectManagerAll(models.Manager):
     def get_queryset(self):
         return super().get_queryset().all()
@@ -17,6 +28,25 @@ class ClassSchoolYearManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-school_year')\
         .values_list('school_year',flat=True).distinct()
+
+# class CandidatesByElectionByGradeLevel(models.Manager):
+#     '''
+#         Given an election and grade level, it will return a list of candidate
+#         Will be used in generating a list of candidate per student
+#     '''
+#     election = None
+#     grade_level = None
+#
+#     def __init__(self, election, grade_level):
+#         super().__init__()
+#         self.election = election
+#         self.grade_level = grade_level
+#
+#     def get_queryset(self):
+#         return super().get_queryset().all().filter(
+#                 election = self.election,
+#                 position__grade_levels__grade_level = self.grade_level
+#         )
 #end of Model Managers ########################################
 
 class School(BaseModel):
@@ -255,6 +285,7 @@ class Student(BaseModel):
     class Meta:
         ordering = ('last_name', 'first_name',
                     'middle_name')
+
     def __str__(self):
         if (self.middle_name != ""):
             return self.last_name + ", " + self.first_name + " " + self.middle_name[:1].upper() + "."
@@ -352,6 +383,10 @@ class Election(BaseModel):
             max_length = 20,
             choices = STATUS_CHOICES,
             default = 'NEW'
+    )
+    is_token_generated = models.BooleanField(
+            default=False,
+            verbose_name="Token Available?"
     )
 
     objects = ObjectManagerActive()
@@ -476,7 +511,53 @@ class Candidate(BaseModel):
 
     class Meta:
         unique_together = (('student', 'election'),)
+        ordering = ('position', 'student',)
+
+    def __str__(self):
+        return self.student.__str__() + '(' + self.position.__str__() + ')'
+
+class Voter(BaseModel):
+    student = models.ForeignKey(
+            Student,
+            on_delete = models.SET_NULL,
+            blank = False,
+            null = True,
+            verbose_name = "Student",
+            related_name = 'voters'
+    )
+    voter_token = models.CharField(
+            max_length=50,
+            verbose_name="Voter Token",
+            null=False,
+            db_index=True
+    )
+    student_class =  models.ForeignKey(
+            Class,
+            on_delete = models.SET_NULL,
+            blank = False,
+            null = True,
+            verbose_name = "Student Class",
+            related_name = 'voters'
+    )
+    election = models.ForeignKey(
+            Election,
+            on_delete = models.SET_NULL,
+            blank = False,
+            null = True,
+            verbose_name = "Election",
+            related_name = 'voters'
+    )
+    candidates = models.ManyToManyField(
+            Candidate,
+            verbose_name = 'Candidates',
+            blank = True,
+            related_name = 'voters'
+    )
+
+    class Meta:
+        unique_together = (('student', 'election'),)
 
     def __str__(self):
         return self.student.__str__()
+
 #end of related to election ########################

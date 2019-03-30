@@ -2,9 +2,10 @@ from django.views.generic import TemplateView,DetailView
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import permission_required
 from registration import forms
-from registration.models import Election,Student,Class,Sex
+from registration.models import Election,Student,Class,Sex,Candidate,Voter
 from registration.management.helpers.db_object_helpers import toggle_object_status
 from registration.management.helpers.db_object_helpers import get_student_summary_data
+from registration.management.helpers.token_generator import BatchKeyGenerator
 from django.core import serializers
 from django.http import HttpResponse
 from django.conf import settings
@@ -133,8 +134,10 @@ def show_more_details_ajax(request, pk):
     )
     return JsonResponse(data)
 
-@permission_required('registration.add_election', raise_exception=True)
-def populate_table_voters_list_ajax(request, election_id):
+def get_voters_list(election_id): #permission not required since this is internal def
+    '''
+        return student_list of all voters based on the given election_id
+    '''
     student_list = []
     election = Election.objects.get(id = election_id)
     school_year = election.school_year
@@ -149,40 +152,23 @@ def populate_table_voters_list_ajax(request, election_id):
             student_json = {}
             student_ = {}
             student_['name'] = student.__str__()
+            student_['lrn'] = student.lrn
             student_['sex'] = student.sex.__str__()
+            student_['class_id'] = class_.id
             student_['grade_level'] = class_.grade_level
             student_['section'] = class_.section
             student_json['pk'] = student.id
             student_json['fields'] = student_
             student_list.append(student_json)
+    return student_list
 
+@permission_required('registration.add_election', raise_exception=True)
+def populate_table_voters_list_ajax(request, election_id):
+    student_list = get_voters_list(election_id)
     return HttpResponse(json.dumps(student_list), content_type='application/json')
 
 @permission_required('registration.add_election', raise_exception=True)
 def populate_table_voters_summary_ajax(request, election_id):
-    # return_list = []
-    # election = Election.objects.get(id = election_id)
-    # school_year = election.school_year
-    # for position in election.positions.all(): #get summary
-    #     for grade_level in position.grade_levels.all():
-    #         class_list = Class.objects.filter(grade_level = grade_level.grade_level)
-    #         for class_ in class_list:
-    #             row = {}
-    #             section = class_.section
-    #             row['grade_level'] = grade_level.grade_level
-    #             row['section'] = section
-    #             row['male_count'] = Sex.objects.get(
-    #                     sex='M').students.filter(
-    #                     classes__school_year=school_year,
-    #                     classes__grade_level=grade_level,
-    #                     classes__section=section).count()
-    #             row['female_count'] = Sex.objects.get(
-    #                     sex='F').students.filter(
-    #                     classes__school_year=school_year,
-    #                     classes__grade_level=grade_level.grade_level,
-    #                     classes__section=section).count()
-    #             if not (row['male_count'] == 0 and row['female_count'] == 0) :
-    #                 return_list.append(row)
     return_dict = dict()
     return_list_rows = []
     return_dict_summary = dict()
@@ -211,3 +197,68 @@ def populate_table_voters_summary_ajax(request, election_id):
     return_dict['summary'] = return_dict_summary
 
     return HttpResponse(json.dumps(return_dict), content_type='application/json')
+
+@permission_required('registration.add_student', raise_exception=True)
+def generate_batch_token_ajax(request, election_id):
+    '''
+        Generate a token in a batch for a newly created election.
+        Make sure that the election.is_token_generated is false before generating
+    '''
+    batch_key_generator = BatchKeyGenerator(size = 6)
+    election = Election.objects.get(id = election_id)
+    student_list = get_voters_list(election_id)
+    return_list = []
+    if not election.is_token_generated:
+        for student in student_list:
+            student_json = {}
+            student_json['pk'] = student['pk']
+            student_json['name'] = student['fields']['name']
+            student_json['lrn'] = student['fields']['lrn']
+            student_json['grade_level']  = student['fields']['grade_level']
+            student_json['section']  = student['fields']['section']
+            student_json['class_id'] = student['fields']['class_id']
+            student_json['election_id'] = election_id
+            candidates = Candidate.objects.get_candidate_of_voter(
+                                            election,
+                                            student_json['grade_level']
+                                                    )
+            student_json['candidates'] = list(candidates.values('student','position'))
+            student_json['token'] = batch_key_generator.generate_key(
+                chars = str(student_json['name']) + str(student_json['lrn'] \
+                        + str(student_json['grade_level']) + str(student_json['section'])
+                )
+            )
+            student_json['token'] = student_json['token'] + "-{}".format(election_id)
+            return_list.append(student_json)
+
+            #insert into database
+            candidates = [candidate for candidate in candidates]
+            voter = Voter(
+                    student = Student.objects.get(id = student_json['pk']),
+                    student_class = Class.objects.get( id = student_json['class_id']),
+                    election = election,
+                    voter_token = student_json['token']
+            )
+            voter.save()
+            voter.candidates.set(candidates)
+        #set election.is_token_generated to true
+        election.is_token_generated = True
+        election.status = "FINALIZED"
+        election.save()
+
+    return HttpResponse(json.dumps(return_list), content_type='application/json')
+
+@permission_required('registration.add_student', raise_exception=True)
+def populate_voters_token_table_ajax(request, election_id):
+    election = Election.objects.get(id = election_id)
+    voters = Voter.objects.filter(election=election)
+    return_list = []
+    for voter in voters:
+        voter_json = {}
+        voter_json['grade_level'] = voter.student_class.grade_level
+        voter_json['section'] = voter.student_class.section
+        voter_json['name'] = voter.student.__str__()
+        voter_json['sex'] = voter.student.sex.__str__()
+        voter_json['token'] = voter.voter_token
+        return_list.append(voter_json)
+    return HttpResponse(json.dumps(return_list), content_type='application/json')
