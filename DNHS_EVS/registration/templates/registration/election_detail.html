@@ -44,7 +44,7 @@
             <div class="panel-heading">
               Status
             </div>
-            <div class="panel-body">
+            <div id="election_status" class="panel-body">
                {{object.status}}
             </div>
           </div>
@@ -291,7 +291,9 @@
                         $('#loader').hide();
               },
               success: function(data){
-                      location.reload(); //refresh current page
+                      // location.reload(); //refresh currtokens_listent page
+                      $('#tokens_list').DataTable().ajax.reload();
+                      $('#election_status').html("FINALIZED");
                         },
           });
         },

@@ -1,4 +1,23 @@
 {% extends 'base.html' %}
 {% block content %}
   <h1>Home Page</h1>
+
+
+
+<!-- modal for Voting -->
+<div class="modal fade" id="modal-vote">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      Test
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+    $(window).on('load',function(){
+        $('#modal-vote').modal('show');
+    });
+</script>
+
+
 {% endblock %}

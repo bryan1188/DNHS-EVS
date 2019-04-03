@@ -2,6 +2,9 @@ https://support.rackspace.com/how-to/centos-hostname-change/
 
 https://www.serverlab.ca/tutorials/linux/administration-linux/configure-centos-6-network-settings/
 
+show all NIC
+ip a
+
 https://www.youtube.com/watch?v=DzXCHAuHf0I&t=351s
 https://www.digitalocean.com/community/tutorials/how-to-install-python-3-and-set-up-a-local-programming-environment-on-centos-7
 root:
