@@ -8,14 +8,17 @@
 <div class="modal fade" id="modal-vote">
   <div class="modal-dialog">
     <div class="modal-content">
-      Test
+      Election Day!
     </div>
   </div>
 </div>
 
 <script type="text/javascript">
     $(window).on('load',function(){
-        $('#modal-vote').modal('show');
+      // if election day, show modal-vote
+      console.log("{{is_election_day}}");
+        if ("{{is_election_day}}" == "True")
+          $('#modal-vote').modal('show');
     });
 </script>
 

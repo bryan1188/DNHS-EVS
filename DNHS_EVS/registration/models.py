@@ -2,6 +2,7 @@ from django.db import models
 from registration.models_election import Position
 from django.contrib.auth.models import User
 from registration.models_base import BaseModel
+import datetime
 
 
 #Model Managers###############################################
@@ -13,12 +14,25 @@ class ObjectManagerActive(models.Manager):
         '''
             Given an election and grade level, it will return a list of candidate
             Will be used in generating a list of candidate per student
-            Use in Candidat model
+            Use in Candidate model
         '''
         return super().get_queryset().all().filter(
                 election = election,
                 position__grade_levels__grade_level = grade_level
         )
+
+    def is_election_day(self):
+        '''
+            return True if current date is in range of any election that has status
+                of 'FINALIZED'
+            Used in Election Model
+        '''
+        date_now = datetime.datetime.now().date()
+        if super().get_queryset().filter(election_day_to__gte=date_now,
+            election_day_from__lte=date_now, status='FINALIZED').count() > 0:
+            return True
+        else:
+             return False
 
 class ObjectManagerAll(models.Manager):
     def get_queryset(self):
@@ -29,24 +43,6 @@ class ClassSchoolYearManager(models.Manager):
         return super().get_queryset().order_by('-school_year')\
         .values_list('school_year',flat=True).distinct()
 
-# class CandidatesByElectionByGradeLevel(models.Manager):
-#     '''
-#         Given an election and grade level, it will return a list of candidate
-#         Will be used in generating a list of candidate per student
-#     '''
-#     election = None
-#     grade_level = None
-#
-#     def __init__(self, election, grade_level):
-#         super().__init__()
-#         self.election = election
-#         self.grade_level = grade_level
-#
-#     def get_queryset(self):
-#         return super().get_queryset().all().filter(
-#                 election = self.election,
-#                 position__grade_levels__grade_level = self.grade_level
-#         )
 #end of Model Managers ########################################
 
 class School(BaseModel):

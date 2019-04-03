@@ -5,13 +5,16 @@ from django.template.loader import render_to_string
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from registration.models import Election
+import datetime
 
 class HomePage(TemplateView):
     template_name = 'home_page.html'
 
-    def get(self, request, *args, **kwargs):
-        # permissions_group =
-        return super().get(self)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_election_day'] = Election.objects.is_election_day()
+        return context
 
 class TestPage(TemplateView):
     template_name = 'test.html'
