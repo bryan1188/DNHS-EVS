@@ -2,7 +2,8 @@
 
 
 {% block form_content %}
-<form method="post" action="{% url 'registration:create_user_ajax' %}" class="js-user-create-form">
+<form method="post" data-table-list-id="#user_list"
+  action="{% url 'registration:create_user_ajax' %}" class="js-user-create-form">
   {% csrf_token %}
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">

@@ -1,4 +1,5 @@
 {% load widget_tweaks %}
+{% load crispy_forms_tags %}
 
 {% for field in user_form %}
   <div class="form-group {% if field.errors %} has-error {% endif%}">

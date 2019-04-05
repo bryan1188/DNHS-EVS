@@ -135,6 +135,7 @@ def show_more_details_ajax(request, pk):
     return JsonResponse(data)
 
 def get_voters_list(election_id): #permission not required since this is internal def
+                                #internal means it's not exposed through urls.py
     '''
         return student_list of all voters based on the given election_id
     '''
@@ -232,7 +233,9 @@ def generate_batch_token_ajax(request, election_id):
             return_list.append(student_json)
 
             #insert into database
-            candidates = [candidate for candidate in candidates]
+            # candidates = [candidate for candidate in candidates] #not needed.
+                #getting list of candidates is handled on election.viewsF.vote.show_voter_ballot_ajax
+
             voter = Voter(
                     student = Student.objects.get(id = student_json['pk']),
                     student_class = Class.objects.get( id = student_json['class_id']),
@@ -240,7 +243,7 @@ def generate_batch_token_ajax(request, election_id):
                     voter_token = student_json['token']
             )
             voter.save()
-            voter.candidates.set(candidates)
+            # voter.candidates.set(candidates)
         #set election.is_token_generated to true
         election.is_token_generated = True
         election.status = "FINALIZED"

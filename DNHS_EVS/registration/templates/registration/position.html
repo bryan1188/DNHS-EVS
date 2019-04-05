@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
-{% load bootstrap3 %}
+{% load bootstrap4 %}
 {% load staticfiles %}
+{% load crispy_forms_tags %}
 
 {% block heading  %}
 
@@ -16,7 +17,7 @@
 <h2>Position Management</h2>
 <form method="post">
   {% csrf_token %}
-    {{ filter_form.as_p }}
+    {{ filter_form|crispy }}
 </form>
 <p>
  <button type="button" class="btn btn-primary js-create-position"

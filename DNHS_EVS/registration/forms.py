@@ -193,7 +193,7 @@ class UserFilterForm(forms.Form):
     group = forms.ModelChoiceField(widget=forms.CheckboxSelectMultiple(
         attrs = {
             'data-toggle': 'tooltip',
-            'data-placement': 'right',
+            'data-placement': 'left',
             'title': 'Check/uncheck to show specific user group'
             }
         ),
@@ -203,14 +203,14 @@ class UserFilterForm(forms.Form):
     active = forms.BooleanField(initial=True, widget=forms.CheckboxInput(
             attrs = {
                 'data-toggle': 'tooltip',
-                'data-placement': 'right',
+                'data-placement': 'left',
                 'title': 'Apply filter for active or inactive users'
                 }
     ))
     all_users = forms.BooleanField(initial=False, widget=forms.CheckboxInput(
             attrs = {
                 'data-toggle': 'tooltip',
-                'data-placement': 'right',
+                'data-placement': 'left',
                 'title': 'Toggle to show all users'
                 }
     ))
@@ -223,7 +223,7 @@ class ElectionFilterForm(forms.Form):
                 widget=forms.Select(
                 attrs = {
                     'data-toggle': 'tooltip',
-                    'data-placement': 'right',
+                    'data-placement': 'left',
                     'title': 'Apply filter by school year'
                     }
                     )
@@ -426,7 +426,7 @@ class GenericFilterForm(forms.Form):
     show_all = forms.BooleanField(initial=False, widget=forms.CheckboxInput(
             attrs = {
                 'data-toggle': 'tooltip',
-                'data-placement': 'right',
+                'data-placement': 'left',
                 'title': 'Toggle to show or hide inactive'
                 }
     ))

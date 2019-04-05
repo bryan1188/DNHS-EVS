@@ -1,0 +1,37 @@
+<!-- this modal whill be shown after voter confirmed -->
+<!-- This serves as the voter's ballot and this is the page where the voter cast his vote -->
+<!-- This model should not be closed unless confrimation is clicked -->
+
+{% load widget_tweaks %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+<div class="modal-header">
+  <h4 class="modal-title">{{object.student.first_name|title}}, this is your OFFICIAL BALLOT!</h4>
+</div>
+<div class="modal-body">
+  {% for position in positions_with_candidate %}
+      <div class="form-group">
+        <label>{{position.position}} ({{position.number_of_slots}})</label>
+          <div id="id_{{position.position}}">
+            {% for candidate in position.candidates %}
+              <div class="checkbox">
+                  <label for="id_{{position.position}}_{{candidate.counter}}">
+                    <input type="checkbox" name="{{position.position}}" value="{{candidate.candidate_id}}"
+                      id="id_{{position.position}}_{{candidate.counter}}">
+                   {{ candidate.candidate_name }}
+                  </label>
+                </div>
+            {% endfor %}
+          </div>
+      </div>
+  {% endfor%}
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+  <button type="submit" class="btn btn-primary">
+      <span class="glyphicon glyphicon-send"></span>
+      Cast Vote
+  </button>
+</div>

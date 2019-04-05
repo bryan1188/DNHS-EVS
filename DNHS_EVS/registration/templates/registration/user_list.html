@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load bootstrap3 %}
+{% load bootstrap4 %}
 {% load staticfiles %}
 
 {% block heading  %}
@@ -13,9 +13,10 @@
 {% endblock %}
 
 {% block content %}
+<p></p>
   <form method="post">
     {% csrf_token %}
-      {{ user_filter_form.as_p }}
+      {% bootstrap_form user_filter_form %}
   </form>
   <p>
      <button type="button" class="btn btn-primary js-create-user" data-url="{% url 'registration:create_user_ajax' %}">

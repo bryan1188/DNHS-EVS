@@ -76,6 +76,7 @@ $(function () {
 
     };
 
+    //TRY IT AGAIN USING RETURN FALSE. MAO CGURO NI AGI NGA WLA NMO NAKUHA BEFORE AGI SA RETURN FALSE
     var saveFormWithImage2 = function() {
       var form = $(this);
       var formData = new FormData();
@@ -118,11 +119,7 @@ $(function () {
         success: function(data){
           if (data.form_is_valid) {
               $("#modal-section").modal("hide");
-              $('#election_list').DataTable().ajax.reload();
-              $('#user_list').DataTable().ajax.reload();
-              $('#position_list').DataTable().ajax.reload();
-              $('#party_list').DataTable().ajax.reload();
-              $('#candidate_list').DataTable().ajax.reload();
+              $(form.attr("data-table-list-id")).DataTable().ajax.reload();
           }
           else{
             $("#modal-section .modal-content").html(data.html_form);

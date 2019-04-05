@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
-{% load bootstrap3 %}
+{% load crispy_forms_tags %}
+{% load bootstrap4 %}
 
 {% block heading %}
 <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
@@ -27,9 +28,9 @@
 </h2>
 <form method="post">
   {% csrf_token %}
-  <table>
-      {{ form.as_table }}
-  </table>
+
+  {{ form|crispy }}
+
   <p><input type="submit" class="btn btn-primary" name="add_update_button"
      {% if not form.instance.pk %}
       value="Add"

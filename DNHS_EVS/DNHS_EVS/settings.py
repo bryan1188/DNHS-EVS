@@ -38,12 +38,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bootstrap3',
+    'bootstrap4',
     'widget_tweaks',
     'searchableselect',
     'crispy_forms',
     'registration',
     'election',
     ]
+
+# https://simpleisbetterthancomplex.com/tutorial/2018/08/13/how-to-use-bootstrap-4-forms-with-django.html
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -145,4 +149,4 @@ Something wrong with the file. changes can't be detected. An alternative is
 to rename the file and set the filename here so it will be update on all
 templates that using it
 '''
-MODAL_AJAX_LOCATION = 'registration/js/modal_ajax_2.js'
+MODAL_AJAX_LOCATION = 'registration/js/modal_ajax_3.js'

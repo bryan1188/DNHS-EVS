@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load bootstrap3 %}
+{% load bootstrap4 %}
 {% load staticfiles %}
 
 {% block heading  %}
@@ -15,7 +15,7 @@
 <h2>{{ object_name|title }} Management</h2>
 <form method="post">
   {% csrf_token %}
-    {{ filter_form.as_p }}
+    {% bootstrap_form filter_form %}
 </form>
 <p>
  <button type="button" class="btn btn-primary js-create-candidate"

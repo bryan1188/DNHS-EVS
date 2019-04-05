@@ -29,10 +29,20 @@ class ObjectManagerActive(models.Manager):
         '''
         date_now = datetime.datetime.now().date()
         if super().get_queryset().filter(election_day_to__gte=date_now,
-            election_day_from__lte=date_now, status='FINALIZED').count() > 0:
+            election_day_from__lte=date_now, status='FINALIZED').exists():
             return True
         else:
              return False
+
+    def get_current_election(self):
+        '''
+            get the current election and return the election instance
+            used in Election Model
+            used in election.viewsF.vote.authenticate_voter_ajax
+        '''
+        date_now = datetime.datetime.now().date()
+        return super().get_queryset().filter(election_day_to__gte=date_now,
+            election_day_from__lte=date_now, status='FINALIZED').first()
 
 class ObjectManagerAll(models.Manager):
     def get_queryset(self):
@@ -283,13 +293,34 @@ class Student(BaseModel):
                     'middle_name')
 
     def __str__(self):
-        if (self.middle_name != ""):
-            return self.last_name + ", " + self.first_name + " " + self.middle_name[:1].upper() + "."
+        if self.middle_name == "-" or not self.middle_name:
+            return "{}, {}".format(self.last_name, self.first_name)
         else:
-            return self.last_name + ", " + self.first_name
+            return "{}, {} {}.".format(self.last_name,
+                                        self.first_name,
+                                        self.middle_name[:1].upper()
+                                       )
+        # if self.middle_name != "" or:
+        #     return self.last_name + ", " + self.first_name + " " + self.middle_name[:1].upper() + "."
+        # else:
+        #     return self.last_name + ", " + self.first_name
 
     def natural_key(self):
         return self.__str__()
+
+    @property
+    def name_title(self):
+        if self.middle_name == "-" or not self.middle_name:
+            # middle name is blank or set to "-"
+            return "{} {}".format(self.first_name,
+                                    self.last_name
+                                )
+        else:
+            return "{} {} {}".format(self.first_name,
+                                    self.middle_name,
+                                    self.last_name
+                                    )
+
 
 #related to users ##############################
 class ElectionOfficer(BaseModel):
@@ -523,7 +554,7 @@ class Voter(BaseModel):
     )
     voter_token = models.CharField(
             max_length=50,
-            verbose_name="Voter Token",
+            verbose_name="Token",
             null=False,
             db_index=True
     )

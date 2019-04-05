@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
-{% load bootstrap3 %}
+{% load bootstrap4 %}
 {% load staticfiles %}
+{% load crispy_forms_tags %}
 
 {% block heading  %}
 
@@ -16,8 +17,8 @@
 <h2>Election Management</h2>
   <form method="post">
     {% csrf_token %}
-      {{ election_filter_form.as_p }}
-      {{ show_all_filter_form.as_p }}
+      {{ election_filter_form|crispy }}
+      {{ show_all_filter_form|crispy }}
   </form>
   <p>
    <button type="button" class="btn btn-primary js-create-election"

@@ -1,5 +1,7 @@
 {% load widget_tweaks %}
 {% load staticfiles %}
+{% load crispy_forms_tags %}
+
 <script type="text/javascript" src="{% static 'js/bootstrap-datepicker.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/bootstrap-datepicker.css' %}">
 <script>
@@ -9,7 +11,7 @@
   });
 </script>
 
-<form method="post"
+<form method="post" data-table-list-id="#election_list"
   {% if mode == 'create' %}
     action="{% url 'registration:create_election_ajax' %}"
     class="js-election-create-form">
@@ -42,10 +44,10 @@
         {% for error in field.errors %}
           <p class="help-block"> {{ error }}</p>
         {% endfor %}
-        <label for="{{field.id_for_label}}"> {{field.label}}</label>
-        {% render_field field  %}
+        {{ field|as_crispy_field }}
       </div>
     {% endfor %}
+
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -67,7 +69,7 @@
 {% if mode == 'create' %}
 <script> //set default to position select box as select all
 
-    $(document).ready( function () { 
+    $(document).ready( function () {
       $('#id_positions option').prop('selected', true);
       });
 

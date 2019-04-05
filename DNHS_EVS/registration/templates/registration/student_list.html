@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load bootstrap3 %}
 {% load staticfiles %}
+{% load crispy_forms_tags %}
 
 {% block heading  %}
   <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
@@ -17,7 +18,7 @@
 
 <form method="post">
   {% csrf_token %}
-    {{ class_filter_form.as_p }}
+    {{ class_filter_form|crispy }}
 </form>
 
   <table id="uploaded_students" class="table table-bordered display">
