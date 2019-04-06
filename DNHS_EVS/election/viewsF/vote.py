@@ -53,7 +53,7 @@ def show_voter_confirmation_ajax(request, pk):
 
 def show_voter_ballot_ajax(request, voter_id):
     '''
-        acter the voter confirmed, show the voter's ballot and start casting vote
+        after the voter confirmed, show the voter's ballot and start casting vote
         minimized database hits to improve performance. Pending action
     '''
     data = dict()
@@ -106,6 +106,25 @@ def show_voter_ballot_ajax(request, voter_id):
     context['form'] = form
     data['html_form'] = render_to_string(
             'election/partial_voter_ballot.html',
+            context,
+            request=request
+    )
+    return JsonResponse(data)
+
+def show_voter_ballot_ajax_2(request, voter_id):
+    '''
+        acter the voter confirmed, show the voter's ballot and start casting vote
+        minimized database hits to improve performance. Pending action
+        use django forms instead of manually creating fields
+    '''
+    data = dict()
+    context = dict()
+    voter = get_object_or_404(Voter, pk=voter_id)
+    form = forms.OfficialBallotForm(voter=voter)
+    context['object'] = voter
+    context['form'] = form
+    data['html_form'] = render_to_string(
+            'election/partial_voter_ballot_2.html',
             context,
             request=request
     )

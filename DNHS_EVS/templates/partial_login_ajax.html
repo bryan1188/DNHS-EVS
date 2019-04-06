@@ -1,5 +1,7 @@
 {% load widget_tweaks %}
 {% block content %}
+{% load crispy_forms_tags %}
+
   <form method="post" action="{% url 'login_ajax' %}" class="js-login-form">
     {% csrf_token %}
     <div class="modal-header">
@@ -14,8 +16,7 @@
         {% for error in field.errors %}
           <p class="help-block"> {{ error }}</p>
         {% endfor %}
-        <label for="{{field.id_for_label}}"> {{field.label}}</label>
-        {% render_field field  %}
+        {{ field|as_crispy_field }}
       </div>
     {% endfor %}
     </div>

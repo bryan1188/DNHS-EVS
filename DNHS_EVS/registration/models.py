@@ -53,6 +53,13 @@ class ClassSchoolYearManager(models.Manager):
         return super().get_queryset().order_by('-school_year')\
         .values_list('school_year',flat=True).distinct()
 
+class StudentManager(models.Manager):
+    def get_by_natural_key(self, first_name, last_name):
+        return "{}, {}".format(self.get(last_name=last_name), self.get(first_name=first_name))
+
+class SexManager(models.Manager):
+    def get_by_natural_key(self, sex):
+        return self.get(sex=sex)
 #end of Model Managers ########################################
 
 class School(BaseModel):
@@ -96,10 +103,6 @@ class Class(BaseModel):
         return self.grade_level + " - " + self.section
 
 #lookup tables for Student Table################
-class SexManager(models.Manager):
-    def get_by_natural_key(self, sex):
-        return self.get(sex=sex)
-
 class Sex(BaseModel):
     sex = models.CharField(max_length=1,verbose_name="Sex")
     # objects = SexManager()
@@ -287,6 +290,7 @@ class Student(BaseModel):
                 blank=True,
                 related_name='students'
     )
+
 
     class Meta:
         ordering = ('last_name', 'first_name',

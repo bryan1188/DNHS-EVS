@@ -1,5 +1,7 @@
 from django import forms
-from registration.models import Voter
+from registration.models import Voter,Candidate
+from registration.models import Position
+from django.contrib.auth.models import Group  #testing only, remove after testing
 
 class VoterAuthenticateForm(forms.Form):
     token = forms.CharField()
@@ -52,3 +54,43 @@ class VoterConfirmationForm(forms.ModelForm):
     class Meta:
         model = Voter
         fields = ('voter_token',)
+
+class OfficialBallotForm(forms.Form):
+    '''
+        official ballot of the voter.
+        Dynamic number of fields based on the number of positions of the current election
+    '''
+    voter = None
+
+    def __init__(self, *args, **kwargs):
+        if kwargs.get('voter', None):
+            self.voter = kwargs.get('voter')
+            #after getting the data, delete passed argument to prevent error on calling super().__init__()
+            del kwargs['voter']
+        super().__init__(*args, **kwargs)
+        # get first the candidates of this voter
+        candidates = Candidate.objects.get_candidate_of_voter(
+                        self.voter.election,
+                        self.voter.student_class.grade_level
+                    )
+        # based on the list of candidates, get the positions available
+        positions = [
+                candidate.position.__str__() for candidate in  candidates
+                ]
+        for position in positions:
+            field_name = position
+            # get the candidates for every position
+            candidates_for_this_position = tuple([
+                (candidate.pk, candidate.student.__str__()) \
+                for candidate in candidates.filter(position__title=position)
+                        ])
+            self.fields[field_name] = forms.MultipleChoiceField(
+                                widget=forms.CheckboxSelectMultiple(
+                                        attrs = { #variable place holder that will be consumed on the template
+                                            'number-of-slots': Position.objects.get(title=position).number_of_slots,
+                                        },
+                                    ),
+                                choices=candidates_for_this_position,
+                                required=False
+                            )
+            self.fields[field_name].label = field_name.title()
