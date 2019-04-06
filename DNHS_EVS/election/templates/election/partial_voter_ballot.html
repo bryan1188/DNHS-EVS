@@ -10,22 +10,15 @@
   <h4 class="modal-title">{{object.student.first_name|title}}, this is your OFFICIAL BALLOT!</h4>
 </div>
 <div class="modal-body">
-  {% for position in positions_with_candidate %}
-      <div class="form-group">
-        <label>{{position.position}} ({{position.number_of_slots}})</label>
-          <div id="id_{{position.position}}">
-            {% for candidate in position.candidates %}
-              <div class="checkbox">
-                  <label for="id_{{position.position}}_{{candidate.counter}}">
-                    <input type="checkbox" name="{{position.position}}" value="{{candidate.candidate_id}}"
-                      id="id_{{position.position}}_{{candidate.counter}}">
-                   {{ candidate.candidate_name }}
-                  </label>
-                </div>
-            {% endfor %}
-          </div>
-      </div>
-  {% endfor%}
+  {% for field in form %}
+    <div class="form-group {% if field.errors %} has-error {% endif%}">
+      {% for error in field.errors %}
+        <p class="help-block"> {{ error }}</p>
+      {% endfor %}
+
+      {{ field|as_crispy_field }}
+    </div>
+  {% endfor %}
 </div>
 
 <div class="modal-footer">
@@ -35,3 +28,72 @@
       Cast Vote
   </button>
 </div>
+
+<script type="text/javascript">
+
+  $(function(){
+
+    //listener
+    // grab all checkbox inputs
+    $('input:checkbox').change( function() {
+      var number_of_slots = parseInt($(this).attr("number-of-slots"));
+
+      //track last checked
+      if($(this).is(':checked')){
+
+        //find the max last-checked-counter
+        max_checked_counter = 0;
+        $(this).parent().parent().siblings()
+                .find('input:checkbox:checked')
+                .each( function(index, value) {
+                  if (parseInt($(this).attr("last-checked-counter")) > max_checked_counter){
+                    max_checked_counter = parseInt($(this).attr("last-checked-counter"));
+                  }
+                });
+
+        $(this).attr("last-checked-counter",max_checked_counter + 1); //set to track as this is the latest checked element
+
+        //get other checkboxes
+        //get count of checked checkboxes
+        //find the least recent checked element to tbe unchecked
+        var siblings_checked_count = 0;
+        var least_counter;
+        var least_checked_id;
+        $(this).parent().parent().siblings()
+                .find('input:checkbox:checked')
+                .each( function(index, value) {
+
+                    // find the least element to be unchecked
+                    if (least_counter === undefined) {
+                      least_counter = parseInt($(this).attr("last-checked-counter"));
+                      least_checked_id = $(this).attr("id");
+                    }
+                    else {
+                      if (parseInt($(this).attr("last-checked-counter")) < least_counter) {
+                        least_counter = parseInt($(this).attr("last-checked-counter"));
+                        least_checked_id = $(this).attr("id");
+                      }
+                    }
+                    siblings_checked_count += 1;
+
+                });
+
+        if (siblings_checked_count >= number_of_slots){
+          //unchecked the least recent candidate
+          $('#' + least_checked_id).prop('checked', false);
+
+        }
+
+      }
+      else { //reset to 0
+        last_checked_counter = 0; //reset
+        $(this).attr("last-checked-counter",last_checked_counter); //then set again
+      }
+
+    });
+
+    // $('input:checkbox').prop('checked', true);
+  });
+
+
+</script>

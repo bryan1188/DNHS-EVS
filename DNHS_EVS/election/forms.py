@@ -31,9 +31,9 @@ class VoterAuthenticateForm(forms.Form):
             return token
 
 class VoterConfirmationForm(forms.ModelForm):
-
-    voter_name = forms.CharField()
-    voter_class = forms.CharField()
+    voter_token = forms.CharField(required=False)
+    voter_name = forms.CharField(required=False)
+    voter_class = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -79,6 +79,7 @@ class OfficialBallotForm(forms.Form):
                 ]
         for position in positions:
             field_name = position
+            number_of_slots = Position.objects.get(title=position).number_of_slots
             # get the candidates for every position
             candidates_for_this_position = tuple([
                 (candidate.pk, candidate.student.__str__()) \
@@ -87,10 +88,14 @@ class OfficialBallotForm(forms.Form):
             self.fields[field_name] = forms.MultipleChoiceField(
                                 widget=forms.CheckboxSelectMultiple(
                                         attrs = { #variable place holder that will be consumed on the template
-                                            'number-of-slots': Position.objects.get(title=position).number_of_slots,
+                                            # this will determine how many allowed candidate per position
+                                            'number-of-slots': number_of_slots,
+                                             #this will identify the last element checked. Based on this number and number_of_slots,
+                                             #other elements will be automatically unchecked
+                                            'last-checked-counter': 0,
                                         },
                                     ),
                                 choices=candidates_for_this_position,
                                 required=False
                             )
-            self.fields[field_name].label = field_name.title()
+            self.fields[field_name].label = "{}({})".format(field_name.title(),number_of_slots)

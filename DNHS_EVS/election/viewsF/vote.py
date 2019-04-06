@@ -51,7 +51,7 @@ def show_voter_confirmation_ajax(request, pk):
     )
     return JsonResponse(data)
 
-def show_voter_ballot_ajax(request, voter_id):
+def show_voter_ballot_ajax_to_remove(request, voter_id):
     '''
         after the voter confirmed, show the voter's ballot and start casting vote
         minimized database hits to improve performance. Pending action
@@ -111,7 +111,7 @@ def show_voter_ballot_ajax(request, voter_id):
     )
     return JsonResponse(data)
 
-def show_voter_ballot_ajax_2(request, voter_id):
+def show_voter_ballot_ajax(request, voter_id):
     '''
         acter the voter confirmed, show the voter's ballot and start casting vote
         minimized database hits to improve performance. Pending action
@@ -120,11 +120,12 @@ def show_voter_ballot_ajax_2(request, voter_id):
     data = dict()
     context = dict()
     voter = get_object_or_404(Voter, pk=voter_id)
+    #the magic is in the form
     form = forms.OfficialBallotForm(voter=voter)
     context['object'] = voter
     context['form'] = form
     data['html_form'] = render_to_string(
-            'election/partial_voter_ballot_2.html',
+            'election/partial_voter_ballot.html',
             context,
             request=request
     )

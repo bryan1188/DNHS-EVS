@@ -122,14 +122,13 @@
 
       //bind
       $("#modal-section").on("submit", ".js-authenticate-voter-form", authenticateVoter);
-
       $('#modal-vote-confirmation').on('click','.js-not-me', function(){
           //refresh current page to show again modal-section
           //so voter will enter again the token
           location.reload();
       });
-
       $('#modal-vote-confirmation').on("click",".js-this-is-me", userConfirmed);
+
 
     });
   </script>

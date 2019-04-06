@@ -15,8 +15,4 @@ urlpatterns = [
         vote.show_voter_ballot_ajax,
         name='show_voter_ballot_ajax'
     ),
-    path('ajax/voter/ballot_2/<int:voter_id>',
-        vote.show_voter_ballot_ajax_2,
-        name='show_voter_ballot_ajax_2'
-    ),
     ]
