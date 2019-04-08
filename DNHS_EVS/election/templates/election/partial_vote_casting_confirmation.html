@@ -1,0 +1,26 @@
+<!-- this modal whill be shown after voter cast the vote -->
+<!-- New token will be shown here so user can validate the vote after -->
+<!-- This model should not be closed unless confrimation is clicked -->
+
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+
+
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
+    <span area-hidden="true">&times;</span>
+  </button>
+  <h4 class="modal-title">
+    Hi {{object.student.first_name|title}}, your vote has been counted!
+  </h4>
+</div>
+<div class="modal-body">
+  Please right-down your new token to view your vote!
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+  <button type="submit" class="btn btn-primary">
+      <span class="glyphicon glyphicon-send"></span>
+      Cast Vote
+  </button>
+</div>

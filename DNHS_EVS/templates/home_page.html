@@ -22,17 +22,24 @@
   </div>
 </div>
 
-<div class="modal fade" id="modal-show-ballot">
+<div class="modal fade" id="modal-ballot">
   <div class="modal-dialog">
     <div class="modal-content">
     </div>
   </div>
 </div>
 
-  <div class="" id="variable_container"
-    data-url-authenticate_voter_ajax="{% url 'election:authenticate_voter_ajax' %}"
-  >
+<div class="modal fade" id="modal-vote-casting-confirmation">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
   </div>
+</div>
+
+<div class="" id="variable_container"
+  data-url-authenticate_voter_ajax="{% url 'election:authenticate_voter_ajax' %}"
+  >
+</div>
 
   <script type="text/javascript">
     //this will not show on other browser if extracted to other file.js.
@@ -60,6 +67,8 @@
         type: 'get',
         dataType: 'json',
         beforeSend: function(){
+                      // don't close model on click outside of the modal
+                      $('#modal-vote-confirmation').modal({backdrop: 'static', keyboard: false});
                       $("#modal-vote-confirmation").modal("show");
                     },
         success: function(data){
@@ -99,18 +108,20 @@
       };
 
       var userConfirmed = function(){
-        var form = $(this);
+        var btn = $(this);
 
         $.ajax({
-          url: form.attr("action"),
-          type: form.attr("method"),
+          url: btn.attr("action"),
+          type: btn.attr("method"),
           dataType: 'json',
           beforeSend: function(){
                         $("#modal-vote-confirmation").modal("hide");
-                        $("#modal-show-ballot").modal("show");
+                        // don't close model on click outside of the modal
+                        $('#modal-ballot').modal({backdrop: 'static', keyboard: false});
+                        $("#modal-ballot").modal("show");
                       },
           success: function(data){
-             $("#modal-show-ballot .modal-content").html(data.html_form);
+             $("#modal-ballot .modal-content").html(data.html_form);
              // alert("test");
           }
         });
@@ -118,7 +129,38 @@
         //return false to not display the json data value.
         //data should be processed accordingly through ajax's call 'success'
         return false;
-      }
+      };
+
+      var castVote = function(){
+
+        var form = $(this);
+        $.ajax({
+          url: form.attr("action"),
+          data: form.serialize(),
+          type: form.attr("method"),
+          dataType: 'json',
+          success: function(data){
+            if (data.form_is_valid){
+              //hide #modal-ballot
+              $("#modal-ballot").modal("hide");
+
+              //show confirmation
+              $("#modal-vote-casting-confirmation").modal("show");
+
+              //give the voter his/her new token to validate his/her vote
+              $("#modal-vote-casting-confirmation .modal-content").html(data.html_form);
+            }
+            else {
+              $("#modal-ballot .modal-content").html(data.html_form);
+            }
+          }
+        });
+
+        //return false to not display the json data value.
+        //data should be processed accordingly through ajax's call 'success'
+        return false;
+
+      };
 
       //bind
       $("#modal-section").on("submit", ".js-authenticate-voter-form", authenticateVoter);
@@ -128,7 +170,7 @@
           location.reload();
       });
       $('#modal-vote-confirmation').on("click",".js-this-is-me", userConfirmed);
-
+      $("#modal-ballot").on("submit", ".js-cast-vote-form", castVote);
 
     });
   </script>

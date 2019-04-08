@@ -584,6 +584,9 @@ class Voter(BaseModel):
             blank = True,
             related_name = 'voters'
     )
+    is_voted_cased = models.BooleanField(default=False, verbose_name="Vote casted?")
+
+
 
     class Meta:
         unique_together = (('student', 'election'),)

@@ -13,6 +13,6 @@ urlpatterns = [
     ),
     path('ajax/voter/ballot/<int:voter_id>',
         vote.show_voter_ballot_ajax,
-        name='show_voter_ballot_ajax'
+        name='voter_ballot_ajax'
     ),
     ]

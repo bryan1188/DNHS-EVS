@@ -3,31 +3,40 @@
 <!-- This model should not be closed unless confrimation is clicked -->
 
 {% load widget_tweaks %}
-{% load staticfiles %}
 {% load crispy_forms_tags %}
 
-<div class="modal-header">
-  <h4 class="modal-title">{{object.student.first_name|title}}, this is your OFFICIAL BALLOT!</h4>
-</div>
-<div class="modal-body">
-  {% for field in form %}
-    <div class="form-group {% if field.errors %} has-error {% endif%}">
-      {% for error in field.errors %}
-        <p class="help-block"> {{ error }}</p>
-      {% endfor %}
+<form method="post"
+    action="{% url 'election:voter_ballot_ajax' object.pk %}"
+    class="js-cast-vote-form">
+  {% csrf_token %}
 
-      {{ field|as_crispy_field }}
-    </div>
-  {% endfor %}
-</div>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
+      <span area-hidden="true">&times;</span>
+    </button>
+    <h4 class="modal-title">Hi {{object.student.first_name|title}}, here is your OFFICIAL BALLOT!</h4>
+  </div>
 
-<div class="modal-footer">
-  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-  <button type="submit" class="btn btn-primary">
-      <span class="glyphicon glyphicon-send"></span>
-      Cast Vote
-  </button>
-</div>
+  <div class="modal-body">
+    {% for field in form %}
+      <div class="form-group {% if field.errors %} has-error {% endif%}">
+        {% for error in field.errors %}
+          <p class="help-block"> {{ error }}</p>
+        {% endfor %}
+
+        {{ field|as_crispy_field }}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-primary">
+        <span class="glyphicon glyphicon-send"></span>
+        Cast Vote
+    </button>
+  </div>
+</form>
 
 <script type="text/javascript">
 
@@ -35,6 +44,7 @@
 
     //listener
     // grab all checkbox inputs
+    //add some logic to auto uncheck based on the number of slots
     $('input:checkbox').change( function() {
       var number_of_slots = parseInt($(this).attr("number-of-slots"));
 
@@ -92,7 +102,6 @@
 
     });
 
-    // $('input:checkbox').prop('checked', true);
   });
 
 

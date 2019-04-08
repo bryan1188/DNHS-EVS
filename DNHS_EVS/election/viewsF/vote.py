@@ -120,13 +120,21 @@ def show_voter_ballot_ajax(request, voter_id):
     data = dict()
     context = dict()
     voter = get_object_or_404(Voter, pk=voter_id)
-    #the magic is in the form
-    form = forms.OfficialBallotForm(voter=voter)
     context['object'] = voter
-    context['form'] = form
-    data['html_form'] = render_to_string(
-            'election/partial_voter_ballot.html',
-            context,
-            request=request
-    )
+    if request.method == 'POST':
+        print(request.POST)
+        data['html_form'] = render_to_string(
+                'election/partial_vote_casting_confirmation.html',
+                context,
+                request=request
+        )
+    else:
+        #the magic is in the form
+        form = forms.OfficialBallotForm(voter=voter)
+        context['form'] = form
+        data['html_form'] = render_to_string(
+                'election/partial_voter_ballot.html',
+                context,
+                request=request
+        )
     return JsonResponse(data)
