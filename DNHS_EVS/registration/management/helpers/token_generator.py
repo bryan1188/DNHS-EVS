@@ -57,3 +57,12 @@ class BatchKeyGenerator():
         self.generated_key_set.add(generated_key)
 
         return generated_key
+
+def voter_new_token_generator(voter):
+    '''
+        after the voter voted, a new token will be given to validate his/her vote
+        random is based on the voter's information. not neccessarily unique as
+            this will be hashed
+        this will be parsed for security
+    '''
+    pass

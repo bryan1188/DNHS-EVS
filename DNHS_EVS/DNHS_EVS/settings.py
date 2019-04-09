@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import hashlib
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +26,9 @@ SECRET_KEY = '@r#ql!gfrgc5#6=9*7%*8(lha)!5os8kiqdqsex8#*85eoq&!!'
 # hashing secret key
 HASHING_SECRET_KEY = 'b0ch523jOhn316ForGodSoLoveTheWorldThatHeGaveHISOnlySon...'
 HASHING_SALT = 'b0ch523matthew2830'
+
+#hassing settings
+HASHLIB_VOTER_NEW_TOKEN = hashlib.sha512
 
 #flag to make counting more secure. This may degrade performance.
 #used in registration.models.Vote
@@ -132,6 +136,10 @@ TIME_ZONE = 'Asia/Manila'
 
 DATE_FORMAT = 'm/d/Y'
 
+TIME_FORMAT = 'A'
+
+SHORT_DATETIME_FORMAT = 'm/d/Y h:i A'
+DATE_TIME_FORMAT = 'm/d/Y h:i A'
 USE_L10N = True
 
 DATE_INPUT_FORMATS = ['%m-%d-%Y']

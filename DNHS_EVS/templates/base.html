@@ -56,15 +56,20 @@
             </li>
           {% endif %}
 
-        {% if perms.registration.add_election %}
+        {% if perms.registration.add_election or perms.registration.view_vote %}
           <li>
             <div class="dropdown">
               <button class="dropbtn">Election</button>
               <div class="dropdown-content">
+                {% if perms.registration.add_election %}
                 <a href="{%url 'registration:position' %}">Position Management</a>
                 <a href="{%url 'registration:list_election' %}">Election Management</a>
                 <a href="{%url 'registration:party' %}">Party Management</a>
                 <a href="{%url 'registration:candidate' %}">Candidate Management</a>
+                {% endif %}
+                {% if perms.registration.view_vote %}
+                <a href="{%url 'election:election_live_monitoring' %}">Live Monitoring</a>
+                {% endif %}
                 <!-- <a href="#">Review List Voters and Candidates</a>
                 <a href="#">Generate Voter's Token</a>
                 <a href="#">Add Candidate</a>

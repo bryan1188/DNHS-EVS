@@ -1,5 +1,5 @@
 from django.urls import path
-from election.viewsF import vote
+from election.viewsF import vote,live_monitoring
 
 app_name = 'election'
 
@@ -14,5 +14,17 @@ urlpatterns = [
     path('ajax/voter/ballot/<int:voter_id>',
         vote.show_voter_ballot_ajax,
         name='voter_ballot_ajax'
+    ),
+    path('liveVoteMonitoring/',
+        live_monitoring.ElectionLiveMonitoring.as_view(),
+        name='election_live_monitoring'
+    ),
+    path('ajax/populate_vote_count/',
+        live_monitoring.populate_vote_count_ajax,
+        name='populate_vote_count_live'
+    ),
+    path('ajax/check_for_new_vote/',
+        live_monitoring.check_for_new_vote_ajax,
+        name='check_for_new_vote_ajax'
     ),
     ]

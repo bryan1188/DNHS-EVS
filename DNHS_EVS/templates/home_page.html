@@ -171,6 +171,11 @@
       });
       $('#modal-vote-confirmation').on("click",".js-this-is-me", userConfirmed);
       $("#modal-ballot").on("submit", ".js-cast-vote-form", castVote);
+      $('#modal-vote-casting-confirmation').on('click','.btn-close', function(){
+          //refresh current page to show again modal-section
+          //so voter will enter again the token
+          location.reload();
+      });
 
     });
   </script>

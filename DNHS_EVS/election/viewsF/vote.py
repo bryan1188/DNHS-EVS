@@ -1,10 +1,15 @@
 from election import forms
 from django.template.loader import render_to_string
 from django.http import JsonResponse
-from registration.models import Election,Voter,Candidate
+from registration.models import Election,Voter,Candidate,Vote
 from registration.models_election import Position
 from django.core import serializers
 from django.shortcuts import get_object_or_404
+from election.models import Ballot
+from datetime import datetime
+from registration.management.helpers.token_generator import id_generator
+from election.management.helpers.hasher_helpers import MyHasher
+from django.conf import settings
 
 def authenticate_voter_ajax(request):
     '''
@@ -122,12 +127,57 @@ def show_voter_ballot_ajax(request, voter_id):
     voter = get_object_or_404(Voter, pk=voter_id)
     context['object'] = voter
     if request.method == 'POST':
-        print(request.POST)
-        data['html_form'] = render_to_string(
-                'election/partial_vote_casting_confirmation.html',
-                context,
-                request=request
-        )
+        form = forms.OfficialBallotForm(request.POST, voter=voter)
+        if form.is_valid():
+            #get client's IP
+            ip = None
+            if request.META.get('HTTP_X_FORWARDED_FOR'):
+                ip = request.META.get('HTTP_X_FORWARDED_FOR').split(',')[0]
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+            #create ballot for this voter
+            ballot = Ballot(
+                    vote_casted_timestamp = datetime.now(),
+                    vote_casting_IP = ip
+            )
+            ballot.assign_voter_id(voter)
+            ballot.save()
+            # get the canidates that the voter voted
+            for position,candidates in form.cleaned_data.items():
+                for candidate in candidates:
+                    #push the vote on the database
+                    vote = Vote(
+                        ballot=ballot,
+                        candidate=Candidate.objects.get(id=int(candidate))
+                    )
+                    # to validate the vote. withouth this, this vote will be tagged
+                    #  as invalid
+                    vote.populate_hashed_id()
+                    vote.save()
+
+            #update the voter's recored to tagged as voted
+            voter.is_vote_casted = True
+
+            voter_validation_token = voter.assign_voter_token_for_validation_h()
+            voter.save()
+
+            data['form_is_valid'] = True
+            context['voter_validation_token'] = voter_validation_token
+            data['html_form'] = render_to_string(
+                    'election/partial_vote_casting_confirmation.html',
+                    context,
+                    request=request
+            )
+        else:
+            data['form_is_valid'] = False
+            context['object'] = voter
+            context['form'] = form
+            data['html_form'] = render_to_string(
+                    'election/partial_voter_ballot.html',
+                    context,
+                    request=request
+            )
+
     else:
         #the magic is in the form
         form = forms.OfficialBallotForm(voter=voter)

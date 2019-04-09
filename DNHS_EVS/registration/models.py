@@ -4,10 +4,13 @@ from django.contrib.auth.models import User
 from registration.models_base import BaseModel
 from election.models import Ballot
 from election.management.helpers.hasher_helpers import MyHasher
+from registration.management.helpers.token_generator import id_generator
 import datetime
 from django.conf import settings
 import uuid
 import hashlib
+from django.utils import timezone
+
 
 #Model Managers###############################################
 class ObjectManagerActive(models.Manager):
@@ -74,6 +77,15 @@ class VoteManger(models.Manager):
         votes = super().get_queryset()
         vote_ids = [vote.id for vote in votes if vote.valid_vote]
         return super().get_queryset().filter(id__in=vote_ids)
+
+    def get_last_create_date(self):
+        if super().get_queryset().all().count() > 1:
+            return timezone.localtime(super().get_queryset().all().aggregate(
+                                            models.Max('created_date')
+                                            ).get('created_date__max')
+                                        )
+        else:
+            return None
 
 #end of Model Managers ########################################
 
@@ -599,7 +611,7 @@ class Voter(BaseModel):
             blank = True,
             related_name = 'voters'
     )
-    is_voted_cased = models.BooleanField(
+    is_vote_casted = models.BooleanField(
             default=False,
             verbose_name="Vote casted?"
     )
@@ -612,6 +624,28 @@ class Voter(BaseModel):
             default=False,
             verbose_name="Temporary Token"
     )
+
+    validation_token_hasher = MyHasher()
+    validation_token_hasher.hasher_lib = settings.HASHLIB_VOTER_NEW_TOKEN
+
+    def authenticate_for_vote_validation(self, validation_token):
+        '''
+            check if the voter enters the correct validation_token
+        '''
+        return self.validation_token_hasher.check(
+                    self.voter_token_for_validation_h,
+                    validation_token)
+
+    def assign_voter_token_for_validation_h(self):
+        '''
+            update voter_token_for_validation_h and return the un-hashed generated token
+        '''
+        voter_validation_token = id_generator(
+            6,
+            "{}{}".format(self.student.lrn,self.student.__str__())
+        )
+        self.voter_token_for_validation_h = self.validation_token_hasher.hash(voter_validation_token)
+        return voter_validation_token
 
     @property
     def hash_id(self):
@@ -645,6 +679,7 @@ class Vote(BaseModel):
             max_length=255,
             null=False,
             default=uuid.uuid4().hex,
+            unique=True
     )
     ballot = models.ForeignKey(
             Ballot,
@@ -675,6 +710,7 @@ class Vote(BaseModel):
         objects = VoteManger()
 
     def populate_hashed_id(self):
+        # add mechanism to check if hash generated already exist.
         self.hashed_id = self.hasher.hash(self.ballot.voter_id_h
                             + settings.HASHING_SECRET_KEY)
 
@@ -695,4 +731,6 @@ class Vote(BaseModel):
                             + settings.HASHING_SECRET_KEY)
         except:
             return False
+
+
 #end of related to voting ########################

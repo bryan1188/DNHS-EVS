@@ -5,6 +5,9 @@ from registration.models_election import Position
 from django.contrib.auth.models import User,Group
 from django.db.models import Q
 from searchableselect.widgets import SearchableSelect
+from django.utils import timezone,formats
+from django.conf import settings
+
 
 
 class UploadStudentsForm(forms.Form):
@@ -499,6 +502,9 @@ class CandidateFormMoreDetails(CandidateForm):
     created_by = forms.CharField(
         widget=forms.TextInput(attrs={'readonly':'readonly'})
     )
+    # modified_date = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly':'readonly'})
+    # )
     last_updated_by = forms.CharField(
         widget=forms.TextInput(attrs={'readonly':'readonly'})
         )
@@ -506,7 +512,17 @@ class CandidateFormMoreDetails(CandidateForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.fields['created_by'].initial = self.instance.created_by
-            self.fields['last_updated_by'].initial = self.instance.last_updated_by
+            self.fields['created_by'].initial = "{} ({})".format(
+                            self.instance.created_by,
+                            formats.date_format(
+                                timezone.localtime(self.instance.created_date),
+                                settings.DATE_TIME_FORMAT)
+            )
+            self.fields['last_updated_by'].initial = "{} ({})".format(
+                            self.instance.last_updated_by,
+                            formats.date_format(
+                                timezone.localtime(self.instance.modified_date),
+                                settings.DATE_TIME_FORMAT)
+            )
             for key in self.fields.items(): #set all field as disabled
                 self.fields[key[0]].widget.attrs['disabled'] = True

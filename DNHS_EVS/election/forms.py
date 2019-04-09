@@ -99,3 +99,13 @@ class OfficialBallotForm(forms.Form):
                                 required=False
                             )
             self.fields[field_name].label = "{}({})".format(field_name.title(),number_of_slots)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for position,value in self.cleaned_data.items():
+            if len(value) > Position.objects.get(title=position).number_of_slots:
+                raise forms.ValidationError(
+                    "Number of votes is more than the specified number of slots for {} position.".format(
+                        position
+                    )
+                )

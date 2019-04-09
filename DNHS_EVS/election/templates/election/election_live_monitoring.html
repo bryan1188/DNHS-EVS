@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load widget_tweaks %}
+
+
+{% block heading  %}
+    <link rel="stylesheet" href="{% static 'css/buttons.dataTables.min.css' %}">
+
+    <!-- for more datatables buttons -->
+    <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
+{% endblock %}
+
+{% block content %}
+  {% if object %}
+    <h2>Live Votes Monitoring for {{ object|title }} Election</h2>
+    <div class="panel panel-info">
+      <div class="panel-heading">
+       <a data-toggle="collapse" href="#collapseCanidates"><h2>Live Monitoring</h2></a>
+      </div>
+      <div id="collapseCanidates" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <form method="post">
+            {% csrf_token %}
+              {{ filter_form.as_p }}
+          </form>
+          <p>
+           <button type="button" class="btn btn-primary js-refresh-count"
+            data-toggle="tooltip" data-placement="right" title="Create new Candidate"
+              data-url="{% url 'registration:create_candidate_ajax' %}">
+             <span class="glyphicon glyphicon-refresh"></span>
+             Refresh Now
+           </button>
+          </p>
+          <div class="table-responsive">
+            <table id="vote_monitoring" class="table table-bordered display">
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Candidate</th>
+                  <th>Vote Count</th>
+                </tr>
+              </thead>
+              <tfoot>
+                <tr>
+                  <th>Position</th>
+                  <th>Candidate</th>
+                  <th>Vote Count</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  {% else %}
+    <script type="text/javascript">
+      $(window).on('load',function(){
+        // show modal telling user no active election
+            $("#modal-section").modal("show");
+      });
+    </script>
+  {%endif%}
+
+
+  <div class="modal fade" id="modal-section">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
+            <span area-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">
+            No Election!
+          </h4>
+        </div>
+        <div class="modal-body">
+          <p>There is no election today to monitor. Please come back next time!</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary btn-close" data-dismiss="modal">Okay</button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    $(function () {
+
+      var last_update = 0;
+      var auto_refresh_interval = 60000;
+
+      var table = $('#vote_monitoring').DataTable({
+        "processing": true,
+        "ajax": {
+            "processing": true,
+            "url": "{% url 'election:populate_vote_count_live' %}",
+            // "data": function( d ) {
+            //         d.select_all = get_all_checkbox();
+            //         d.election = "{{ object.id }}"; //filter for this election.
+            //                                 //get candidates for this election only
+            //       },
+            "dataSrc": ""
+        },
+        'columns': [
+          {"data": "fields.position"},
+          {"data": "fields.candidate"},
+          {"data": "fields.vote_count"},
+        ],
+        fixedColumns: false,
+        'columnDefs': [
+            {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                "targets": [-1],
+                "className": "text-center",
+                // "width": "4%"
+           },
+           ],
+         "ordering": false
+      });
+
+
+      $('#modal-section').on('click','.btn-close', function(){
+          //redirect backward
+          history.go(-1);
+      });
+
+      $('.js-refresh-count').click(function(){
+        $('#vote_monitoring').DataTable().ajax.reload();
+      });
+
+      //auto refresh every
+      window.setInterval(function(){
+        $.ajax({
+            url: "{% url 'election:check_for_new_vote_ajax' %}",
+            type: 'get',
+            dataType: 'json',
+            success: function(data){
+                        if (data.last_vote_timestamp != last_update) {
+                          last_update = data.last_vote_timestamp;
+                          $('#vote_monitoring').DataTable().ajax.reload();
+                        }
+                      },
+        });
+      }, auto_refresh_interval);
+
+    });
+  </script>
+
+  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'js/dataTables.buttons.min.js' %}"></script>
+  <script src="{% static 'js/buttons.print.min.js' %}"></script>
+
+  <!-- for other buttons of datatables -->
+  <script src="{% static 'js/dataTables.bootstrap.min.js' %}"></script>
+  <script src="{% static 'js/buttons.bootstrap.min.js' %}"></script>
+  <script src="{% static 'js/jszip.min.js' %}"></script>
+  <script src="{% static 'js/pdfmake.min.js' %}"></script>
+  <script src="{% static 'js/vfs_fonts.js' %}"></script>
+  <script src="{% static 'js/buttons.html5.min.js' %}"></script>
+  <script src="{% static 'js/buttons.colVis.min.js' %}"></script>
+
+{% endblock %}
