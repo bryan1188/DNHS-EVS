@@ -23,8 +23,12 @@ TEMPLATE_DIR = os.path.join(BASE_DIR,'templates')
 SECRET_KEY = '@r#ql!gfrgc5#6=9*7%*8(lha)!5os8kiqdqsex8#*85eoq&!!'
 
 # hashing secret key
-HASHING_SECRET_KEY = 'b0ch523jOhn316'
+HASHING_SECRET_KEY = 'b0ch523jOhn316ForGodSoLoveTheWorldThatHeGaveHISOnlySon...'
 HASHING_SALT = 'b0ch523matthew2830'
+
+#flag to make counting more secure. This may degrade performance.
+#used in registration.models.Vote
+VOTE_SECURITY = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

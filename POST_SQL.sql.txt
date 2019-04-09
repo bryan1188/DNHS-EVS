@@ -1,0 +1,3 @@
+REVOKE DELETE ON django.registration_vote FROM django;
+
+REVOKE UPDATE ON django.registration_vote FROM django;

@@ -6,7 +6,8 @@ from election.models import Ballot
 from election.management.helpers.hasher_helpers import MyHasher
 import datetime
 from django.conf import settings
-
+import uuid
+import hashlib
 
 #Model Managers###############################################
 class ObjectManagerActive(models.Manager):
@@ -63,6 +64,17 @@ class StudentManager(models.Manager):
 class SexManager(models.Manager):
     def get_by_natural_key(self, sex):
         return self.get(sex=sex)
+
+class VoteManger(models.Manager):
+    '''
+        For additional security, Vote should only return valid votes based on
+            valid_vote propert.
+    '''
+    def get_queryset(self):
+        votes = super().get_queryset()
+        vote_ids = [vote.id for vote in votes if vote.valid_vote]
+        return super().get_queryset().filter(id__in=vote_ids)
+
 #end of Model Managers ########################################
 
 class School(BaseModel):
@@ -611,7 +623,6 @@ class Voter(BaseModel):
     @property
     def ballot(self):
         try:
-            my_hasher = MyHasher()
             return Ballot.objects.get(
                     voter_id_h = self.hash_id
                     )
@@ -626,3 +637,62 @@ class Voter(BaseModel):
         return self.student.__str__()
 
 #end of related to election ########################
+
+
+# models related to voting ##################
+class Vote(BaseModel):
+    hashed_id = models.CharField(
+            max_length=255,
+            null=False,
+            default=uuid.uuid4().hex,
+    )
+    ballot = models.ForeignKey(
+            Ballot,
+            on_delete = models.SET_NULL,
+            blank = False,
+            null = True,
+            verbose_name = "Ballot",
+            related_name = 'votes'
+    )
+    candidate = models.ForeignKey(
+            Candidate,
+            on_delete = models.SET_NULL,
+            blank = False,
+            null = True,
+            verbose_name = "Candidate",
+            related_name = 'votes'
+    )
+
+    class Meta:
+        unique_together = (('ballot', 'candidate'),)
+
+    hasher = MyHasher()
+    # used sha512 for better security
+    hasher.hasher_lib = hashlib.sha512
+
+    if settings.VOTE_SECURITY: #check if VOTE SECURITY is enabled
+        #for additional security, only return valid vote
+        objects = VoteManger()
+
+    def populate_hashed_id(self):
+        self.hashed_id = self.hasher.hash(self.ballot.voter_id_h
+                            + settings.HASHING_SECRET_KEY)
+
+    @property
+    def valid_vote(self):
+        '''
+            these are the additional security for vote model
+            check if a certain vote is valid based on the hashed_id
+            the application has no update privilege so it can't update the
+                recored once inserted
+            the application has no delete privilege so it can't delete any
+                vote from a certain candidate
+            once vote is casted, no update or delete needed
+
+        '''
+        try:
+            return self.hasher.check(self.hashed_id, self.ballot.voter_id_h
+                            + settings.HASHING_SECRET_KEY)
+        except:
+            return False
+#end of related to voting ########################
