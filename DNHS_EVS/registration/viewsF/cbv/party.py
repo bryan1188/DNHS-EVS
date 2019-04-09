@@ -45,7 +45,7 @@ def process_post_request(request, form, is_create):
 @permission_required('registration.add_election', raise_exception=True)
 def create_ajax(request, *args, **kwargs):
     data = dict()
-    context = dict()
+    context = dict()    
 
     if request.method == 'POST':
         form = forms.PartyForm(data = request.POST)

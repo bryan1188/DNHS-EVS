@@ -2,7 +2,10 @@ from django.db import models
 from registration.models_election import Position
 from django.contrib.auth.models import User
 from registration.models_base import BaseModel
+from election.models import Ballot
+from election.management.helpers.hasher_helpers import MyHasher
 import datetime
+from django.conf import settings
 
 
 #Model Managers###############################################
@@ -584,8 +587,36 @@ class Voter(BaseModel):
             blank = True,
             related_name = 'voters'
     )
-    is_voted_cased = models.BooleanField(default=False, verbose_name="Vote casted?")
+    is_voted_cased = models.BooleanField(
+            default=False,
+            verbose_name="Vote casted?"
+    )
+    voter_token_for_validation_h = models.CharField(
+            max_length=250,
+            verbose_name="Vote Validation Token",
+            null=True,
+    )
+    is_temporary_token = models.BooleanField(
+            default=False,
+            verbose_name="Temporary Token"
+    )
 
+    @property
+    def hash_id(self):
+        my_hasher = MyHasher()
+        return my_hasher.hash_fixed_salt(
+                            str(self.id) + settings.HASHING_SECRET_KEY
+                        )
+
+    @property
+    def ballot(self):
+        try:
+            my_hasher = MyHasher()
+            return Ballot.objects.get(
+                    voter_id_h = self.hash_id
+                    )
+        except Ballot.DoesNotExist:
+            return None
 
 
     class Meta:
