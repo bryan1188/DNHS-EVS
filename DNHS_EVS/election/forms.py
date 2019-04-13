@@ -27,8 +27,14 @@ class VoterAuthenticateForm(forms.Form):
                 "This is not a valid token for this election. Kindly check."
             )
         else:
-            self.voter = voter_
-            return token
+            # check if the voter voted already
+            if voter_.is_vote_casted:
+                raise forms.ValidationError(
+                    "This token has been used already!"
+                )
+            else:
+                self.voter = voter_
+                return token
 
 class VoterConfirmationForm(forms.ModelForm):
     voter_token = forms.CharField(required=False)
