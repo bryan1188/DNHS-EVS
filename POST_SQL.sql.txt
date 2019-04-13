@@ -1,3 +1,7 @@
 REVOKE DELETE ON django.registration_vote FROM django;
 
 REVOKE UPDATE ON django.registration_vote FROM django;
+
+REVOKE DELETE ON django.registration_votearchived FROM django;
+
+REVOKE UPDATE ON django.registration_votearchived FROM django;

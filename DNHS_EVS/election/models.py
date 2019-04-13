@@ -7,9 +7,9 @@ import uuid
 # Create your models here.
 class Ballot(RegistrationModels.BaseModel):
     vote_casted_timestamp = models.DateTimeField(null=False)
-    vote_casting_IP = models.GenericIPAddressField(null=True)
     # https://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
     # request.META.get('REMOTE_ADDR')
+    vote_casting_IP = models.GenericIPAddressField(null=True)
     voter_id_h = models.CharField(
             max_length=255,
             verbose_name="Hashed Voter ID",

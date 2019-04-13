@@ -31,6 +31,7 @@ HASHING_SALT = 'b0ch523matthew2830'
 HASHLIB_VOTER_NEW_TOKEN = hashlib.sha512
 
 #flag to make counting more secure. This may degrade performance.
+#disable if performance is degraded
 #used in registration.models.Vote
 VOTE_SECURITY = True
 

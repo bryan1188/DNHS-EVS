@@ -6,6 +6,8 @@ from registration.models import Election,Student,Class,Sex,Candidate,Voter
 from registration.management.helpers.db_object_helpers import toggle_object_status
 from registration.management.helpers.db_object_helpers import get_student_summary_data
 from registration.management.helpers.token_generator import BatchKeyGenerator
+from election.management.helpers.declare_winner import declare_winners
+from reporting.management.helpers.denormalizer import denomarlized_election
 from django.core import serializers
 from django.http import HttpResponse
 from django.conf import settings
@@ -265,3 +267,17 @@ def populate_voters_token_table_ajax(request, election_id):
         voter_json['token'] = voter.voter_token
         return_list.append(voter_json)
     return HttpResponse(json.dumps(return_list), content_type='application/json')
+
+@permission_required('registration.add_student', raise_exception=True)
+def complete_election_ajax(request, election_id):
+    '''
+        Steps:
+            1. declare winner
+            2. call denormalizer
+    '''
+    election = Election.objects.get(id = election_id)
+    declare_winners(election)
+    denomarlized_election_status = denomarlized_election(election)
+    data = dict()
+
+    return JsonResponse(data)

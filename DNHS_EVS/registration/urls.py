@@ -125,6 +125,10 @@ urlpatterns = [
         election.populate_voters_token_table_ajax,
         name='populate_voters_token_table_ajax'
         ),
+    path('ajax/election/complete_election/<int:election_id>/',
+        election.complete_election_ajax,
+        name='complete_election_ajax'
+        ),
     path('positions/', position.PositionList.as_view(), name='position'),
     path('ajax/positions/populate_table_position_list_ajax/',
         position.populate_table_position_list_ajax,

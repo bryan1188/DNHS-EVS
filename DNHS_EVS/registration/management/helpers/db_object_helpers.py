@@ -51,6 +51,15 @@ def get_student_summary_data(*args, **kwargs):
         namedtuple_result = namedtuple('Summary',[col[0] for col in desc])
         return [namedtuple_result(*row) for row in cursor.fetchall()]
 
+def truncate_table(table_object):
+    '''
+        this will do truncate. not delete.
+        Used for tables that has high security like Vote
+    '''
+    table_name = table_object._meta.db_table
+    sql_query = "truncate table {}".format(table_name)
+    with connection.cursor() as cursor:
+        cursor.execute(sql_query)
 
 def toggle_object_status(*args, **kwargs):
     '''

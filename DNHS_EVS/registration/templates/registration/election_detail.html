@@ -21,6 +21,19 @@
 <div class="panel panel-info">
   <div class="panel-heading">
        <a data-toggle="collapse" href="#collapseDetails"><h2>Election Details</h2></a>
+       <button type="button" class="btn btn-primary js-update-election">
+         <span class="glyphicon glyphicon-edit"></span>
+           Update Election
+       </button>
+       {% if object.status == 'FINALIZED' and perms.registration.add_student %}
+       <button type="button" class="btn btn-primary js-complete-election"
+         data-toggle="tooltip" data-placement="right"
+         title="Tag this election as COMPLETED"
+        >
+         <span class="glyphicon glyphicon-check"></span>
+           Complete this Election
+       </button>
+       {% endif %}
   </div>
   <div id="collapseDetails" class="panel-collapse collapse in">
     <div class="panel-body">
@@ -246,10 +259,110 @@
     </div>
   </div>
 
-  <!-- Dialog -->
+  <!-- script for show dialog -->
+  <!-- https://jqueryui.com/dialog/#animated -->
+
+  <!-- generating token confirmation -->
+  <script> //script for showing the modal for confirmation of generating token
+      //after confirmation, token will be generated for the election
+    $( function() {
+      $( "#dialog-confirm" ).dialog({
+        resizable: false,
+        height: "auto",
+        width: 400,
+        modal: true,
+        autoOpen: false,
+        buttons: {
+          "Confirm": function() {
+            $( this ).dialog( "close" );
+            $.ajax({
+                url: "{% url 'registration:generate_batch_token_ajax' object.id %}",
+                type: 'get',
+                dataType: 'json',
+                beforeSend: function(){
+                            $('#generate_button').remove();
+                            // $('#loader').show(); find a very good loader
+                            },
+                complete: function(){
+                          // $('#loader').hide();
+                },
+                success: function(data){
+                        location.reload(); //refresh current page
+                        // $('#tokens_list').DataTable().ajax.reload();
+                        // $('#election_status').html("FINALIZED");
+                          },
+            });
+          },
+          Cancel: function() {
+            $( this ).dialog( "close" );
+          }
+        }
+      });
+
+      $( ".js-generate-token" ).on( "click", function() {
+        $( "#dialog-confirm" ).dialog( "open" );
+      });
+
+    } );
+  </script>
+  <!-- Dialog for generate token confirmation -->
   <div id="dialog-confirm" title="Generate Voters' token for this election?">
     <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
-      This action will generate the token for all the voters listed above and will make this election as 'FINALIZED'. Do you want to proceed?
+      This action will generate the token for all the voters listed above and will make this election as 'FINALIZED'.
+      Once it's done, this page will automatically be refreshed. Do you want to proceed?
+    </p>
+  </div>
+
+  <!-- Complete this election  -->
+  <script> //script for showing the modal for confirmation of completing the election
+      //after confirmation, token will be generated for the election
+    $( function() {
+      $( "#complete-election" ).dialog({
+        resizable: false,
+        height: "auto",
+        width: 400,
+        modal: true,
+        autoOpen: false,
+        buttons: {
+          "Confirm": function() {
+            $( this ).dialog( "close" );
+            $.ajax({
+                url: "{% url 'registration:complete_election_ajax' object.id %}",
+                type: 'get',
+                dataType: 'json',
+                beforeSend: function(){
+                            $('.js-complete-election').remove();
+                            // $('#loader').show();
+                            },
+                complete: function(){
+                          // $('#loader').hide();
+                },
+                success: function(data){
+                        location.reload(); //refresh currtokens_listent page
+                        // $('#tokens_list').DataTable().ajax.reload();
+                        // $('#election_status').html("FINALIZED");
+                          },
+            });
+          },
+          Cancel: function() {
+            $( this ).dialog( "close" );
+          }
+        }
+      });
+
+      $( ".js-complete-election" ).on( "click", function() {
+        $( "#complete-election" ).dialog( "open" );
+      });
+
+    } );
+  </script>
+
+  <!-- Dialog for confirmation in completing this elections -->
+  <div id="complete-election" title="Do you want to complete this Election?">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+      This action will complete this election and declare the winners.
+      Voters can no longer cast their votes.
+      Once it's done, this page will automatically be refreshed. Do you want to proceed?
     </p>
   </div>
 
@@ -263,52 +376,6 @@
   </div>
 </div>
 
-
-
-<!-- script for show dialog -->
-<!-- https://jqueryui.com/dialog/#animated -->
-
-<script>
-  $( function() {
-    $( "#dialog-confirm" ).dialog({
-      resizable: false,
-      height: "auto",
-      width: 400,
-      modal: true,
-      autoOpen: false,
-      buttons: {
-        "Confirm": function() {
-          $( this ).dialog( "close" );
-          $.ajax({
-              url: "{% url 'registration:generate_batch_token_ajax' object.id %}",
-              type: 'get',
-              dataType: 'json',
-              beforeSend: function(){
-                          $('#generate_button').remove();
-                          $('#loader').show();
-                          },
-              complete: function(){
-                        $('#loader').hide();
-              },
-              success: function(data){
-                      // location.reload(); //refresh currtokens_listent page
-                      $('#tokens_list').DataTable().ajax.reload();
-                      $('#election_status').html("FINALIZED");
-                        },
-          });
-        },
-        Cancel: function() {
-          $( this ).dialog( "close" );
-        }
-      }
-    });
-
-    $( ".js-generate-token" ).on( "click", function() {
-      $( "#dialog-confirm" ).dialog( "open" );
-    });
-
-  } );
-</script>
 
 <script> //initialize script
   function get_all_checkbox(){

@@ -5,7 +5,7 @@ from registration.models_base import BaseModel
 from election.models import Ballot
 from election.management.helpers.hasher_helpers import MyHasher
 from registration.management.helpers.token_generator import id_generator
-from reporting.management.helpers.denormalizer import denomarlized_election
+# from reporting.management.helpers.denormalizer import denomarlized_election
 import datetime
 from django.conf import settings
 import uuid
@@ -462,15 +462,25 @@ class Election(BaseModel):
     def natural_key(self):
         return self.__str__()
 
-    def denormalized(self):
-        '''
-            Denormalized all votes for analysis.
-            Denormalized table is optimized for select queries which is heavily
-                used in reporting
-            DenomarmalizedVotes model will be populated based on this election
-            Returns True if success, False if something wrong
-        '''
-        return denomarlized_election(self)
+    # do it in view. facing issue in importing classes. It got circular reference
+    # def denormalized(self):
+    #     '''
+    #         Denormalized all votes for analysis.
+    #         Denormalized table is optimized for select queries which is heavily
+    #             used in reporting
+    #         DenomarmalizedVotes model will be populated based on this election
+    #         Returns True if success, False if something wrong
+    #     '''
+    #     return denomarlized_election(self)
+    #
+    # def complete_election(self):
+    #     '''
+    #         This will complete the election instance.
+    #         Complete means winner should be declared and no votes will be accepted.
+    #         Change the status to COMPLETED.
+    #         Archive all votes of the electin instance
+    #     '''
+    #     pass
 
 class Party(BaseModel):
     name = models.CharField(
@@ -725,9 +735,9 @@ class Vote(BaseModel):
     # used sha512 for better security
     hasher.hasher_lib = hashlib.sha512
 
-    if settings.VOTE_SECURITY: #check if VOTE SECURITY is enabled
+    # if settings.VOTE_SECURITY: #check if VOTE SECURITY is enabled
         #for additional security, only return valid vote
-        objects = VoteManger()
+    objects = VoteManger() #Security is enforced. not an option
 
     def populate_hashed_id(self):
         # add mechanism to check if hash generated already exist.
@@ -751,4 +761,85 @@ class Vote(BaseModel):
                             + settings.HASHING_SECRET_KEY)
         except:
             return False
+
+class VoteArchived(BaseModel):
+    '''
+        To improve voting experience, Vote model should be truncated every election.
+        This is the archive table for Vote Model.
+        Relationship should be maintain here when voter validate his/her vote
+    '''
+    hashed_id = models.CharField(
+            max_length=255,
+            null=False,
+            default=uuid.uuid4().hex,
+            unique=True
+    )
+    ballot = models.ForeignKey(
+            Ballot,
+            on_delete = models.SET_NULL,
+            blank = False,
+            null = True,
+            verbose_name = "Ballot",
+            related_name = 'votes_archived'
+    )
+    candidate = models.ForeignKey(
+            Candidate,
+            on_delete = models.SET_NULL,
+            blank = False,
+            null = True,
+            verbose_name = "Candidate",
+            related_name = 'votes_archived'
+    )
+    election = models.ForeignKey(
+            Election,
+            on_delete = models.SET_NULL,
+            blank = False,
+            null = True,
+            verbose_name = "Election",
+            related_name = 'votes_archived'
+    )
+
+    class Meta:
+        unique_together = (('ballot', 'candidate'),)
+
+    @property
+    def valid_vote(self):
+        '''
+            these are the additional security for vote model
+            check if a certain vote is valid based on the hashed_id
+            the application has no update privilege so it can't update the
+                recored once inserted
+            the application has no delete privilege so it can't delete any
+                vote from a certain candidate
+            once vote is casted, no update or delete needed
+
+        '''
+        try:
+            return self.hasher.check(self.hashed_id, self.ballot.voter_id_h
+                            + settings.HASHING_SECRET_KEY)
+        except:
+            return False
+
+class WinnerCandidate(BaseModel):
+    election = models.ForeignKey(
+            Election,
+            on_delete = models.SET_NULL,
+            blank = False,
+            null = True,
+            verbose_name = 'Election',
+            related_name = 'winner_candidates'
+    )
+    candidate = models.ForeignKey(
+            Candidate,
+            on_delete = models.SET_NULL,
+            blank = False,
+            null = True,
+            verbose_name = 'Candidate',
+            related_name = 'winner_candidates'
+    )
+    tie = models.BooleanField(
+            default=False,
+            verbose_name="Is Tie?"
+    )
+
 #end of related to voting ########################
