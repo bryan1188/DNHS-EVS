@@ -15,7 +15,7 @@ class Ballot(RegistrationModels.BaseModel):
             verbose_name="Hashed Voter ID",
             null=False,
             default=uuid.uuid4().hex,
-            unique=True
+            unique=True,
     )
 
     def assign_voter_id(self, voter):

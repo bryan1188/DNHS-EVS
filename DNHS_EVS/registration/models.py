@@ -5,6 +5,7 @@ from registration.models_base import BaseModel
 from election.models import Ballot
 from election.management.helpers.hasher_helpers import MyHasher
 from registration.management.helpers.token_generator import id_generator
+from reporting.management.helpers.denormalizer import denomarlized_election
 import datetime
 from django.conf import settings
 import uuid
@@ -461,6 +462,16 @@ class Election(BaseModel):
     def natural_key(self):
         return self.__str__()
 
+    def denormalized(self):
+        '''
+            Denormalized all votes for analysis.
+            Denormalized table is optimized for select queries which is heavily
+                used in reporting
+            DenomarmalizedVotes model will be populated based on this election
+            Returns True if success, False if something wrong
+        '''
+        return denomarlized_election(self)
+
 class Party(BaseModel):
     name = models.CharField(
                 max_length=255,
@@ -574,6 +585,12 @@ class Candidate(BaseModel):
     def __str__(self):
         return self.student.__str__() + '(' + self.position.__str__() + ')'
 
+    @property
+    def candidate_class(self):
+        return self.student.classes.filter(
+                school_year=self.election.school_year
+                ).first()
+
 class Voter(BaseModel):
     student = models.ForeignKey(
             Student,
@@ -675,6 +692,9 @@ class Voter(BaseModel):
 
 # models related to voting ##################
 class Vote(BaseModel):
+    '''
+        Minimized index in this model for performance optimization
+    '''
     hashed_id = models.CharField(
             max_length=255,
             null=False,
@@ -731,6 +751,4 @@ class Vote(BaseModel):
                             + settings.HASHING_SECRET_KEY)
         except:
             return False
-
-
 #end of related to voting ########################
