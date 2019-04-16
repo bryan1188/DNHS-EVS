@@ -7,7 +7,7 @@ from registration.management.helpers.db_object_helpers import toggle_object_stat
 from registration.management.helpers.db_object_helpers import get_student_summary_data
 from registration.management.helpers.token_generator import BatchKeyGenerator
 from election.management.helpers.declare_winner import declare_winners
-from reporting.management.helpers.denormalizer import denomarlized_election
+from reporting.management.helpers.denormalizer import denormalized_election
 from django.core import serializers
 from django.http import HttpResponse
 from django.conf import settings
@@ -277,7 +277,7 @@ def complete_election_ajax(request, election_id):
     '''
     election = Election.objects.get(id = election_id)
     declare_winners(election)
-    denomarlized_election_status = denomarlized_election(election)
+    denormalized_election_status = denormalized_election(election)
     data = dict()
 
     return JsonResponse(data)

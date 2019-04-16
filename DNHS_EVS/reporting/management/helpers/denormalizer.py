@@ -1,15 +1,15 @@
 from reporting.management.helpers.bulk_create_helper import BulkCreateManager
-from reporting.models import DenomarmalizedVotes
+from reporting.models import DenormalizedVotes
 from  registration.models import VoteArchived,Vote
 from registration.management.helpers.db_object_helpers import truncate_table
 
-def delete_election_in_DenomarmalizedVotes(election):
-    DenomarmalizedVotes.objects.filter(election_id=election.id).delete()
+def delete_election_in_DenormalizedVotes(election):
+    DenormalizedVotes.objects.filter(election_id=election.id).delete()
 
 def delete_election_in_VoteArchived(election):
     VoteArchived.objects.filter(election_id=election.id).delete()
 
-def denomarlized_election(election):
+def denormalized_election(election):
     '''
         Call this from view, can't be call in model. Got circular reference error.
         Make sure election status is FINALIZED before calling this method
@@ -17,24 +17,24 @@ def denomarlized_election(election):
         Denormalized table is optimized for select queries which is heavily
             used in reporting
         Steps:
-            1. Delete all records in DenomarmalizedVotes table for this election
+            1. Delete all records in DenormalizedVotes table for this election
                 No Delete for security purposes. This action should be done only once per election.
-            2. populate DenomarmalizedVotes table and VoteArchive Table
+            2. populate DenormalizedVotes table and VoteArchive Table
             3. validate
                 count the source and compare the count in the target
                 if matched then return True if Not return False and delete all inserted
-                    records in DenomarmalizedVotes and VoteArchive
+                    records in DenormalizedVotes and VoteArchive
             4. Update the given election to status COMPLETED
 
     '''
     if election.status != 'FINALIZED':
         return False
 
-    # # step 1. Delete all record in DenomarmalizedVotes model for the given election
+    # # step 1. Delete all record in DenormalizedVotes model for the given election
     # # this is to avoid duplicates
-    # delete_election_in_DenomarmalizedVotes(election)
+    # delete_election_in_DenormalizedVotes(election)
 
-    # step 2. populate DenomarmalizedVotes and VoteArchive
+    # step 2. populate DenormalizedVotes and VoteArchive
     # get all voters of the election
     voters = election.voters.all()
     bulk_mgr = BulkCreateManager(chunk_size=200) #commit every 200 records
@@ -46,7 +46,7 @@ def denomarlized_election(election):
         if voter.ballot != None: #make sure voter has voted
             for vote in voter.ballot.votes.all():
                 # print(vote.candidate.id)
-                bulk_mgr.add(DenomarmalizedVotes(
+                bulk_mgr.add(DenormalizedVotes(
                     voter_id_h = voter.hash_id,
                     voter_sex = voter.student.sex.sex,
                     voter_age = voter.student.age,
@@ -76,7 +76,8 @@ def denomarlized_election(election):
                     election_name = vote.candidate.election.name,
                     election_school_year = vote.candidate.election.school_year,
                     election_day_from = vote.candidate.election.election_day_from,
-                    election_day_to = vote.candidate.election.election_day_to
+                    election_day_to = vote.candidate.election.election_day_to,
+                    candidate_position_priority = vote.candidate.position.priority
                     )
                 )
                 bulk_mgr_vote_archive.add(VoteArchived(
@@ -91,12 +92,12 @@ def denomarlized_election(election):
             bulk_mgr_vote_archive.done()
 
     # step 3. validate the count
-    DenomarmalizedVotes_count = DenomarmalizedVotes.objects.filter(
+    DenormalizedVotes_count = DenormalizedVotes.objects.filter(
                                     election_id=election.id
                                 ).count()
-    if vote_counter != DenomarmalizedVotes_count:
+    if vote_counter != DenormalizedVotes_count:
         # rollback. delete all inserted record for the given election
-        delete_election_in_DenomarmalizedVotes(election)
+        delete_election_in_DenormalizedVotes(election)
         return False
     else:
         truncate_table(Vote)

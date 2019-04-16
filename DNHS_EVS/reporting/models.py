@@ -1,11 +1,40 @@
 from django.db import models
 from registration.models_base import BaseModel
+from registration.models import Election
+from django.db.models import Count
 import uuid
 # Create your models here.
 
-class DenomarmalizedVotes(BaseModel):
+class DenormalizedVotesManager(models.Manager):
     '''
-        Denomarlized table for reporting queries
+        Return report data
+    '''
+
+    def get_votes_distribution(self, election_id, distribution_by):
+        if distribution_by == "voter_class_section":
+            return super().get_queryset().filter(election_id=election_id).values(
+                    'candidate_position',
+                    'candidate_name',
+                    'voter_class_grade_level',
+                    'voter_class_section',
+                    'candidate_position_priority'
+                ).annotate(
+                    votes=Count('candidate_name')
+                ).order_by('candidate_position_priority','candidate_name','voter_class_grade_level','voter_class_section')
+        else:
+            return super().get_queryset().filter(election_id=election_id).values(
+                    'candidate_position',
+                    'candidate_name',
+                    distribution_by,
+                    'candidate_position_priority'
+                ).annotate(
+                    votes=Count('candidate_name')
+                ).order_by('candidate_position_priority','candidate_name',distribution_by)
+
+
+class DenormalizedVotes(BaseModel):
+    '''
+        Denormalized table for reporting queries
         This model should be heavily indexed for select optimization
     '''
     voter_id_h = models.CharField(
@@ -146,6 +175,12 @@ class DenomarmalizedVotes(BaseModel):
             blank=False,
             null=False,
     )
+    candidate_position_priority = models.PositiveSmallIntegerField(
+                verbose_name="Priority",
+                blank=False,
+                null=False,
+                default = 0,
+    )
     election_id = models.PositiveIntegerField(
             null=False,
             blank=False,
@@ -176,3 +211,5 @@ class DenomarmalizedVotes(BaseModel):
             verbose_name="Election End Date",
             db_index=True
     )
+
+    objects = DenormalizedVotesManager()

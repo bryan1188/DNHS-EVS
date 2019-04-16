@@ -1,42 +1,93 @@
-
+{% extends 'base.html' %}
 {% load staticfiles %}
   {% block heading %}
 
   <!-- Bootstrap -->
   <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"> -->
-  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+  <!-- <script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script> -->
+
   {% endblock %}
 
 {% block content %}
 
 <div class="container">
-  <h2>Spinner Buttons</h2>
-  <p>Add spinners to buttons:</p>
+  <div id="canvas-holder" style="width:40%">
+        <canvas id="chart-area" width="533" height="266" class="my-chart">
+         </canvas>
+    </div>
 
-  <button class="btn btn-primary">
-    <span class="spinner-border spinner-border-sm"></span>
-  </button>
-
-  <button class="btn btn-primary">
-    <span class="spinner-border spinner-border-sm"></span>
-    Loading..
-  </button>
-
-  <button class="btn btn-primary" disabled>
-    <span class="spinner-border spinner-border-sm"></span>
-    Loading..
-  </button>
-
-  <button class="btn btn-primary" disabled>
-    <span class="spinner-grow spinner-grow-sm"></span>
-    Loading..
-  </button>
 </div>
 
-<script type="text/javascript">
+<script>
+    var config = "";
+
+  Chart.Chart.pluginService.register({
+    beforeDraw: function(chart) {
+        if (chart.config.centerText.display !== null &&
+            typeof chart.config.centerText.display !== 'undefined' &&
+            chart.config.centerText.display) {
+            drawTotals(chart);
+        }
+    },
+});
+
+function drawTotals(chart) {
+
+    var width = chart.chart.width,
+    height = chart.chart.height,
+    ctx = chart.chart.ctx;
+
+    ctx.restore();
+    var fontSize = (height / 114).toFixed(2);
+    ctx.font = fontSize + "em sans-serif";
+    ctx.textBaseline = "middle";
+
+    var text = chart.config.centerText.text,
+    textX = Math.round((width - ctx.measureText(text).width) / 2),
+    textY = height / 2;
+
+    ctx.fillText(text, textX, textY);
+    ctx.save();
+}
+
+window.onload = function() {
+    var ctx = document.getElementById("chart-area").getContext("2d");
+    window.myDoughnut = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        datasets: [{
+            data: [
+                50, 60, 100, 30, 40
+            ],
+            backgroundColor: [
+            'rgba(54, 162, 235, .4)',
+            'rgba(255, 206, 86, .4)',
+            'rgba(75, 192, 192, .4)',
+            'rgba(153, 102, 255, .4)',
+            'rgba(255, 159, 64, .4)',
+            ],
+        }],
+        labels: [
+            "Red",
+            "Orange",
+            "Yellow",
+            "Green",
+             "Blue"
+        ]
+    },
+    options: {
+        responsive: true,
+        legend: {
+            display: false,
+        }
+    },
+    centerText: {
+        display: true,
+        text: "280"
+    }
+  });
+};
 
 </script>
 

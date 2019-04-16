@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block heading  %}
+<!-- For confirm dialog -->
+<link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
+
+<link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/buttons.dataTables.min.css' %}">
+
+<!-- for more datatables buttons -->
+<link rel="stylesheet" href="{% static 'css/dataTables.bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
+
+<!-- chart.js -->
+<script src="{% static 'js/Chart.min.js' %}"></script>
+<script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script>
+
+
+{% endblock %}
+
+{% block content %}
+  <h2>Reportings</h2>
+  <div class="tabbable">
+      <ul class="nav nav-pills nav-stacked col-md-2">
+         <li class="active"><a href="#election-result" data-toggle="tab">Election Result</a></li>
+         <li ><a href="#votes-distribution" data-toggle="tab">Votes Distribution</a></li>
+         <li ><a href="#participation-report" data-toggle="tab">Participation Report</a></li>
+     </ul>
+     <div class="tab-content col-md-10">
+         <div class="tab-pane active" id="election-result">
+           <h2 class='text-center' style="margin: 0px">Election Result</h2>
+           <!-- filter form -->
+           <form method="post" id="filter-form-result">
+             {% csrf_token %}
+               {{ result_filter_form|crispy }}
+           </form>
+             <canvas id="by-section-graph" style='height:200px; width:300px'>
+             </canvas>
+         </div>
+         <div class="tab-pane fade" id="votes-distribution">
+           <h2 class='text-center' style="margin: 0px">Votes Distribution Report</h2>
+
+           <!-- filter form -->
+           <form method="post" id="filter-form">
+             {% csrf_token %}
+               {{ election_filter_form|crispy }}
+           </form>
+
+           <!-- per position -->
+           <div id="distrbution-by-panel">
+                         <!-- This portion is populated by javascript -->
+           </div>
+
+         </div>
+         <div class="tab-pane fade" id="participation-report">
+           <h2 class='text-center' style="margin: 0px">Participation Report</h2>
+             <canvas id="by-section-graph" style='height:200px; width:300px'>
+             </canvas>
+         </div>
+     </div>
+  </div>
+
+<!-- function related to chart drawing  -->
+<script type="text/javascript">
+
+  function draw_by_vote_distribution_graph(id,graph_title,labels_list,datasets_list){
+    var ctx = $('#'+id);
+    var myChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: labels_list,
+              datasets: datasets_list
+          },
+          options: {
+              title: {
+                  display: true,
+                  text: graph_title,
+                  position: 'top',
+                  fontSize: 20
+              },
+              legend: {
+                display: true,
+                position: 'top'
+              },
+              plugins: {
+              // Change options for ALL labels of THIS CHART
+              datalabels: {
+                  color: '#000000'
+                }
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+          },
+      });
+  }
+
+</script>
+
+<!-- scripts for updating data. ajax requests -->
+<script type="text/javascript">
+
+  function get_election(){
+    return $('#id_election').val();
+  }
+
+  function get_distribution_by(){
+    return $('#id_distribuion').val();
+  }
+
+  function update_distribution_by_data(){
+    console.log(get_election());
+    console.log(get_distribution_by());
+  }
+
+  function call_ajax_distribution(){
+    var form = $('#filter-form');
+    $.ajax({
+        url: "{% url 'reporting:get_votes_distribution_ajax' %}",
+        type: 'get',
+        "processing": true,
+        dataType: 'json',
+        data:form.serialize(),
+        success: function(data){
+                  //insert the needed html
+                  $('#distrbution-by-panel').html(data.html_panel);
+
+                  if ($.isArray(data.distribution_by_data)) { //multiple positions
+
+                      //loop in the distribution_by_data items
+                      $.each(data.distribution_by_data, function(key, value){
+
+                        // draw the chart
+                        draw_by_vote_distribution_graph(
+                                          "by-vote-distribution-" + value.position_as_id,
+                                            value.title_text,
+                                            value.labels,
+                                            value.dataset);
+
+                        //for tabular
+                        var table = $('#tabular-data-'+ value.position_as_id).DataTable({
+                           // "iDisplayLength": 25,
+                           "processing": true,
+                           "dom":  "<'row'<'col-sm-6'l><'col-sm-6'f>><'row'<'col-sm-6'B><'col-sm-6'p>><'row'<'col-sm-12't>><'row'<'col-sm-12'i>>",
+                           "buttons": [
+                                 'copy', 'print', 'excel', 'pdf'
+                                   ],
+                          lengthChange: true,
+                          fixedColumns: false,
+                        });
+                        table.buttons().container().appendTo('#tabular-data-'+ value.position_as_id +'_wrapper .col-md-6:eq(0)' );
+
+                      });
+
+                  }
+                  else{ //single position
+                        // draw the chart
+                        draw_by_vote_distribution_graph(
+                                          "by-vote-distribution-" + data.distribution_by_data.position_as_id,
+                                            data.distribution_by_data.title_text,
+                                            data.distribution_by_data.labels,
+                                            data.distribution_by_data.dataset);
+                  }
+                  },
+    });
+  }
+
+  //get distribution_by data upon load
+  call_ajax_distribution();
+
+  //listener
+  $('#id_distribution').change( function(){
+    call_ajax_distribution();
+  });
+  $('#id_election').change( function(){
+    call_ajax_distribution();
+  });
+
+</script>
+
+<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'js/buttons.print.min.js' %}"></script>
+
+<!-- for other buttons of datatables -->
+<script src="{% static 'js/dataTables.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/buttons.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/jszip.min.js' %}"></script>
+<script src="{% static 'js/pdfmake.min.js' %}"></script>
+<script src="{% static 'js/vfs_fonts.js' %}"></script>
+<script src="{% static 'js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'js/buttons.colVis.min.js' %}"></script>
+
+<!-- For confirm dialog -->
+<script src="{% static 'js/jquery-ui.js' %}"></script>
+
+<script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+
+{% endblock %}
