@@ -1,4 +1,5 @@
-from registration.models import Vote,WinnerCandidate
+from registration.models import Vote
+from reporting.models import WinnerCandidateDenormalized
 from operator import itemgetter
 from reporting.management.helpers.bulk_create_helper import BulkCreateManager
 
@@ -70,9 +71,28 @@ def declare_winners(election):
 
         #8 Push to the database using bulk_manager
         for winner in winner_list:
-            winner_candidate_bulk_mgr.add(WinnerCandidate(
-                        election = election,
-                        candidate = winner['candidate'],
+            winner_candidate_bulk_mgr.add(WinnerCandidateDenormalized(
+                        candidate_name = winner['candidate'].student.__str__(),
+                        candidate_sex = winner['candidate'].student.sex.__str__(),
+                        candidate_age = winner['candidate'].student.age,
+                        candidate_mother_tongue = winner['candidate'].student.mother_tongue.mother_tongue,
+                        candidate_ethnic_group = winner['candidate'].student.ethnic_group.ethnic_group,
+                        candidate_religion = winner['candidate'].student.religion.religion,
+                        candidate_address_barangay = winner['candidate'].student.address_barangay.address_barangay,
+                        candidate_address_municipality = winner['candidate'].student.address_municipality.address_municipality,
+                        candidate_address_province = winner['candidate'].student.address_province.address_province,
+                        candidate_class_grade_level = winner['candidate'].candidate_class.grade_level,
+                        candidate_class_section = winner['candidate'].candidate_class.section,
+                        candidate_party = winner['candidate'].party.name,
+                        candidate_position = winner['candidate'].position.title,
+                        candidate_position_number_of_slots = winner['candidate'].position.number_of_slots,
+                        candidate_position_priority = winner['candidate'].position.priority,
+                        number_of_votes = winner['vote_count'],
+                        election_id = election.id,
+                        election_name = election.name,
+                        election_school_year = election.school_year,
+                        election_day_from = election.election_day_from,
+                        election_day_to = election.election_day_to,
                         tie = winner['tie_flag']
                     )
             )

@@ -30,28 +30,70 @@
      </ul>
      <div class="tab-content col-md-10">
          <div class="tab-pane active" id="election-result">
-           <h2 class='text-center' style="margin: 0px">Election Result</h2>
-           <!-- filter form -->
-           <form method="post" id="filter-form-result">
-             {% csrf_token %}
-               {{ result_filter_form|crispy }}
-           </form>
-             <canvas id="by-section-graph" style='height:200px; width:300px'>
-             </canvas>
+             <h2 class='text-center' style="margin: 0px">Election Result</h2>
+             <!-- filter form -->
+             <form method="post" id="filter-form-result" data-url="{% url 'reporting:populate_result_graphs_ajax' %}">
+               {% csrf_token %}
+                 {{ result_filter_form|crispy }}
+             </form>
+
+             <!-- Panel for Final Result -->
+             <div class="panel panel-info">
+                 <div class="panel-heading">
+                    <a data-toggle="collapse" href="#collapse-election-winners"><h2>Winners</h2></a>
+                 </div>
+                 <div id="collapse-election-winners" class="panel-collapse collapse in">
+                     <div class="panel-body">
+                       <p>
+                        <button type="button" class="btn btn-primary js-override-tie"
+                         data-url="#">
+                          <span class="glyphicon glyphicon-edit"></span>
+                          Override Tie
+                        </button>
+                       </p>
+                       <div class="table-responsive">
+                         <table id="election-winner-table" class="table table-bordered display">
+                           <thead>
+                             <tr>
+                               <th>Position</th>
+                               <th>Canidate</th>
+                               <th>Party</th>
+                               <th># of Votes</th>
+                             </tr>
+                           </thead>
+                           <tfoot>
+                             <tr>
+                               <th>Position</th>
+                               <th>Canidate</th>
+                               <th>Party</th>
+                               <th># of Votes</th>
+                             </tr>
+                           </tfoot>
+                         </table>
+                       </div>
+                     </div>
+                 </div>
+             </div>
+
+             <!-- panel for election Result pill for every position-->
+             <div id="election-result-panel">
+                           <!-- This portion is populated by javascript -->
+             </div>
          </div>
+
          <div class="tab-pane fade" id="votes-distribution">
-           <h2 class='text-center' style="margin: 0px">Votes Distribution Report</h2>
+             <h2 class='text-center' style="margin: 0px">Votes Distribution Report</h2>
 
-           <!-- filter form -->
-           <form method="post" id="filter-form">
-             {% csrf_token %}
-               {{ election_filter_form|crispy }}
-           </form>
+             <!-- filter form -->
+             <form method="post" id="filter-form" data-url="{% url 'reporting:get_votes_distribution_ajax' %}">
+               {% csrf_token %}
+                 {{ election_filter_form|crispy }}
+             </form>
 
-           <!-- per position -->
-           <div id="distrbution-by-panel">
-                         <!-- This portion is populated by javascript -->
-           </div>
+             <!-- panel for Votes distribution pill -->
+             <div id="distrbution-by-panel">
+                           <!-- This portion is populated by javascript -->
+             </div>
 
          </div>
          <div class="tab-pane fade" id="participation-report">
@@ -65,10 +107,11 @@
 <!-- function related to chart drawing  -->
 <script type="text/javascript">
 
-  function draw_by_vote_distribution_graph(id,graph_title,labels_list,datasets_list){
+  function draw_graph(id,graph_title,labels_list,datasets_list,chart_type){
+
     var ctx = $('#'+id);
     var myChart = new Chart(ctx, {
-          type: 'bar',
+          type: chart_type,
           data: {
               labels: labels_list,
               datasets: datasets_list
@@ -95,6 +138,11 @@
                     ticks: {
                         beginAtZero: true
                     }
+                }],
+                xAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
                 }]
             }
           },
@@ -114,38 +162,66 @@
     return $('#id_distribuion').val();
   }
 
-  function update_distribution_by_data(){
-    console.log(get_election());
-    console.log(get_distribution_by());
+  function populate_winner_table(){
+    var form = $('#filter-form-result');
+    var table = $('#election-winner-table').DataTable({
+      "bFilter" : false,
+      "bLengthChange": false,
+      "bPaginate": false,
+       "processing": true,
+       "ajax": {
+           "processing": true,
+           "url": "{% url 'reporting:populate_winner_table_ajax' %}",
+           "data": function(data){
+              data.election = form.find('#id_election').val();
+           },
+           "dataSrc": ""
+       },
+       'columns': [
+         {"data": "fields.candidate_position"},
+         {"data": "fields.candidate_name"},
+          {"data": "fields.candidate_party"},
+         {"data": "fields.number_of_votes"},
+       ],
+       "dom":  "<'row'<'col-sm-6'l><'col-sm-6'f>><'row'<'col-sm-6'B><'col-sm-6'p>><'row'<'col-sm-12't>><'row'<'col-sm-12'i>>",
+       "buttons": [
+             'copy', 'print', 'excel', 'pdf'
+               ],
+      lengthChange: true,
+      fixedColumns: false,
+      "order": [],
+    });
+    table.buttons().container().appendTo('#election-winner-table_wrapper .col-md-6:eq(0)' );
+
   }
 
-  function call_ajax_distribution(){
-    var form = $('#filter-form');
+  function draw_graphs_ajax(filter_form_id, panel_id,chart_type){
+    var form = $('#' + filter_form_id);
     $.ajax({
-        url: "{% url 'reporting:get_votes_distribution_ajax' %}",
+        url: form.attr("data-url"),
         type: 'get',
         "processing": true,
         dataType: 'json',
         data:form.serialize(),
         success: function(data){
                   //insert the needed html
-                  $('#distrbution-by-panel').html(data.html_panel);
+                  $('#' + panel_id).html(data.html_panel);
 
-                  if ($.isArray(data.distribution_by_data)) { //multiple positions
+                  if ($.isArray(data.result_data)) { //multiple positions
 
                       //loop in the distribution_by_data items
-                      $.each(data.distribution_by_data, function(key, value){
+                      $.each(data.result_data, function(key, value){
 
                         // draw the chart
-                        draw_by_vote_distribution_graph(
-                                          "by-vote-distribution-" + value.position_as_id,
+                        draw_graph(
+                                          data.nav_pill +"-" + value.object_id,
                                             value.title_text,
                                             value.labels,
-                                            value.dataset);
+                                            value.dataset,chart_type);
 
                         //for tabular
-                        var table = $('#tabular-data-'+ value.position_as_id).DataTable({
-                           // "iDisplayLength": 25,
+                        var table = $('#' + data.nav_pill + '-tabular-data-'+ value.object_id).DataTable({
+                           "iDisplayLength": 25,
                            "processing": true,
                            "dom":  "<'row'<'col-sm-6'l><'col-sm-6'f>><'row'<'col-sm-6'B><'col-sm-6'p>><'row'<'col-sm-12't>><'row'<'col-sm-12'i>>",
                            "buttons": [
@@ -154,32 +230,57 @@
                           lengthChange: true,
                           fixedColumns: false,
                         });
-                        table.buttons().container().appendTo('#tabular-data-'+ value.position_as_id +'_wrapper .col-md-6:eq(0)' );
+                        table.buttons().container().appendTo('#' + data.nav_pill + '-tabular-data-' + value.object_id +'_wrapper .col-md-6:eq(0)' );
 
                       });
 
                   }
                   else{ //single position
                         // draw the chart
-                        draw_by_vote_distribution_graph(
-                                          "by-vote-distribution-" + data.distribution_by_data.position_as_id,
-                                            data.distribution_by_data.title_text,
-                                            data.distribution_by_data.labels,
-                                            data.distribution_by_data.dataset);
+                        draw_graph(
+                                          data.nav_pill + "-"  + data.result_data.object_id,
+                                            data.result_data.title_text,
+                                            data.result_data.labels,
+                                            data.result_data.dataset,chart_type);
+
+                        //for tabular
+                        var table = $('#' + data.nav_pill + '-tabular-data-'+ data.result_data.object_id).DataTable({
+                           "iDisplayLength": 25,
+                           "processing": true,
+                           "dom":  "<'row'<'col-sm-6'l><'col-sm-6'f>><'row'<'col-sm-6'B><'col-sm-6'p>><'row'<'col-sm-12't>><'row'<'col-sm-12'i>>",
+                           "buttons": [
+                                 'copy', 'print', 'excel', 'pdf'
+                                   ],
+                          lengthChange: true,
+                          fixedColumns: false,
+                        });
+                        table.buttons().container().appendTo('#' + data.nav_pill + '-tabular-data-'+ data.result_data.object_id +'_wrapper .col-md-6:eq(0)' );
+
+
                   }
                   },
     });
   }
 
-  //get distribution_by data upon load
-  call_ajax_distribution();
+  $(document).ready( function () { //use this so buttons in tabular will apear upon load
+    //get distribution_by data upon load
+    draw_graphs_ajax('filter-form','distrbution-by-panel','bar');
+    draw_graphs_ajax('filter-form-result','election-result-panel','horizontalBar');
+    populate_winner_table();
+    });
+
 
   //listener
-  $('#id_distribution').change( function(){
-    call_ajax_distribution();
+  $('#filter-form #id_distribution').change( function(){
+    draw_graphs_ajax('filter-form','distrbution-by-panel','bar');
   });
-  $('#id_election').change( function(){
-    call_ajax_distribution();
+  $('#filter-form #id_election').change( function(){
+    draw_graphs_ajax('filter-form','distrbution-by-panel','bar');
+  });
+
+  $('#filter-form-result #id_election').change( function(){
+    $('#election-winner-table').DataTable().ajax.reload();
+    draw_graphs_ajax('filter-form-result','election-result-panel','horizontalBar');
   });
 
 </script>

@@ -6,8 +6,9 @@ ELECTION_CHOICES = tuple(
     [ (election.id, election.__str__()) for election in Election.objects.filter(
                         status='COMPLETED'
                         )
-
     ]
+    # [ (election.id, election.__str__()) for election in Election.objects.all()
+    # ]
 )
 
 class ElectionFilterForm(forms.Form):

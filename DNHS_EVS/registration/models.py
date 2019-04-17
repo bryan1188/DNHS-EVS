@@ -820,26 +820,34 @@ class VoteArchived(BaseModel):
         except:
             return False
 
-class WinnerCandidate(BaseModel):
-    election = models.ForeignKey(
-            Election,
-            on_delete = models.SET_NULL,
-            blank = False,
-            null = True,
-            verbose_name = 'Election',
-            related_name = 'winner_candidates'
-    )
-    candidate = models.ForeignKey(
-            Candidate,
-            on_delete = models.SET_NULL,
-            blank = False,
-            null = True,
-            verbose_name = 'Candidate',
-            related_name = 'winner_candidates'
-    )
-    tie = models.BooleanField(
-            default=False,
-            verbose_name="Is Tie?"
-    )
+# class WinnerCandidate(BaseModel):
+#   denormalized this model. refer to reporting.models.WinnerCandidateDenormalized
+#     election = models.ForeignKey(
+#             Election,
+#             on_delete = models.SET_NULL,
+#             blank = False,
+#             null = True,
+#             verbose_name = 'Election',
+#             related_name = 'winner_candidates'
+#     )
+#     candidate = models.ForeignKey(
+#             Candidate,
+#             on_delete = models.SET_NULL,
+#             blank = False,
+#             null = True,
+#             verbose_name = 'Candidate',
+#             related_name = 'winner_candidates'
+#     )
+#     tie = models.BooleanField(
+#             default=False,
+#             verbose_name="Is Tie?"
+#     )
+    # number_of_votes =  models.PositiveIntegerField(
+    #         null=False,
+    #         blank=False,
+    #         default=0,
+    #
+    # )
+    # candidate_position_priority
 
 #end of related to voting ########################
