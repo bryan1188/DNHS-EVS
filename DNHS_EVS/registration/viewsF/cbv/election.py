@@ -272,12 +272,16 @@ def populate_voters_token_table_ajax(request, election_id):
 def complete_election_ajax(request, election_id):
     '''
         Steps:
-            1. declare winner
-            2. call denormalizer
+            1. populate reporting participation rate
+            2. declare winner
+            3. call denormalizer
     '''
     election = Election.objects.get(id = election_id)
-    declare_winners(election)
-    denormalized_election_status = denormalized_election(election)
+    if election.status == 'FINALIZED':
+        election.populate_reporting_participation_rate()
+        declare_winners(election)
+        # election is set as FINALIZED in this call
+        denormalized_election_status = denormalized_election(election)
     data = dict()
 
     return JsonResponse(data)

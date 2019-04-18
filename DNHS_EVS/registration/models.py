@@ -5,7 +5,9 @@ from registration.models_base import BaseModel
 from election.models import Ballot
 from election.management.helpers.hasher_helpers import MyHasher
 from registration.management.helpers.token_generator import id_generator
-# from reporting.management.helpers.denormalizer import denomarlized_election
+from reporting.management.helpers.bulk_create_helper import BulkCreateManager
+from registration.management.helpers.list_helpers import NoDupList
+from reporting.models import ParticipationRate
 import datetime
 from django.conf import settings
 import uuid
@@ -462,25 +464,100 @@ class Election(BaseModel):
     def natural_key(self):
         return self.__str__()
 
-    # do it in view. facing issue in importing classes. It got circular reference
-    # def denormalized(self):
-    #     '''
-    #         Denormalized all votes for analysis.
-    #         Denormalized table is optimized for select queries which is heavily
-    #             used in reporting
-    #         DenomarmalizedVotes model will be populated based on this election
-    #         Returns True if success, False if something wrong
-    #     '''
-    #     return denomarlized_election(self)
-    #
-    # def complete_election(self):
-    #     '''
-    #         This will complete the election instance.
-    #         Complete means winner should be declared and no votes will be accepted.
-    #         Change the status to COMPLETED.
-    #         Archive all votes of the electin instance
-    #     '''
-    #     pass
+    def populate_reporting_participation_rate(self):
+        '''
+            Steps:
+                1. check if election is FINALIZED
+                2. get overall participation rate
+                3. get by grade_level participation rate
+                4. get by section participation rate
+        '''
+        if self.status == 'FINALIZED': # step 1
+
+            # step 2
+            total_voters =self.voters.count()
+            total_casted_votes = self.voters.filter(is_vote_casted=True).count()
+            percentage = 0
+            if total_voters:
+                percentage = total_casted_votes/total_voters
+            overall_participation_rate = ParticipationRate(
+                    election_id = self.id,
+                    election_name = self.name,
+                    election_school_year = self.school_year,
+                    election_day_from = self.election_day_from,
+                    election_day_to = self.election_day_to,
+                    group = 'OVERALL',
+                    group_value = '{}({})'.format(self.name,self.school_year),
+                    total_voters = total_voters,
+                    total_casted_votes = total_casted_votes,
+                    percentage = percentage,
+            )
+            overall_participation_rate.save()
+
+            # step 3
+
+            #get all grade_levels, and sections for this election
+            #sections is included to minimized duplication of iteration
+            grade_levels = NoDupList()
+            sections = NoDupList()
+            for voter in self.voters.all():
+                grade_levels.append(voter.student_class.grade_level)
+                sections.append(voter.student_class.section)
+
+            for grade_level in grade_levels.list_data:
+                total_voters = self.voters.filter(
+                            student_class__grade_level=grade_level
+                        ).count()
+                total_casted_votes = self.voters.filter(
+                            is_vote_casted=True,
+                            student_class__grade_level=grade_level
+                        ).count()
+                percentage = 0
+                if total_voters:
+                    percentage = total_casted_votes/total_voters
+                grade_level_participation_rate = ParticipationRate(
+                    election_id = self.id,
+                    election_name = self.name,
+                    election_school_year = self.school_year,
+                    election_day_from = self.election_day_from,
+                    election_day_to = self.election_day_to,
+                    group = 'GRADE_LEVEL',
+                    group_value = grade_level,
+                    total_voters = total_voters,
+                    total_casted_votes = total_casted_votes,
+                    percentage = percentage
+                )
+                grade_level_participation_rate.save()
+
+            #step 4
+            for section in sections.list_data:
+                total_voters = self.voters.filter(
+                            student_class__section=section
+                        ).count()
+                total_casted_votes = self.voters.filter(
+                            is_vote_casted=True,
+                            student_class__section=section
+                        ).count()
+                percentage = 0
+                if total_voters:
+                    percentage = total_casted_votes/total_voters
+                section_participation_rate = ParticipationRate(
+                    election_id = self.id,
+                    election_name = self.name,
+                    election_school_year = self.school_year,
+                    election_day_from = self.election_day_from,
+                    election_day_to = self.election_day_to,
+                    group = 'SECTION',
+                    group_value = section,
+                    total_voters = total_voters,
+                    total_casted_votes = total_casted_votes,
+                    percentage = percentage
+                )
+                section_participation_rate.save()
+
+            return True
+        else:
+            return False
 
 class Party(BaseModel):
     name = models.CharField(
@@ -819,35 +896,5 @@ class VoteArchived(BaseModel):
                             + settings.HASHING_SECRET_KEY)
         except:
             return False
-
-# class WinnerCandidate(BaseModel):
-#   denormalized this model. refer to reporting.models.WinnerCandidateDenormalized
-#     election = models.ForeignKey(
-#             Election,
-#             on_delete = models.SET_NULL,
-#             blank = False,
-#             null = True,
-#             verbose_name = 'Election',
-#             related_name = 'winner_candidates'
-#     )
-#     candidate = models.ForeignKey(
-#             Candidate,
-#             on_delete = models.SET_NULL,
-#             blank = False,
-#             null = True,
-#             verbose_name = 'Candidate',
-#             related_name = 'winner_candidates'
-#     )
-#     tie = models.BooleanField(
-#             default=False,
-#             verbose_name="Is Tie?"
-#     )
-    # number_of_votes =  models.PositiveIntegerField(
-    #         null=False,
-    #         blank=False,
-    #         default=0,
-    #
-    # )
-    # candidate_position_priority
 
 #end of related to voting ########################

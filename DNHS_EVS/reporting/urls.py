@@ -21,4 +21,12 @@ urlpatterns = [
         reporting.populate_result_graphs_ajax,
         name='populate_result_graphs_ajax'
     ),
+    path('ajax/populate_participation_report_graphs_overall/',
+        reporting.populate_participation_report_graphs_overall_ajax,
+        name='populate_participation_report_graphs_overall_ajax'
+    ),
+    path('ajax/populate_participation_report_graphs/',
+        reporting.populate_participation_report_graphs_ajax,
+        name='populate_participation_report_graphs_ajax'
+    ),
 ]

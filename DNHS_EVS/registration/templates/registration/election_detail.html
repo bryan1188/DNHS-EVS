@@ -420,15 +420,15 @@
 <!-- chartjs plugins to show text in middle -->
 <!-- http://www.authorcode.com/how-to-add-text-inside-the-doughnut-chart-using-chart-js/ -->
 <script>
-  Chart.Chart.pluginService.register({
-    beforeDraw: function(chart) {
-        if (chart.config.centerText.display !== null &&
-            typeof chart.config.centerText.display !== 'undefined' &&
-            chart.config.centerText.display) {
-            drawTotals(chart);
-        }
-    },
-  });
+  // Chart.Chart.pluginService.register({
+  //   beforeDraw: function(chart) {
+  //       if (chart.config.centerText.display !== null &&
+  //           typeof chart.config.centerText.display !== 'undefined' &&
+  //           chart.config.centerText.display) {
+  //           drawTotals(chart);
+  //       }
+  //   },
+  // });
 
   function drawTotals(chart) {
 
@@ -514,6 +514,15 @@
   function draw_grade_level_graph(){
     var ctx = $('#overall-graph-grade-level');
     var myChart = new Chart(ctx, {
+          plugins: [{
+              beforeDraw: function(chart, options) {
+                if (chart.config.centerText.display !== null &&
+                    typeof chart.config.centerText.display !== 'undefined' &&
+                    chart.config.centerText.display) {
+                    drawTotals(chart);
+                }
+              }
+          }],
           type: 'doughnut',
           data: {
               labels: grade_level_label,
@@ -535,12 +544,13 @@
                 display: true,
                 position: 'bottom'
               },
-              plugins: {
+              plugins: [{
               // Change options for ALL labels of THIS CHART
               datalabels: {
                   color: '#000000'
                 }
-            }
+              },
+            ]
           },
           centerText: {
               display: true,
@@ -552,15 +562,15 @@
   function draw_gender_graph(){
     var ctx = $('#overall-graph-gender');
     var myChart = new Chart(ctx, {
-          // plugins: [{
-          //     beforeDraw: function(chart, options) {
-          //       if (chart.config.centerText.display !== null &&
-          //           typeof chart.config.centerText.display !== 'undefined' &&
-          //           chart.config.centerText.display) {
-          //           drawTotals(chart);
-          //       }
-          //     }
-          // }],
+          plugins: [{
+              beforeDraw: function(chart, options) {
+                if (chart.config.centerText.display !== null &&
+                    typeof chart.config.centerText.display !== 'undefined' &&
+                    chart.config.centerText.display) {
+                    drawTotals(chart);
+                }
+              }
+          }],
           type: 'doughnut',
           data: {
               labels: gender_label,

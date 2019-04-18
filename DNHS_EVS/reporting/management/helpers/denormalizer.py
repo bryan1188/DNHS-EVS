@@ -1,5 +1,5 @@
 from reporting.management.helpers.bulk_create_helper import BulkCreateManager
-from reporting.models import DenormalizedVotes
+from reporting.models import DenormalizedVotes,ParticipationRate
 from  registration.models import VoteArchived,Vote
 from registration.management.helpers.db_object_helpers import truncate_table
 
@@ -39,7 +39,6 @@ def denormalized_election(election):
     voters = election.voters.all()
     bulk_mgr = BulkCreateManager(chunk_size=200) #commit every 200 records
     bulk_mgr_vote_archive = BulkCreateManager(chunk_size=200)
-
     vote_counter = 0
     for voter in voters:
         # in every voter, get the votes by accessing the voter's ballot

@@ -1,0 +1,29 @@
+select 'TRUNCATE ' || table_schema || '.'|| table_name ||' RESTART IDENTITY CASCADE;' from information_schema.tables
+where table_schema='django'
+	and table_name like 'registration%';
+	
+
+TRUNCATE django.registration_election RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_position RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_voter RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_voter_candidates RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_candidate RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_election_positions RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_electionofficer RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_party RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_positiongradelevel RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_student RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_student_classes RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_userprofile RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_school RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_class RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_addressbarangay RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_addressmunicipality RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_addressprovince RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_ethnicgroup RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_mothertongue RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_religion RESTART IDENTITY CASCADE;
+TRUNCATE django.registration_sex RESTART IDENTITY CASCADE;
+
+TRUNCATE django.auth_user_groups CASCADE;
+delete from django.auth_user where username != 'admin';

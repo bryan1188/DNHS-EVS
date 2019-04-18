@@ -1,6 +1,6 @@
 from django.db import models
 from registration.models_base import BaseModel
-from registration.models import Election
+# from registration.models import Election
 from django.db.models import Count
 import uuid
 # Create your models here.
@@ -32,7 +32,7 @@ class DenormalizedVotesManager(models.Manager):
                 ).order_by('candidate_position_priority','candidate_name',distribution_by)
 
     def get_votes_per_candidate(self, election_id):
-        return  super().get_queryset().filter(election_id=1).values(
+        return  super().get_queryset().filter(election_id=election_id).values(
                         'candidate_position',
                         'candidate_name',
                         'candidate_position_priority').annotate(
@@ -353,3 +353,72 @@ class WinnerCandidateDenormalized(BaseModel):
 
     def __str__(self):
         return "{} ({})".format(self.candidate_name, self.candidate_position)
+
+class ParticipationRate(BaseModel):
+    GROUP_CHOICES = (
+        ('OVERALL', 'OVERALL'),
+        ('GRADE_LEVEL','GRADE_LEVEL'),
+        ('SECTION','SECTION'),
+    )
+    election_id = models.PositiveIntegerField(
+            null=False,
+            blank=False,
+            db_index=True
+    )
+    election_name = models.CharField(
+            max_length=255,
+            blank=False,
+            null=False,
+            db_index=True
+    )
+    election_school_year = models.CharField(
+            max_length=20,
+            null=False,
+            blank=False,
+            verbose_name="School Year",
+            db_index=True
+    )
+    election_day_from = models.DateField(
+            null=False,
+            blank=False,
+            verbose_name="Election Start Date",
+            db_index=True
+    )
+    election_day_to = models.DateField(
+            null=False,
+            blank=False,
+            verbose_name="Election End Date",
+            db_index=True
+    )
+    group = models.CharField(
+            max_length = 20,
+            choices = GROUP_CHOICES,
+    )
+    group_value = models.CharField(
+            max_length=255,
+            blank=False,
+            null=False,
+            db_index=True
+    )
+    total_voters = models.PositiveIntegerField(
+            null=False,
+            blank=False,
+            db_index=True
+    )
+    total_casted_votes = models.PositiveIntegerField(
+            null=False,
+            blank=False,
+            db_index=True
+    )
+    percentage = models.FloatField()
+
+    class Meta:
+        ordering = ('-election_day_to','group_value')
+
+    @property
+    def percentage_format(self):
+        return round(self.percentage * 100, 2)
+
+    @property
+    def total_not_voted(self):
+        return self.total_voters - self.total_casted_votes

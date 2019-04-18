@@ -3,8 +3,10 @@ from django.contrib.auth.decorators import permission_required
 from django.views.generic import TemplateView
 from reporting.forms import ElectionFilterForm
 from reporting import forms
-from registration.models import Election
-from reporting.models import DenormalizedVotes,WinnerCandidateDenormalized
+from registration.models import Election,Voter
+from reporting.models import (DenormalizedVotes,WinnerCandidateDenormalized,
+                                ParticipationRate
+                             )
 from django.core import serializers
 from django.http import HttpResponse,JsonResponse
 from reporting.management.helpers.color_picker import ColorPicker
@@ -20,8 +22,9 @@ class Reporting(PermissionRequiredMixin,TemplateView):
         context = super().get_context_data(**kwargs)
         context['election_filter_form'] = ElectionFilterForm()
         context['result_filter_form'] = forms.ElectionResultFilterForm()
-        context['default_election'] = Election.objects.filter(status='COMPLETED').first()
-        context['default_distribution'] ="section"
+        # context['default_election'] = Election.objects.filter(status='COMPLETED').first()
+        # context['default_distribution'] ="section"
+        context['participation_rate_filter'] = forms.ElectionResultFilterForm()
         return context
 
 @permission_required(_permission_required, raise_exception=True)
@@ -182,6 +185,8 @@ def populate_result_graphs_ajax(request):
     nav_pill = 'election-result'
 
     if election_id:
+        color_picker = ColorPicker()
+        color_picker.opacity = 1
         election = Election.objects.get(id=election_id)
         positions = election.positions.all()
         #get group_by data
@@ -193,8 +198,7 @@ def populate_result_graphs_ajax(request):
             #build dictionary of graphs for all positions
             #same format used in get_votes_distribution_ajax
             position_result = dict()
-            color_picker = ColorPicker()
-            color_picker.opacity = 1
+            position_graph_background_color = color_picker.get_random_color()
             '''
                 Dictionary Format:
                 {
@@ -228,7 +232,7 @@ def populate_result_graphs_ajax(request):
                         )
             ]
             dataset['backgroundColor'] = [
-                    color_picker.get_random_color() \
+                    position_graph_background_color \
                     for x in range(len(position_result['labels']))
             ]
             dataset['borderWidth'] = 1
@@ -249,7 +253,7 @@ def populate_result_graphs_ajax(request):
                 for candidate in diff_candidates:
                     position_result['labels'].append(candidate)
                     dataset['data'].append(0)
-                    dataset['backgroundColor'].append(color_picker.get_random_color())
+                    dataset['backgroundColor'].append(position_graph_background_color)
 
             dataset_list.append(dataset)
             position_result['dataset'] = dataset_list
@@ -277,6 +281,245 @@ def populate_result_graphs_ajax(request):
                     context,
                     request=request
             )
+
+    return JsonResponse({
+                'result_data': result_data,
+                'html_panel': html_panel,
+                'nav_pill': nav_pill
+                }
+    )
+
+@permission_required(_permission_required, raise_exception=True)
+def populate_participation_report_graphs_overall_ajax(request):
+    '''
+    '''
+    election_id = request.GET.get('election')
+    result_data = list()
+    # make the the html for the panels needed
+    html_panel = ""
+    nav_pill = 'participation-rate'
+
+    if election_id:
+        election = Election.objects.get(id=election_id)
+        # create dictionary needed for overall data
+        '''
+            Dictionary Format:
+            {
+                title_text: <Title of the chart. used in options.title.text>,
+                text_center: <percentage>
+                labels: ['voted', 'not voted'],
+                dataset:
+                    {
+                        label: 'Participation Rate',
+                        data: [<#of voted>,<# not voted>],
+                        backgroundColor: [gree,red],
+                        borderWidth: 1
+                    }
+            }
+        '''
+        participation_report_overall_dict = dict()
+        participation_report_overall_dict['title_text'] = 'Overall Participation Rate'
+        participation_report_overall_dict['labels'] = ['Voted', 'Not Voted']
+        dataset_list = list()
+        dataset_dict = dict()
+        dataset_dict['label'] = 'Participation Rate'
+        overall_query_set = ParticipationRate.objects.filter(
+                                    election_id=election_id,
+                                    group='OVERALL'
+                                ).first()
+        dataset_dict['data'] = [
+                        overall_query_set.total_casted_votes,
+                        overall_query_set.total_not_voted
+        ]
+        dataset_dict['backgroundColor'] = [
+                        "rgba(103, 201, 64, 1)",
+                        "rgba(252, 68, 86, 1)"
+        ]
+        dataset_dict['borderWidth'] = 1
+        if overall_query_set.total_voters:
+            participation_report_overall_dict['center_text'] =  '{}%'.format(
+                        round(overall_query_set.total_casted_votes/overall_query_set.total_voters * 100 , 2)
+                    )
+        else:
+            participation_report_overall_dict['center_text'] =  '0%'
+        dataset_list.append(dataset_dict)
+        participation_report_overall_dict['dataset'] = dataset_list
+        participation_report_overall_dict['object_id'] = 'overall'
+        result_data.append(participation_report_overall_dict)
+        context = dict()
+        #identifies if the panel to be made is for primary.
+        #difference is on the padding,margin, etc. style
+        context['primary_panel_flag'] = True
+        context['object_id'] = 'overall'
+        context['nav_pill'] = nav_pill
+        context['panel_title'] = 'Overall'
+        voters_query_set = Voter.objects.filter(
+                                election=election
+                            ).prefetch_related('student_class')
+        voters_tuple = [ (
+                            voter.student_class.grade_level,
+                            voter.student_class.section,
+                            str(voter),
+                            'Yes' if voter.is_vote_casted else 'No'
+                         ) \
+                            for voter in voters_query_set
+                       ]
+        context['tabular_query_set'] = voters_tuple
+
+        html_panel += render_to_string(
+                'reporting/partial_panel_pane_participation.html',
+                context,
+                request=request
+        )
+    return JsonResponse({
+                'result_data': result_data,
+                'html_panel': html_panel,
+                'nav_pill': nav_pill
+                }
+    )
+
+@permission_required(_permission_required, raise_exception=True)
+def populate_participation_report_graphs_ajax(request):
+    '''
+    '''
+    election_id = request.GET.get('election')
+    # election_id = 1
+    print(election_id)
+    result_data = list()
+    # make the the html for the panels needed
+    html_panel = ""
+    nav_pill = 'participation-rate'
+
+    if election_id:
+        election = Election.objects.get(id=election_id)
+        # create dictionary needed for grade_level report
+        '''
+            Dictionary Format:
+            {
+                title_text: <Title of the chart. used in options.title.text>,
+                labels: [list of candidates],
+                object_id: <object_identifier>
+                dataset:
+                    {
+                        data: [participation_rate per grade_level],
+                        backgroundColor: [get from CollorPicker()],
+                        borderWidth: 1
+                    }
+            }
+        '''
+        grade_level_graph_dict = dict()
+        grade_level_color_picker = ColorPicker()
+        grade_level_graph_dict['title_text'] = "Participation Rate per Grade Level"
+        grade_level_query_set = ParticipationRate.objects.filter(
+                election_id=election_id,
+                group='GRADE_LEVEL'
+                )
+        grade_level_graph_dict['labels'] =list(
+                    grade_level_query_set.values_list('group_value', flat=True)
+        )
+        grade_level_graph_dict['object_id'] = 'grade_level'
+        dataset_list = list()
+        dataset_dict = dict()
+        dataset_dict['data'] = [
+                round(row * 100, 2) for row in \
+                        grade_level_query_set.values_list('percentage', flat=True)
+        ]
+        dataset_dict['backgroundColor'] = [
+                grade_level_color_picker.get_random_color() \
+                for x in range(len(dataset_dict['data']))
+        ]
+        dataset_dict['borderWidth'] = 1
+        dataset_list.append(dataset_dict)
+        grade_level_graph_dict['dataset'] = dataset_list
+        result_data.append(grade_level_graph_dict)
+
+        # create html for the panel to be inserted in the template
+        context = dict()
+        #identifies if the panel to be made is for primary.
+        #difference is on the padding,margin, etc. style
+        context['primary_panel_flag'] = False
+        context['object_id'] = grade_level_graph_dict['object_id']
+        context['nav_pill'] = nav_pill
+        context['panel_title'] = "By Grade Level"
+        context['tabular_1_col_name'] = "Grade Level"
+        context['tabular_query_set'] = [(
+                    row.group_value,
+                    row.total_voters,
+                    row.total_casted_votes,
+                    round(row.percentage * 100 , 2)
+                ) \
+                for row in grade_level_query_set
+        ]
+        html_panel += render_to_string(
+                'reporting/partial_panel_pane_participation.html',
+                context,
+                request=request
+        )
+
+        # create dictionary needed for section level report
+        '''
+            Dictionary Format:
+            {
+                title_text: <Title of the chart. used in options.title.text>,
+                labels: [list of candidates],
+                object_id: <object_identifier>
+                dataset:
+                    {
+                        data: [participation_rate per section],
+                        backgroundColor: [get from CollorPicker()],
+                        borderWidth: 1
+                    }
+            }
+        '''
+        section_graph_dict = dict()
+        section_color_picker = ColorPicker()
+        section_graph_dict['title_text'] = "Participation Rate per Section"
+        section_query_set = ParticipationRate.objects.filter(
+                election_id=election_id,
+                group='SECTION'
+                )
+        section_graph_dict['labels'] =list(
+                    section_query_set.values_list('group_value', flat=True)
+        )
+        section_graph_dict['object_id'] = 'section'
+        dataset_list = list()
+        dataset_dict = dict()
+        dataset_dict['data'] = [
+                round(row * 100, 2) for row in \
+                        section_query_set.values_list('percentage', flat=True)
+        ]
+        dataset_dict['backgroundColor'] = [
+                section_color_picker.get_random_color() \
+                for x in range(len(dataset_dict['data']))
+        ]
+        dataset_dict['borderWidth'] = 1
+        dataset_list.append(dataset_dict)
+        section_graph_dict['dataset'] = dataset_list
+        result_data.append(section_graph_dict)
+
+        # create html for the panel to be inserted in the template
+        context = dict()
+        #identifies if the panel to be made is for primary.
+        #difference is on the padding,margin, etc. style
+        context['primary_panel_flag'] = False
+        context['object_id'] = section_graph_dict['object_id']
+        context['nav_pill'] = nav_pill
+        context['panel_title'] = "By Section"
+        context['tabular_1_col_name'] = "Section"
+        context['tabular_query_set'] = [(
+                    row.group_value,
+                    row.total_voters,
+                    row.total_casted_votes,
+                    round(row.percentage * 100 , 2)
+                ) \
+                for row in section_query_set
+        ]
+        html_panel += render_to_string(
+                'reporting/partial_panel_pane_participation.html',
+                context,
+                request=request
+        )
+
 
     return JsonResponse({
                 'result_data': result_data,

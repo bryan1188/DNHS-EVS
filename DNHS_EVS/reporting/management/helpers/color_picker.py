@@ -1,7 +1,7 @@
 import random
 
 class ColorPicker():
-    opacity = 1
+    # opacity = 1
     COLOR_LIST = [
             'rgba(255, 99, 132, {})',
             'rgba(54, 162, 235, {})',
@@ -12,7 +12,10 @@ class ColorPicker():
             'rgba(104, 204, 81, {})',
             'rgba(239, 38, 108, {})',
     ]
-    color_list = list(COLOR_LIST) #new list instance
+
+    def __init__(self):
+        self.opacity = 1
+        self.color_list = list(self.COLOR_LIST) #new list instance
 
     def get_random_color(self):
         '''
