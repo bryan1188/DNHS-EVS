@@ -409,6 +409,7 @@ def populate_participation_report_graphs_ajax(request):
         '''
         grade_level_graph_dict = dict()
         grade_level_color_picker = ColorPicker()
+        grade_level_color_picker.opacity = .6
         grade_level_graph_dict['title_text'] = "Participation Rate per Grade Level"
         grade_level_query_set = ParticipationRate.objects.filter(
                 election_id=election_id,
@@ -473,6 +474,7 @@ def populate_participation_report_graphs_ajax(request):
         '''
         section_graph_dict = dict()
         section_color_picker = ColorPicker()
+        section_color_picker.opacity = .6
         section_graph_dict['title_text'] = "Participation Rate per Section"
         section_query_set = ParticipationRate.objects.filter(
                 election_id=election_id,

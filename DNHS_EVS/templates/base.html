@@ -81,6 +81,18 @@
             </div>
           </li>
         {% endif %}
+
+        {% if perms.registration.view_vote %}
+        <li>
+          <div class="dropdown">
+            <button class="dropbtn">Data Analytics</button>
+            <div class="dropdown-content">          
+              <a href="{%url 'reporting:reports' %}">Reports</a>
+            </div>
+          </div>
+        </li>
+        {% endif %}
+
         </ul>
         <ul class="nav navbar-nav navbar-right">
          <li>
