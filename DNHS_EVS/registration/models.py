@@ -659,6 +659,12 @@ class Candidate(BaseModel):
     profile_pic = models.ImageField(
             upload_to='candidate_pics/',
             blank=True, default='candidate_pics/avatar.png')
+    general_plan_of_actions = models.CharField(
+                max_length=2000,
+                null=True,
+                blank=True,
+                verbose_name="General Plan of Actions"
+    )
     #overriding objects so that the actives will only show on the form that will consume this model
     #or any other form that call this model
     objects = ObjectManagerActive()

@@ -30,17 +30,33 @@
   </div>
 
   <div class="modal-footer">
-    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-    <button type="submit" class="btn btn-primary">
+    <button type="button" class="btn btn-default" data-dismiss="modal" style="display: inline-block;">Close</button>
+    <button id="cast-vote-btn" type="submit" class="btn btn-primary" style="display: inline-block;" disabled>
         <span class="glyphicon glyphicon-send"></span>
         Cast Vote
     </button>
+    <div class="checkbox" style="display: inline-block;">
+          <label>
+            <input type="checkbox" id="vote-confirmation-checkbox"><b>Confirm Votes</b>
+          </label>
+    </div>
   </div>
 </form>
 
 <script type="text/javascript">
 
   $(function(){
+
+    $('#vote-confirmation-checkbox').change( function(){
+        if($(this).is(':checked')){
+            console.log($('#cast-vote-btn').attr('disabled'));
+            $('#cast-vote-btn').attr('disabled', false);
+        }
+        else{
+          console.log($('#cast-vote-btn').attr('disabled'));
+          $('#cast-vote-btn').attr('disabled', true);
+        }
+    });
 
     //listener
     // grab all checkbox inputs

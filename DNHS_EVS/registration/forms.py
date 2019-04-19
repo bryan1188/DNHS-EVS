@@ -10,6 +10,7 @@ from django.conf import settings
 
 
 
+
 class UploadStudentsForm(forms.Form):
     file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
     # file_field = forms.FileField(widget=forms.ClearableFileInput())
@@ -468,6 +469,9 @@ class PartyFormMoreDetails(PartyForm):
                 self.fields[key[0]].widget.attrs['disabled'] = True
 
 class CandidateForm(forms.ModelForm):
+
+    # profile_pic = ImageField(widget=PictureWidget)
+
     class Meta:
         model = Candidate
         fields = (
@@ -475,8 +479,12 @@ class CandidateForm(forms.ModelForm):
                 'position',
                 'student',
                 'party',
-                # 'profile_pic',
+                'general_plan_of_actions',
+                'profile_pic',
         )
+        widgets = {
+                'general_plan_of_actions': forms.Textarea(),
+        }
 
     def clean_student(self):
         cleaned_data = super().clean()

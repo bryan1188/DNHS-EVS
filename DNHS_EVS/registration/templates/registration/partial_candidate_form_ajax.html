@@ -53,6 +53,27 @@
 
 <script>
 
+  function showImage(){
+    // grab the link from a tag
+    image_link = $("#div_id_profile_pic a").attr('href');
+
+    // create the html
+    img_html =
+                '<div style="width: 33%;  overflow: hidden;">'
+                + '<img src="'
+                + image_link
+                + '" class="img-responsive img-rounded" alt="Profile Pic"'
+                // + ' style="width:250px; height:250px;  background-size: cover; '
+                // + 'background-repeat: no-repeat; background-position: 50% 50%;">'
+                + ' style="width: 150%;  float: left;  float: right; ">'
+                + '</div>';
+    // replace the link with the img_html
+    $("#div_id_profile_pic a").html(img_html)
+
+    // add attribute target=_blank to open new page if image clicked
+    $("#div_id_profile_pic a").attr('target','_blank')
+  }
+
   function clear_student(){
     $('#id_student')
       .find('option')
@@ -100,6 +121,10 @@
 
       $('#id_party').attr('data-live-search',"true");
       $('#id_party').selectpicker('render');
+
+      //show image on update form
+      if ("{{mode}}" != "create")
+          showImage();
 
   });
 </script>

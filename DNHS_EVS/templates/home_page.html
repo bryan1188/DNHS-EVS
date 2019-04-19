@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
+
+
+
 {% block content %}
   <h1>Home Page</h1>
-
-
 
   <!-- modal for Voting -->
   <div class="modal fade" id="modal-section">
@@ -34,7 +35,6 @@
     <div class="modal-content">
     </div>
   </div>
-</div>
 
 <div class="" id="variable_container"
   data-url-authenticate_voter_ajax="{% url 'election:authenticate_voter_ajax' %}"
@@ -109,7 +109,6 @@
 
       var userConfirmed = function(){
         var btn = $(this);
-
         $.ajax({
           url: btn.attr("action"),
           type: btn.attr("method"),
@@ -132,7 +131,6 @@
       };
 
       var castVote = function(){
-
         var form = $(this);
         $.ajax({
           url: form.attr("action"),
@@ -181,5 +179,6 @@
   </script>
 
 {% endif %}
+
 
 {% endblock %}

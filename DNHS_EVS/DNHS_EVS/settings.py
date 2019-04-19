@@ -167,4 +167,4 @@ Something wrong with the file. changes can't be detected. An alternative is
 to rename the file and set the filename here so it will be update on all
 templates that using it
 '''
-MODAL_AJAX_LOCATION = 'registration/js/modal_ajax_3.js'
+MODAL_AJAX_LOCATION = 'registration/js/modal_ajax_2.js'

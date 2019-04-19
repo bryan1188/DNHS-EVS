@@ -50,30 +50,23 @@ $(function () {
           dataType: 'json',
           success: function(data){
             if (data.form_is_valid) {
-               alert("I'm here");
-                $("#modal-section").modal("hide");
-                 alert("I'm here2");
-                $('#candidate_list').DataTable().ajax.reload();
-                 alert("I'm here3");
-                 alert("form is valid: " + data.form_is_valid);
-                 $("#modal-section .modal-content").html(data.html_form);
+               $("#modal-section").modal("hide");
+               $('#candidate_list').DataTable().ajax.reload();
+               $("#modal-section .modal-content").html(data.html_form);
             }
             else{
-              alert('In Else');
               $("#modal-section .modal-content").html(data.html_form);
             }
           },
           error: function (request, status, error) {
-             alert('In Error');
              console.log(request.responseText);
          }
         });
     }
     catch(err){
-      alert("In catch");
       console.log(err.message);
     }
-
+      return false;
     };
 
     //TRY IT AGAIN USING RETURN FALSE. MAO CGURO NI AGI NGA WLA NMO NAKUHA BEFORE AGI SA RETURN FALSE
@@ -149,7 +142,7 @@ $(function () {
 
     //create Candidate
     $('.js-create-candidate').click(loadForm);
-    $("#modal-section").on("submit", ".js-candidate-create-form", saveForm);
+    $("#modal-section").on("submit", ".js-candidate-create-form", saveFormWithImage);
 
     //Update User
     $('#user_list').on("click",".js-update-user",loadForm);
@@ -169,7 +162,7 @@ $(function () {
 
     //Update Candidate
     $('#candidate_list').on("click",".js-update-candidate",loadForm);
-    $('#modal-section').on("submit",".js-candidate-update-form", saveForm);
+    $('#modal-section').on("submit",".js-candidate-update-form", saveFormWithImage);
 
     //reset password
     $('#user_list').on("click",".js-reset-password-user",loadForm);
