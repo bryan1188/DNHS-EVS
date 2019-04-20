@@ -115,3 +115,41 @@ class OfficialBallotForm(forms.Form):
                         position
                     )
                 )
+
+class VoterReviewVoteAuthenticate(forms.Form):
+    token = forms.CharField()
+    secret_password = forms.CharField(widget=forms.PasswordInput)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['token'].label = "Enter your TOKEN:"
+        self.fields['secret_password'].label = "Enter your secret password:"
+        self.voter = None
+
+    def clean_token(self):
+        cleaned_data = super().clean()
+        token = cleaned_data['token'].upper()
+        # use select related to cache the objects from election model
+        # will be used later on the view
+        self.voter = Voter.objects.select_related('election').filter(
+                        voter_token=token
+                        ).first()
+        if not self.voter:
+            raise forms.ValidationError(
+                "This is not a valid token. Kindly check."
+            )
+        else:
+            return token
+
+    def clean_secret_password(self):
+        cleaned_data = super().clean()
+        secret_password = cleaned_data['secret_password']
+        if self.voter:
+            if not self.voter.authenticate_for_vote_validation(secret_password):
+                raise forms.ValidationError(
+                    "Invalid secret password."
+                )
+            else:
+                return secret_password
+        else:
+            return secret_password

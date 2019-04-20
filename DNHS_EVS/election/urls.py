@@ -27,4 +27,8 @@ urlpatterns = [
         live_monitoring.check_for_new_vote_ajax,
         name='check_for_new_vote_ajax'
     ),
+    path('ajax/review_voters_vote_auth/',
+        vote.review_voters_vote_auth_ajax,
+        name='review_voters_vote_auth_ajax'
+    ),
     ]

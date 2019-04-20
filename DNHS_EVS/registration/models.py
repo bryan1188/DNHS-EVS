@@ -741,10 +741,11 @@ class Voter(BaseModel):
     def authenticate_for_vote_validation(self, validation_token):
         '''
             check if the voter enters the correct validation_token
+            Returns True or False
         '''
         return self.validation_token_hasher.check(
                     self.voter_token_for_validation_h,
-                    validation_token)
+                    validation_token.upper())
 
     def assign_voter_token_for_validation_h(self):
         '''

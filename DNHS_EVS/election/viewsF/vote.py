@@ -10,6 +10,7 @@ from datetime import datetime
 from registration.management.helpers.token_generator import id_generator
 from election.management.helpers.hasher_helpers import MyHasher
 from django.conf import settings
+from operator import itemgetter
 
 def authenticate_voter_ajax(request):
     '''
@@ -187,4 +188,53 @@ def show_voter_ballot_ajax(request, voter_id):
                 context,
                 request=request
         )
+    return JsonResponse(data)
+
+def review_voters_vote_auth_ajax(request):
+    '''
+        Handles the modal that will authenticate the voter by enetring his/her
+            token and secret password
+    '''
+    data = dict()
+    context= dict()
+    if request.method == 'POST':
+        form = forms.VoterReviewVoteAuthenticate(data=request.POST)
+        if form.is_valid():
+            votes = None
+            if form.voter.election.status == 'COMPLETED':
+                votes = form.voter.ballot.votes_archived.all().select_related('candidate')
+            else:
+                votes = form.voter.ballot.votes.all().select_related('candidate')
+            # create list of dictinaries to sorted out by position priority
+            votes_list = list()
+            for vote in votes:
+                vote_dict = dict()
+                vote_dict['position'] = str(vote.candidate.position)
+                vote_dict['candidate'] = str(vote.candidate.student)
+                vote_dict['position_priority'] = vote.candidate.position.priority
+                votes_list.append(vote_dict)
+            # sort the votes_list by position.priority
+            votes_list_sorted = sorted(votes_list, key=itemgetter('position_priority'))
+            context['voter'] = form.voter.student.first_name
+            context['votes'] = votes_list_sorted
+            # print(votes_list_sorted)
+            data['html_form_votes'] = render_to_string(
+                    'election/partial_voters_review_vote.html',
+                    context,
+                    request = request
+            )
+            # print(data['html_form_votes'])
+            data['form_is_valid'] = True
+        else:
+            data['form_is_valid'] = False
+        # data['form_is_valid'] = False
+    else:
+        form = forms.VoterReviewVoteAuthenticate()
+
+    context['form'] = form
+    data['html_form'] = render_to_string(
+            'election/partial_voters_review_vote_auth.html',
+            context,
+            request = request
+    )
     return JsonResponse(data)

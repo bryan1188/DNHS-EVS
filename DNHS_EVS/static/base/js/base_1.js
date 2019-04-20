@@ -49,8 +49,45 @@ $(function() {
   return false;
   };
 
+  var reviewVoteForm = function(){
+      var btn = $(this);
+      $.ajax({
+          url: btn.attr("data-url"),
+          type: 'get',
+          dataType: 'json',
+          beforeSend: function(){
+                        $("#modal-review-vote-auth").modal("show");
+                      },
+          success: function(data){
+
+                      $("#modal-review-vote-auth .modal-content").html(data.html_form)
+                    },
+      });
+  };
+
+  var reviewVoteFormSubmit = function(){
+    var form = $(this);
+    $.ajax({
+      url: form.attr("action"),
+      data: form.serialize(),
+      type: form.attr("method"),
+      dataType: 'json',
+      success: function(data){
+        if (data.form_is_valid) {
+            // $("#modal-review-vote-auth").modal("hide");
+            // $("#modal-review-vote").modal("show");
+            $("#modal-review-vote-auth .modal-content").html(data.html_form_votes)
+        }
+        else{
+          $("#modal-review-vote-auth .modal-content").html(data.html_form);
+        }
+      }
+    });
+    return false;
+  };
 
   $('.js-login').click(loadForm);
   $('.js-logout').click(logout);
-  $("#modal-login").on("submit", ".js-login-form", submitForm);
+  $('.js-review-vote').click(reviewVoteForm);
+  $("#modal-review-vote-auth").on("submit", ".js-review-vote-auth-form", reviewVoteFormSubmit);
 });

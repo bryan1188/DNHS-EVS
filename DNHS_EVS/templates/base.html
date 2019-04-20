@@ -110,7 +110,10 @@
          </li>
          <li><a href="#"><span class="glyphicon glyphicon-picture"></span> Candidate Profile</a>
          </li>
-         <li><a href="#"><span class="glyphicon glyphicon-ok"></span> Review Vote</a>
+         <li><a href="#" class="js-review-vote" data-url="{% url 'election:review_voters_vote_auth_ajax' %}">
+                <span class="glyphicon glyphicon-ok"></span>
+                Review Vote
+             </a>
          </li>
        </ul>
       </div>
@@ -125,13 +128,31 @@
     <!-- {% if perms.registration.add_election %}
       Student
     {%endif%} -->
+
+    <!-- modal for login -->
     <div class="modal fade" id="modal-login">
       <div class="modal-dialog">
         <div class="modal-content">
         </div>
       </div>
     </div>
-<script src="{% static 'base/js/base.js' %}"></script>
+
+    <!-- modal for review vote authentication-->
+    <div class="modal fade" id="modal-review-vote-auth">
+      <div class="modal-dialog">
+        <div class="modal-content">
+        </div>
+      </div>
+    </div>
+
+    <!-- modal for review vote after authentication-->
+    <div class="modal fade" id="modal-review-vote">
+      <div class="modal-dialog">
+        <div class="modal-content">
+        </div>
+      </div>
+    </div>
+<script src="{% static 'base/js/base_1.js' %}"></script>
 
   {% block javascript %}
   {% endblock %}
