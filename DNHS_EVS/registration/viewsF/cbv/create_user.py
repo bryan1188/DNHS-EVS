@@ -190,6 +190,7 @@ def create_user_ajax(request, **kwargs):
     if 'election_officer_flag' in kwargs: #from update_user
         context['election_officer_flag'] = kwargs.get('election_officer_flag')
 
+    context['mode_'] = 'create'
     student_list = Student.objects.all()
     context['student_list'] = student_list
     data['html_form'] = render_to_string(template,

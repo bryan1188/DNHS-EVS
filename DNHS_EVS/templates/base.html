@@ -34,7 +34,7 @@
                 <div class="dropdown-content">
                   <a href="{%url 'registration:upload_students' %}">Upload Students</a>
                   <a href="{%url 'registration:add_student' %}">Add Student</a>
-                  <a href="{%url 'registration:list_student' %}">Update Student</a>
+                  <!-- <a href="{%url 'registration:list_student' %}">Update Student</a> -->
                     <a href="{%url 'registration:list_student' %}">List of Students</a>
                 </div>
               </div>
@@ -108,8 +108,8 @@
            </a>
            {% endif %}
          </li>
-         <li><a href="#"><span class="glyphicon glyphicon-picture"></span> Candidate Profile</a>
-         </li>
+         <!-- <li><a href="#"><span class="glyphicon glyphicon-picture"></span> Candidate Profile</a>
+         </li> -->
          <li><a href="#" class="js-review-vote" data-url="{% url 'election:review_voters_vote_auth_ajax' %}">
                 <span class="glyphicon glyphicon-ok"></span>
                 Review Vote
@@ -152,7 +152,7 @@
         </div>
       </div>
     </div>
-<script src="{% static 'base/js/base_1.js' %}"></script>
+<script src="{% static 'base/js/base.js' %}"></script>
 
   {% block javascript %}
   {% endblock %}

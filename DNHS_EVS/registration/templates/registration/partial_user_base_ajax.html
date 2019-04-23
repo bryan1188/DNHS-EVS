@@ -10,7 +10,7 @@
       }
 
 
-  $(document).ready( function () {  //ling my table,uploaded_students, to datable.js
+  $(document).ready( function () {  //link my table,uploaded_students, to datable.js
     $('#uploaded_students').DataTable(
               {
                 "order": [[ 1, "asc" ]]
@@ -20,10 +20,14 @@
 
     $('.table tbody').on('click','.my-btn',function(){
       var currow = $(this).closest('tr');
+      // populate the last_name and first_name
       $('#id_first_name').val(sentenceCase(currow.find('td:eq(2)').text()));
       $('#id_last_name').val(sentenceCase(currow.find('td:eq(1)').text()));
+
+      //populate the hidden input
       $('input[name="student_lrn"]').val(currow.find('td:eq(0)').text().trim());
-    });
+
+      });
 
   });
 </script>
@@ -62,44 +66,66 @@
     var fade_time = 500;
     // convert string election_officer_flag to boolean
     var election_officer_flag_bool = "{{election_officer_flag}}".toLowerCase() == "true" ? true : false;
-    $('#id_for_student_0').change(function() {
-        $('#uploaded_students').prop("hidden", false);
-        if(this.checked ) {
-          $('#id_for_student_1').prop("checked", false);
-          if (!election_officer_flag_bool)
-            $('#uploaded_students_wrapper').fadeIn(fade_time);
+  //   $('#id_for_student_0').change(function() {
+  //       $('#uploaded_students').prop("hidden", false);
+  //       if(this.checked ) {
+  //         $('#id_for_student_1').prop("checked", false);
+  //         if (!election_officer_flag_bool)
+  //           $('#uploaded_students_wrapper').fadeIn(fade_time);
+  //
+  //       }
+  //       else if($('#id_for_student_1').prop("checked") == false){
+  //           // $('#uploaded_students_wrapper').hide();
+  //           $('#uploaded_students_wrapper').fadeOut(fade_time);
+  //           // $(':button').prop('disabled', true);
+  //       }
+  //
+  // });
+      $('#id_for_student_1').change(function() {
+          $('#uploaded_students').prop("hidden", false);
+          if(this.checked ) {
+            // $('#id_for_student_1').prop("checked", false);
+            if (!election_officer_flag_bool)
+              $('#uploaded_students_wrapper').fadeIn(fade_time);
 
-        }
-        else if($('#id_for_student_1').prop("checked") == false){
-            // $('#uploaded_students_wrapper').hide();
-            $('#uploaded_students_wrapper').fadeOut(fade_time);
-            // $(':button').prop('disabled', true);
-        }
+          }
+          else {
+              // $('#uploaded_students_wrapper').hide();
+              $('#uploaded_students_wrapper').fadeOut(fade_time);
+              // $(':button').prop('disabled', true);
+          }
 
-  });
-
-  $('#id_for_student_1').change(function() {
-      $('#uploaded_students').prop("hidden", false);
-      if(this.checked) {
-        $('#id_for_student_0').prop("checked", false);
-        // $('#uploaded_students_wrapper').show();
-        $('#uploaded_students_wrapper').fadeIn(fade_time);
-         // $(':button').prop('disabled', false);
-      }
-      else if($('#id_for_student_0').prop("checked") == false){
-          // $('#uploaded_students_wrapper').hide();
-          $('#uploaded_students_wrapper').fadeOut(fade_time);
-          // $(':button').prop('disabled', true);
-      }
     });
 
+  // $('#id_for_student_1').change(function() {
+  //     $('#uploaded_students').prop("hidden", false);
+  //     if(this.checked) {
+  //       $('#id_for_student_0').prop("checked", false);
+  //       // $('#uploaded_students_wrapper').show();
+  //       $('#uploaded_students_wrapper').fadeIn(fade_time);
+  //        // $(':button').prop('disabled', false);
+  //     }
+  //     else if($('#id_for_student_0').prop("checked") == false){
+  //         // $('#uploaded_students_wrapper').hide();
+  //         $('#uploaded_students_wrapper').fadeOut(fade_time);
+  //         // $(':button').prop('disabled', true);
+  //     }
+  //   });
+
     // if for_student checkbox is checked. just show the table. This is applicable for update
-    if($('#id_for_student_0').prop("checked") || $('#id_for_student_1').prop("checked")) {
+    // if($('#id_for_student_0').prop("checked") || $('#id_for_student_1').prop("checked")) {
+    //     if(!election_officer_flag_bool) {
+    //       $('#uploaded_students').prop("hidden", false);
+    //       $('#uploaded_students_wrapper').fadeIn(fade_time);
+    //     }
+    // }
+    if($('#id_for_student_1').prop("checked")) {
         if(!election_officer_flag_bool) {
           $('#uploaded_students').prop("hidden", false);
           $('#uploaded_students_wrapper').fadeIn(fade_time);
         }
     }
+
 
   });
 </script>

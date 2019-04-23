@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 # from django.shortcuts import redirect
 
 class StudentUpdateView(UpdateView):
-    fields  = [ 'lrn', 'last_name', 'first_name', 'middle_name', 'sex', 'birth_date', 'age', 'mother_tongue', 'ethnic_group', 'religion', 'address_house_no', 'address_barangay', 'address_municipality', 'address_province', 'father_name', 'mother_name', 'guardian_name', 'guardian_relationship', 'parent_guardian_contact_no', 'remarks', 'classes']  #[f.name for f in RegistrationModels.Student._meta.get_fields()]
+    fields  = [ 'lrn', 'last_name', 'first_name', 'middle_name', 'sex', 'birth_date', 'age', 'mother_tongue', 'ethnic_group', 'religion', 'address_house_no', 'address_barangay', 'address_municipality', 'address_province', 'father_name', 'mother_name', 'guardian_name', 'guardian_relationship', 'parent_guardian_contact_no', 'remarks', 'classes'] 
     model = RegistrationModels.Student
     success_url = reverse_lazy('registration:list_student')
 

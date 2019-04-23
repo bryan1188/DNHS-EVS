@@ -18,7 +18,7 @@ class UploadStudentsForm(forms.Form):
 class UserForm(forms.ModelForm):
     FOR_STUDENT_CHOICES = (
         ('election_officer','Election Officer'),
-        ('candidate','Candidate')
+        # ('candidate','Candidate')
     )
     FOR_OTHER_GROUPS_CHOICES = (
         ('teacher','Teacher'),
@@ -86,7 +86,7 @@ class UserFormUpdate(forms.ModelForm):
 
     FOR_STUDENT_CHOICES = (
         ('election_officer','Election Officer'),
-        ('candidate','Candidate')
+        # ('candidate','Candidate')
     )
     FOR_OTHER_GROUPS_CHOICES = (
         ('teacher','Teacher'),
@@ -162,7 +162,7 @@ class UserProfileForm(forms.ModelForm):
         fields = ('profile_pic',)
 
 class ClassFilterForm(forms.Form):
-    school_year_list = Class.objects.all().order_by('school_year')\
+    school_year_list = Class.objects.all().order_by('-school_year')\
                         .values_list('school_year',flat=True).distinct()
     school_year = forms.ModelChoiceField(
                 queryset=school_year_list,

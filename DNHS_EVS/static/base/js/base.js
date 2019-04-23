@@ -89,5 +89,6 @@ $(function() {
   $('.js-login').click(loadForm);
   $('.js-logout').click(logout);
   $('.js-review-vote').click(reviewVoteForm);
+  $("#modal-login").on("submit", ".js-login-form", submitForm);
   $("#modal-review-vote-auth").on("submit", ".js-review-vote-auth-form", reviewVoteFormSubmit);
 });

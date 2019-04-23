@@ -1,14 +1,4 @@
 {% load widget_tweaks %}
 {% load crispy_forms_tags %}
 
-{% for field in user_form %}
-  <div class="form-group {% if field.errors %} has-error {% endif%}">
-    {% for error in field.errors %}
-      <p class="help-block"> {{ error }}</p>
-    {% endfor %}
-      {% if field.label != 'Student lrn'%}
-    <label for="{{field.id_for_label}}"> {{field.label}}</label>
-      {% endif %}
-    {% render_field field  %}
-  </div>
-{% endfor %}
+{{user_form|crispy}}

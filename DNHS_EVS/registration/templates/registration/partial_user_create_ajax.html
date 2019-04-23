@@ -48,4 +48,18 @@
 </table>
 </form>
 
+<script type="text/javascript">
+  $(document).ready( function () {  //link my table,uploaded_students, to datable.js
+
+    $('.table tbody').on('click','.my-btn',function(){
+      var currow = $(this).closest('tr');
+      //populate suggested uername
+        $('#id_username').val(currow.find('td:eq(2)').text().replace(/ /g, '.').toLowerCase()
+                              +'.' + currow.find('td:eq(1)').text().replace(/ /g, '.').toLowerCase() );
+    });
+
+  });
+</script>
+
+
 {%endblock%}

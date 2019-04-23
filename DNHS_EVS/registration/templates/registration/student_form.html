@@ -9,11 +9,7 @@
 <link rel="stylesheet" href="{% static 'css/bootstrap-datepicker.css' %}">
 <link rel="stylesheet" href="{% static 'css/bootstrap-theme.min.css' %}">
 <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-<script>
-  $(function() {
-    $( "#id_birth_date" ).datepicker();
-  });
-</script>
+
 
 {% endblock %}
 
@@ -47,5 +43,25 @@
    {% endif %}
   </p>
 </form>
+
+<script type="text/javascript">
+  $(document).ready( function () {
+     // convert the date format of birthdate from yyyy-mm-dd to mm/dd/yyyy
+     var date = $("#id_birth_date").val().split('-');
+     var newDate = date[1] + '/' + date[2] + '/' + date[0];
+
+     //assign the new value to the field
+     $("#id_birth_date").val(newDate);
+  });
+</script>
+
+<script>
+  $(function() {
+    $( "#id_birth_date" ).datepicker(
+      { dateFormat: 'mm/dd/yyyy' }
+    );
+    $("#id_birth_date").attr("readonly","readonly");
+  });
+</script>
 
 {% endblock %}
