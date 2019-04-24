@@ -23,13 +23,14 @@ def get_student_summary_data(*args, **kwargs):
         #https://stackoverflow.com/questions/716477/join-list-of-lists-in-python
         grade_levels = set(list(itertools.chain.from_iterable(grade_levels))) #merge all items and remove duplicates
 
-        sql_query = "select grade_level, section, sex, count(*) \
+        sql_query = "select grade_level,grade_level_integer, section, sex, count(*) \
                     from registration_student a , registration_student_classes b, \
                         registration_class c, registration_sex d \
                     where a.id = b.student_id and a.sex_id = d.id	\
                         and b.class_id = c.id and c.school_year = '%s' \
                         and c.grade_level in (%s)    \
-                    group by grade_level, section, sex order by grade_level, section" \
+                    group by grade_level, grade_level_integer, section, sex \
+                    order by grade_level_integer, section" \
                     % (school_year,
                     ", ".join( "'{}'".format(grade_level) for grade_level in grade_levels)
                     #to convery the set into a usable sql for in statement

@@ -366,8 +366,8 @@ class PositionForm(forms.ModelForm):
         #create a list and convert to tuple
         GRADE_LEVEL_CHOICES = tuple(
                     [ (grade_level,grade_level) for grade_level in Class.objects.all()\
-                    .order_by('grade_level')\
-                    .values_list('grade_level',flat=True).distinct('grade_level')
+                    .order_by('grade_level_integer','grade_level')\
+                    .values_list('grade_level',flat=True).distinct('grade_level_integer','grade_level')
                     ]
         )
         self.fields['grade_level'] = forms.MultipleChoiceField(

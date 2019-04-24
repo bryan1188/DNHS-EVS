@@ -86,9 +86,21 @@ class PositionGradeLevel(models.Model):
             related_name="grade_levels",
             related_query_name="grade_levels"
     )
+    grade_level_integer =  models.PositiveSmallIntegerField(null=True, default=0)
 
     def __str__(self):
         return self.grade_level
 
+    def save(self, *args, **kwargs):
+        # get the 2nd word of from grade level which is the integer part
+        grade_level_int_ = self.grade_level.split(' ')[1]
+
+        try:
+            grade_level_int_ = int(grade_level_int_)
+        except:
+            grade_level_int_ = 0
+        self.grade_level_integer = grade_level_int_
+        super().save(*args, **kwargs)
+
     class Meta:
-        ordering = ('grade_level',)
+        ordering = ('grade_level_integer',)

@@ -119,10 +119,11 @@ class Class(BaseModel):
     adviser = models.CharField(max_length=150, verbose_name='Adviser', null=True)
     objects = ObjectManagerAll()
     school_year_distinct = ClassSchoolYearManager()
+    grade_level_integer =  models.PositiveSmallIntegerField(null=True, default=0)
 
     class Meta:
         unique_together = (('school_year', 'grade_level','section'),)
-        ordering = ('school_year', 'grade_level',
+        ordering = ('school_year', 'grade_level_integer',
                     'section')
 
     def __str__(self):
@@ -131,6 +132,17 @@ class Class(BaseModel):
     @property
     def grade_level_section(self):
         return self.grade_level + " - " + self.section
+
+    def save(self, *args, **kwargs):
+        # get the 2nd word of from grade level which is the integer part
+        grade_level_int_ = self.grade_level.split(' ')[1]
+
+        try:
+            grade_level_int_ = int(grade_level_int_)
+        except:
+            grade_level_int_ = 0
+        self.grade_level_integer = grade_level_int_
+        super().save(*args, **kwargs)
 
 #lookup tables for Student Table################
 class Sex(BaseModel):
