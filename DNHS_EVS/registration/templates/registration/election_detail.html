@@ -25,10 +25,10 @@
 <div class="panel panel-info">
   <div class="panel-heading">
        <a data-toggle="collapse" href="#collapseDetails"><h2>Election Details</h2></a>
-       <button type="button" class="btn btn-primary js-update-election">
+       <!-- <button type="button" class="btn btn-primary js-update-election">
          <span class="glyphicon glyphicon-edit"></span>
            Update Election
-       </button>
+       </button> -->
        {% if object.status == 'FINALIZED' and perms.registration.add_student %}
        <button type="button" class="btn btn-primary js-complete-election"
          data-toggle="tooltip" data-placement="right"

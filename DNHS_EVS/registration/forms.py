@@ -234,17 +234,9 @@ class ElectionFilterForm(forms.Form):
                 )
 
 class ElectionForm(forms.ModelForm):
-    #get all distinct school year from class model
-    #create a list and convert to tuple
-    SCHOOL_YEAR_CHOICES = tuple(
-                [ (school_year,school_year) for school_year in Class.objects.all()\
-                .order_by('-school_year')\
-                .values_list('school_year',flat=True).distinct('school_year')
-                ]
-            )
-    school_year = forms.ChoiceField(
-                choices=SCHOOL_YEAR_CHOICES
-    )
+
+    # school_year = forms.ChoiceField()
+
     field_order = [
                 'school_year',
                 'name',
@@ -253,6 +245,20 @@ class ElectionForm(forms.ModelForm):
                 'election_day_from',
                 'election_day_to',
     ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        #get all distinct school year from class model
+        #create a list and convert to tuple
+        SCHOOL_YEAR_CHOICES = tuple(
+                    [ (school_year,school_year) for school_year in Class.objects.all()\
+                    .order_by('-school_year')\
+                    .values_list('school_year',flat=True).distinct('school_year')
+                    ]
+                )
+        self.fields['school_year'] = forms.ChoiceField(
+                choices=SCHOOL_YEAR_CHOICES
+        )
 
     class Meta:
         model = Election
@@ -344,19 +350,7 @@ class ElectionFormMoreDetails(ElectionForm):
         self.fields['school_year'].widget.attrs['disabled'] = True
 
 class PositionForm(forms.ModelForm):
-    #get all distinct grade_level from class model
-    #create a list and convert to tuple
-    GRADE_LEVEL_CHOICES = tuple(
-                [ (grade_level,grade_level) for grade_level in Class.objects.all()\
-                .order_by('grade_level')\
-                .values_list('grade_level',flat=True).distinct('grade_level')
-                ]
-    )
-    grade_level = forms.MultipleChoiceField(
-                widget=forms.SelectMultiple,
-                choices=GRADE_LEVEL_CHOICES,
-                initial=[choice[0] for choice in GRADE_LEVEL_CHOICES] #select all
-    )
+
     field_order = [
                 'title',
                 'priority',
@@ -368,6 +362,19 @@ class PositionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        #get all distinct grade_level from class model
+        #create a list and convert to tuple
+        GRADE_LEVEL_CHOICES = tuple(
+                    [ (grade_level,grade_level) for grade_level in Class.objects.all()\
+                    .order_by('grade_level')\
+                    .values_list('grade_level',flat=True).distinct('grade_level')
+                    ]
+        )
+        self.fields['grade_level'] = forms.MultipleChoiceField(
+                    widget=forms.SelectMultiple,
+                    choices=GRADE_LEVEL_CHOICES,
+                    initial=[choice[0] for choice in GRADE_LEVEL_CHOICES] #select all
+        )
         if self.instance.pk: #for update
             # https://stackoverflow.com/questions/34270099/django-modelform-overriding-init
             self.fields['grade_level'].initial = [

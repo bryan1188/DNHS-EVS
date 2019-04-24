@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-<p></p>
+<h2>User Management</h2>
   <form method="post">
     {% csrf_token %}
       {% bootstrap_form user_filter_form %}
