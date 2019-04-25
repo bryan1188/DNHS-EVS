@@ -1,9 +1,11 @@
 <!-- this modal whill be shown after voter confirmed -->
 <!-- This serves as the voter's ballot and this is the page where the voter cast his vote -->
 <!-- This model should not be closed unless confrimation is clicked -->
-
+{% load staticfiles %}
 {% load widget_tweaks %}
 {% load crispy_forms_tags %}
+
+<script src="{% static 'js/popper.min.js' %}"></script>
 
 <form method="post"
     action="{% url 'election:voter_ballot_ajax' object.pk %}"
@@ -43,7 +45,30 @@
   </div>
 </form>
 
+{% for candidate in candidates %}
+
+  <script type="text/javascript">
+    $(document).ready( function () {
+        var candidate_label = $('[value=' + {{candidate.id}} + ']').parent();
+        var title_text = "<img class='img-responsive img-thumbnail' src='/media/{{candidate.profile_pic}}'/>";
+        // title_text = "<img class='img-thumbnail' src='https://picsum.photos/200/100'/>sadfsadfssdf";
+        candidate_label.attr('data-toggle', 'tooltip');
+        candidate_label.attr('data-original-title', title_text);
+        candidate_label.attr('title','');
+        candidate_label.attr('data-placement','right');
+      });
+
+  </script>
+
+
+{% endfor %}
+
 <script type="text/javascript">
+  $(function() {
+    $('[data-toggle="tooltip"]').tooltip({
+        html: true
+      });
+  });
 
   $(function(){
 

@@ -173,6 +173,7 @@ def show_voter_ballot_ajax(request, voter_id):
             data['form_is_valid'] = False
             context['object'] = voter
             context['form'] = form
+            context['candidates'] = form.candidate_list
             data['html_form'] = render_to_string(
                     'election/partial_voter_ballot.html',
                     context,
@@ -183,6 +184,7 @@ def show_voter_ballot_ajax(request, voter_id):
         #the magic is in the form
         form = forms.OfficialBallotForm(voter=voter)
         context['form'] = form
+        context['candidates'] = form.candidate_list
         data['html_form'] = render_to_string(
                 'election/partial_voter_ballot.html',
                 context,

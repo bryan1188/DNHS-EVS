@@ -79,6 +79,8 @@ class OfficialBallotForm(forms.Form):
                         self.voter.election,
                         self.voter.student_class.grade_level
                     )
+        # get this value in the view
+        self.candidate_list = candidates
         # based on the list of candidates, get the positions available
         positions = [
                 candidate.position.__str__() for candidate in  candidates
@@ -99,6 +101,7 @@ class OfficialBallotForm(forms.Form):
                                              #this will identify the last element checked. Based on this number and number_of_slots,
                                              #other elements will be automatically unchecked
                                             'last-checked-counter': 0,
+                                            'hook-value': 'candidate',
                                         },
                                     ),
                                 choices=candidates_for_this_position,
