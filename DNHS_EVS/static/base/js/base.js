@@ -59,8 +59,10 @@ $(function() {
                         $("#modal-review-vote-auth").modal("show");
                       },
           success: function(data){
-
-                      $("#modal-review-vote-auth .modal-content").html(data.html_form)
+                        $("#modal-review-vote-auth .modal-content").fadeOut(300, function(){
+                          $(this).html(data.html_form).fadeIn(300);
+                        });
+                      // $("#modal-review-vote-auth .modal-content").html(data.html_form)
                     },
       });
   };
