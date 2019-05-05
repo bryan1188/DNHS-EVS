@@ -38,6 +38,7 @@ class UploadStudentsAjax(PermissionRequiredMixin,View):
                 uploader = XlsUploader(file_path="{}/{}".format(file_path,name),index=0) #index 0 means open the first sheet in the workbook.
                 uploader.uploadAllData()
                 student_list.extend(uploader.student_list)
+                fs.delete(name) #delete after upload
             data['student_ids'] = student_list
             data['is_valid'] = True
         else:
