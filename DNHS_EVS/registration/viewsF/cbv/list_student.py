@@ -77,11 +77,17 @@ def populate_summary_panel_ajax(request):
     school_year =  request.GET.get('school_year', None)
     grade_levels = request.GET.get('grade_level', None)
     sections = request.GET.get('section', None)
-    summary = get_student_summary_data(
-                school_year=school_year,
-                grade_levels=grade_levels,
-                sections=sections
-    )
+    student_ids = request.GET.getlist('student_ids[]', None) #[] format from front-end
+    if student_ids != [''] and student_ids:
+        summary = get_student_summary_data(
+                    student_ids=student_ids
+        )
+    else:
+        summary = get_student_summary_data(
+                    school_year=school_year,
+                    grade_levels=grade_levels,
+                    sections=sections
+        )
     return_dict = dict()
     return_dict['rows'],return_dict['summary'] = create_summary_json(summary)
     return HttpResponse(json.dumps(return_dict), content_type='application/json')

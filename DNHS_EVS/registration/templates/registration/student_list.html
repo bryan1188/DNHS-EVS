@@ -400,6 +400,7 @@
 
 </script>
 
+<!-- Functions on updating htmls -->
 <script >
 
   function populate_html_of_summary_panel(){
@@ -413,13 +414,24 @@
       });
   }
 
-  function populate_summary_panel(){
-    var form = $('#filter_form');
+  function populate_summary_panel(student_ids=null){
+    if (student_ids === null){
+      var form = $('#filter_form');
+      data_to_send = form.serialize();
+      data_type = 'json';
+    }
+    else {
+      data_to_send = {'student_ids': student_ids};
+      data_type = '';
+    }
     $.ajax({
+        processing: true,
         url: "{% url 'registration:populate_summary_panel_ajax' %}",
         type: 'get',
-        dataType: 'json',
-        data: form.serialize(),
+        // traditional: true,
+        dataType: data_type,
+        data: data_to_send,
+        dataSrc: "",
         beforeSend: function(){
                       populate_html_of_summary_panel();
                     },
@@ -617,15 +629,21 @@
       });
       // student_ids_for_upload = student_ids_for_upload_g;
 
+      var student_ids = new Array();
+
       /* 2. INITIALIZE THE FILE UPLOAD COMPONENT */
       $("#fileupload").fileupload({
         dataType: 'json',
         sequentialUploads: true,  /* 1. SEND THE FILES ONE BY ONE */
         start: function (e) {  /* 2. WHEN THE UPLOADING PROCESS STARTS, SHOW THE MODAL */
           $("#modal-progress").modal("show");
+          studend_ids = [];
         },
         stop: function (e) {  /* 3. WHEN THE UPLOADING PROCESS FINALIZE, HIDE THE MODAL */
           $("#modal-progress").modal("hide");
+          // student_ids = new Set(student_ids);
+          console.log(student_ids);
+          populate_summary_panel(student_ids);
         },
         progressall: function (e, data) {  /* 4. UPDATE THE PROGRESS BAR */
           var progress = parseInt(data.loaded / data.total * 100, 10);
@@ -634,9 +652,8 @@
           $(".progress-bar").text(strProgress);
         },
         done: function (e, data) {  /* 3. PROCESS THE RESPONSE FROM THE SERVER */
-          console.log('done');
           if (data.result.is_valid) {
-            // student_ids_for_upload = student_ids_for_upload.concat(data.result.student_ids);
+            student_ids = student_ids.concat(data.result.student_ids); //append all uploaded ids
           }
         }
       });
