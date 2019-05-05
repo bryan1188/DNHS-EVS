@@ -9,8 +9,6 @@ from django.utils import timezone,formats
 from django.conf import settings
 
 
-
-
 class UploadStudentsForm(forms.Form):
     file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
     # file_field = forms.FileField(widget=forms.ClearableFileInput())

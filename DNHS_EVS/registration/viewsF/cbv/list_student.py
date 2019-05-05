@@ -84,7 +84,6 @@ def populate_summary_panel_ajax(request):
     )
     return_dict = dict()
     return_dict['rows'],return_dict['summary'] = create_summary_json(summary)
-    print(summary)
     return HttpResponse(json.dumps(return_dict), content_type='application/json')
 
 @permission_required('registration.add_student', raise_exception=True)

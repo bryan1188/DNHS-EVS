@@ -101,7 +101,7 @@ WSGI_APPLICATION = 'DNHS_EVS.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'DNHSEVS_T',
+        'NAME': 'DNHSEVS_Clean',
         'USER': 'django',
         'PASSWORD': 'ikpakduwoq!',
         'HOST': 'localhost',

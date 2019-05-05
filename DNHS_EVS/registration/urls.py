@@ -17,6 +17,9 @@ urlpatterns = [
     path('uploadstudents/',upload_students.UploadStudents.as_view(),
         name='upload_students'
         ),
+    path('uploadstudents2/',upload_students.UploadStudentsAjax.as_view(),
+        name='upload_students2'
+        ),
     path('uploadstudents/verification/',
         upload_students.UploadStudentsVerification.as_view(),
         name='upload_students_verification'

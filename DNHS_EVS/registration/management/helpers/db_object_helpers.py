@@ -12,6 +12,7 @@ def create_sql_query(**kwargs):
     school_year = kwargs.get('school_year', None)
     grade_levels = kwargs.get('grade_levels', None)
     sections = kwargs.get('sections', None)
+    student_ids = kwargs.get('student_ids', None)
     sql_query = ""
 
     if sections:
@@ -40,6 +41,18 @@ def create_sql_query(**kwargs):
                     ", ".join( "'{}'".format(grade_level) for grade_level in grade_levels)
                     #to convery the set into a usable sql for in statement
                     )
+    elif student_ids:
+        sql_query = "select grade_level,grade_level_integer, section, sex, count(*) \
+                    from registration_student a , registration_student_classes b, \
+                        registration_class c, registration_sex d \
+                    where a.id = b.student_id and a.sex_id = d.id	\
+                        and b.class_id = c.id  \
+                        and a.id in (%s)                \
+                    group by grade_level, grade_level_integer, section, sex \
+                    order by grade_level_integer, section" \
+                    % (", ".join( "'{}'".format(student_id) for student_id in student_ids)
+                    #to convery the set into a usable sql for in statement
+                    )
     else:
         sql_query = "select grade_level,grade_level_integer, section, sex, count(*) \
                     from registration_student a , registration_student_classes b, \
@@ -62,6 +75,7 @@ def get_student_summary_data(*args, **kwargs):
     school_year_p = kwargs.get('school_year', None)
     grade_levels_p = kwargs.get('grade_levels', None)
     sections_p = kwargs.get('sections', None)
+    student_ids = kwargs.get('student_ids', None)
     if election:
         school_year = election.school_year
         grade_levels = [ [grade_level.grade_level for grade_level in position.grade_levels.all()] \
@@ -96,6 +110,14 @@ def get_student_summary_data(*args, **kwargs):
             sql_query = create_sql_query(
                             school_year=school_year_p
             )
+    elif student_ids:
+        if isinstance(student_ids, list):
+            student_ids = set(student_ids)
+        else:
+            student_ids = {student_ids}
+        sql_query = create_sql_query(
+                    student_ids=student_ids
+        )
     else:
         sql_query = "select grade_level,grade_level_integer, section, sex, count(*) \
                     from registration_student a , registration_student_classes b, \
