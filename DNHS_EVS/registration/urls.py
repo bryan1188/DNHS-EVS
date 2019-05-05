@@ -77,6 +77,14 @@ urlpatterns = [
         list_student.populate_table_uploaded_students_2,
         name='populate_table_uploaded_students_2_ajax'
         ),
+    path('ajax/populate_summary_panel_students/',
+        list_student.populate_summary_panel_ajax,
+        name='populate_summary_panel_ajax'
+        ),
+    path('ajax/populate_hmtl_summary_panel/',
+        list_student.populate_hmtl_summary_panel_ajax,
+        name='populate_hmtl_summary_panel_ajax'
+        ),
     path('ajax/get_filter_options_for_section/',
         list_student.get_filter_options_for_section,
         name='get_filter_options_for_section_ajax'

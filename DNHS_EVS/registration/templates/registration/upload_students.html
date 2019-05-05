@@ -1,12 +1,12 @@
-{% extends 'base.html' %}
+{% extends 'base_2.html' %}
 {% load bootstrap3 %}
 
 {% block content %}
-  <h1>Upload Students Page</h1>
-  <!-- <div class="well text-muted text-center" style="padding-top: 4rem; padding-bottom: 4rem;">
+  <h1>Upload Students</h1>
+  <div class="well text-muted text-center" style="padding-top: 4rem; padding-bottom: 4rem;">
   <span class="glyphicon glyphicon-arrow-down" style="font-size: 4rem;"></span>
-  <h3>Drop Excel Files Here to Upload</h3>
-</div> -->
+  <h3>Drop School Form 1 Excel Files Here to Upload</h3>
+</div>
   <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {% bootstrap_form form %}

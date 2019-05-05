@@ -4,9 +4,12 @@ from django.contrib.auth.decorators import permission_required
 from registration import models
 from registration import forms
 from django.shortcuts import render
+from registration.viewsF.cbv.election import create_summary_json
+from registration.management.helpers.db_object_helpers import get_student_summary_data
 from django.core import serializers
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse
 from django.conf import settings
+from django.template.loader import render_to_string
 import json
 # from django.http import JsonResponse
 # import os
@@ -68,3 +71,29 @@ def populate_table_uploaded_students_2(request): # will be called by ajax reques
     json = serializers.serialize('json', student_list, use_natural_foreign_keys=True, \
         fields=('id','lrn','last_name','first_name','middle_name','sex','birth_date','age','father_name','mother_name','pk'))
     return HttpResponse(json, content_type='application/json')
+
+@permission_required('registration.add_student', raise_exception=True)
+def populate_summary_panel_ajax(request):
+    school_year =  request.GET.get('school_year', None)
+    grade_levels = request.GET.get('grade_level', None)
+    sections = request.GET.get('section', None)
+    summary = get_student_summary_data(
+                school_year=school_year,
+                grade_levels=grade_levels,
+                sections=sections
+    )
+    return_dict = dict()
+    return_dict['rows'],return_dict['summary'] = create_summary_json(summary)
+    print(summary)
+    return HttpResponse(json.dumps(return_dict), content_type='application/json')
+
+@permission_required('registration.add_student', raise_exception=True)
+def populate_hmtl_summary_panel_ajax(request):
+    data = dict()
+    context = dict()
+    data['html_form'] = render_to_string(
+        'registration/partial_student_list_summary_panel.html',
+        context,
+        request = request
+    )
+    return JsonResponse(data)

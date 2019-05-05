@@ -846,7 +846,7 @@ class Vote(BaseModel):
             these are the additional security for vote model
             check if a certain vote is valid based on the hashed_id
             the application has no update privilege so it can't update the
-                recored once inserted
+                record once inserted
             the application has no delete privilege so it can't delete any
                 vote from a certain candidate
             once vote is casted, no update or delete needed

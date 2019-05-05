@@ -1,63 +1,447 @@
-{% extends 'base.html' %}
+{% extends 'base_2.html' %}
 {% load bootstrap3 %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
 {% block heading  %}
-  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
-  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/buttons.dataTables.min.css' %}">
+
+  <!-- for more datatables buttons -->
+  <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
+
+  <!-- chart.js -->
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+  <script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script>
 
 {% endblock %}
 
 {% block content %}
 
 {% block page_heading %}
-<h2>Student List</h2>
+  <style media="screen">
+    .adj-padding {
+      padding: 5px;
+    }
+  </style>
 {% endblock %}
+<h1>Student List</h1>
+<div class="row">
+  <div class="adj-padding" >
+    <div class="panel panel-info" style="margin-bottom: 5px;">
+        <div class="panel-heading">
+            <a data-toggle="collapse"  href="#collapseSummary">Summary</a>
+        </div>
+        <div id="collapseSummary" class="panel-collapse collapse">
+          <div id="summary-panel">
 
-<form method="post">
-  {% csrf_token %}
-    {{ class_filter_form|crispy }}
-</form>
-<div class="table-responsive">
-  <table id="uploaded_students" class="table table-bordered display">
-    <thead>
-      <tr>
-        <th>LRN</th>
-        <th>Last Name</th>
-        <th>First Name</th>
-        <th>Middle Name</th>
-        <th>Sex</th>
-        <th>Birth Date</th>
-        <th>Age</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tfoot>
-      <tr>
-        <th>LRN</th>
-        <th>Last Name</th>
-        <th>First Name</th>
-        <th>Middle Name</th>
-        <th>Sex</th>
-        <th>Birth Date</th>
-        <th>Age</th>
-        <th>Action</th>
-      </tr>
-    </tfoot>
-    <tbody>
-
-    </tbody>
-  </table>
+          </div>
+        </div>
+    </div>
+  </div>
 </div>
+<div class="row">
+  <div class="col-md-3 adj-padding">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <a data-toggle="collapse"  href="#collapseFilter">Filter</a>
+        </div>
+        <div id="collapseFilter" class="panel-collapse collapse in">
+            <div class="panel-body">
+              <form method="post" id="filter_form">
+                {% csrf_token %}
+                  {{ class_filter_form|crispy }}
+              </form>
+            </div>
+        </div>
+    </div>
+  </div>
+  <div class="col-md-9 adj-padding">
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <a data-toggle="collapse"  href="#collapseTable">Table</a>
+      </div>
+      <div id="collapseTable" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <div class="table-responsive">
+            <table id="uploaded_students" class="table table-bordered display">
+              <thead>
+                <tr>
+                  <th>LRN</th>
+                  <th>Last Name</th>
+                  <th>First Name</th>
+                  <th>Middle Name</th>
+                  <th>Sex</th>
+                  <th>Birth Date</th>
+                  <th>Age</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tfoot>
+                <tr>
+                  <th>LRN</th>
+                  <th>Last Name</th>
+                  <th>First Name</th>
+                  <th>Middle Name</th>
+                  <th>Sex</th>
+                  <th>Birth Date</th>
+                  <th>Age</th>
+                  <th>Action</th>
+                </tr>
+              </tfoot>
+              <tbody>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- chartjs plugins to show text in middle -->
+<!-- http://www.authorcode.com/how-to-add-text-inside-the-doughnut-chart-using-chart-js/ -->
+<script>
+  function drawTotals(chart) {
+
+      var width = chart.chart.width,
+      height = chart.chart.height,
+      ctx = chart.chart.ctx;
+
+      ctx.restore();
+      var fontSize = (height / 114).toFixed(2);
+      ctx.font = fontSize + "em sans-serif";
+      ctx.textBaseline = "middle";
+
+      var text = chart.config.centerText.text,
+      textX = Math.round((width - ctx.measureText(text).width) / 2),
+      textY = height / 2;
+
+      ctx.fillText(text, textX, textY);
+      ctx.save();
+  }
+</script>
+
+<!-- global variables -->
+<script>
+    //variables for populating data in the graphs
+    var solid_color = [  'rgba(255, 99, 132)',
+            'rgba(54, 162, 235)',
+            'rgba(255, 206, 86)',
+            'rgba(75, 192, 192)',
+            'rgba(153, 102, 255)',
+            'rgba(255, 159, 64)',
+            'rgba(145, 142, 140)',
+            'rgba(239, 38, 108)',
+      ];
+      var transparent_color = [  'rgba(255, 99, 132, .4)',
+              'rgba(54, 162, 235, .4)',
+              'rgba(255, 206, 86, .4)',
+              'rgba(75, 192, 192, .4)',
+              'rgba(153, 102, 255, .4)',
+              'rgba(255, 159, 64, .4)',
+              'rgba(145, 142, 140, .4)',
+              'rgba(239, 38, 108, .4)',
+        ];
+
+
+      var grade_level_label = new Array();
+      var grade_level_data = new Array();
+      var grade_level_dict = {}; //push grade_level here. if object exist, then add value, if not then append
+
+      var gender_label = new Array();
+      var gender_data = new Array();
+
+      var total_voters;
+
+      var section_labels = new Array();
+      var section_total_data = new Array();
+      var section_male_data = new Array();
+      var section_female_data = new Array();
+
+      function clear_global_variables(){
+        grade_level_label = [];
+        grade_level_data = [];
+        grade_level_dict = {}; //push grade_level here. if object exist, then add value, if not then append
+
+        gender_label = [];
+        gender_data = [];
+
+        total_voters = 0;
+
+        section_labels = [];
+        section_total_data = [];
+        section_male_data = [];
+        section_female_data = [];
+      }
+
+</script>
+
+<!-- functions related to chartjs -->
+<script>
+  function push_data_to_chart(obj){ //get the data and push to
+      //use grade_level_dict
+      //if object exists in the dict, then add the value, if not, create new item
+      if(obj.grade_level in grade_level_dict) {
+        //add the value since they are the same garde level
+        grade_level_dict[obj.grade_level] = grade_level_dict[obj.grade_level] + obj.total;
+      }
+      else{
+        //create new item for this grade_level
+        grade_level_dict[obj.grade_level] = obj.total;
+      }
+  }
+
+  function create_list_for_grade_level_chart(){
+    //loop inside the dictionary and build the needed list
+    $.each(grade_level_dict, function(key, value){
+      grade_level_data.push(value);
+      grade_level_label.push(key);
+    });
+  }
+
+  function draw_grade_level_graph(){
+    var ctx = $('#overall-graph-grade-level');
+    var myChart = new Chart(ctx, {
+          plugins: [{
+              beforeDraw: function(chart, options) {
+                if (chart.config.centerText.display !== null &&
+                    typeof chart.config.centerText.display !== 'undefined' &&
+                    chart.config.centerText.display) {
+                    drawTotals(chart);
+                }
+              }
+          }],
+          type: 'doughnut',
+          data: {
+              labels: grade_level_label,
+              datasets: [{
+                  label: '# Voters per Grade Level',
+                  data: grade_level_data,
+                  backgroundColor: solid_color.slice([0, Object.keys(grade_level_dict).length]),
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              title: {
+                  display: true,
+                  text: 'Voters per Grade Level',
+                  position: 'top',
+                  fontSize: 20
+              },
+              legend: {
+                display: true,
+                position: 'bottom'
+              },
+              plugins: [{
+              // Change options for ALL labels of THIS CHART
+              datalabels: {
+                  color: '#000000'
+                }
+              },
+            ]
+          },
+          centerText: {
+              display: true,
+              text: total_voters
+          }
+      });
+  }
+
+  function draw_gender_graph(){
+    var ctx = $('#overall-graph-gender');
+    var myChart = new Chart(ctx, {
+          plugins: [{
+              beforeDraw: function(chart, options) {
+                if (chart.config.centerText.display !== null &&
+                    typeof chart.config.centerText.display !== 'undefined' &&
+                    chart.config.centerText.display) {
+                    drawTotals(chart);
+                }
+              }
+          }],
+          type: 'doughnut',
+          data: {
+              labels: gender_label,
+              datasets: [{
+                  label: 'Voters per Gender',
+                  data: gender_data,
+                  backgroundColor: [
+                      'rgba(96, 96, 255)',
+                      'rgba(242, 128, 191)',
+                  ],
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              title: {
+                  display: true,
+                  text: 'Voters per Gender',
+                  position: 'top',
+                  fontSize: 20
+              },
+              legend: {
+                display: true,
+                position: 'bottom'
+              },
+              plugins: {
+              // Change options for ALL labels of THIS CHART
+              datalabels: {
+                  color: '#000000'
+                }
+            }
+        },
+        centerText: {
+            display: true,
+            text: total_voters
+        }
+      });
+  }
+
+  function draw_by_section_graph(){
+    var ctx = $('#by-section-graph');
+    var myChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: section_labels,
+              datasets: [
+                  {
+                      label: 'Total',
+                      data: section_total_data,
+                      backgroundColor: "orange",
+                      borderWidth: 1
+                  },
+                  {
+                    label: 'Male',
+                    data: section_male_data,
+                    backgroundColor: "rgba(96, 96, 255)",
+                    borderWidth: 1
+                  },
+                  {
+                    label: 'Female',
+                    data: section_female_data,
+                    backgroundColor: 'rgba(242, 128, 191)',
+                    borderWidth: 1
+                  }
+              ]
+          },
+          options: {
+              title: {
+                  display: true,
+                  text: 'Voters per Section',
+                  position: 'top',
+                  fontSize: 20
+              },
+              legend: {
+                display: true,
+                position: 'top'
+              },
+              plugins: {
+              // Change options for ALL labels of THIS CHART
+              datalabels: {
+                  color: '#000000'
+                }
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+          },
+          centerText: {
+              display: false,
+              text: total_voters
+          }
+      });
+  }
+
+
+</script>
+
 <script >
+
+  function populate_html_of_summary_panel(){
+    $.ajax({
+        url: "{% url 'registration:populate_hmtl_summary_panel_ajax' %}",
+        type: 'get',
+        dataType: 'json',
+        success: function(data){
+          $('#summary-panel').html(data.html_form)
+        }
+      });
+  }
+
+  function populate_summary_panel(){
+    var form = $('#filter_form');
+    $.ajax({
+        url: "{% url 'registration:populate_summary_panel_ajax' %}",
+        type: 'get',
+        dataType: 'json',
+        data: form.serialize(),
+        beforeSend: function(){
+                      populate_html_of_summary_panel();
+                    },
+        success: function(data){
+                  clear_global_variables();
+                  $('#students_summary_table_body').html("");
+                  $.each(data.rows, function(key, value){
+                    var append_html = "<tr>";
+                    append_html += "<td>" + value.grade_level + "</td>" ;
+                    append_html += "<td>" + value.section + "</td>" ;
+                    append_html += "<td>" + value.male_count + "</td>" ;
+                    append_html += "<td>" + value.female_count + "</td>" ;
+                    append_html += "<td>" + value.total + "</td>" ;
+                    append_html += "</tr>";
+                    $('#students_summary_table_body').append(append_html);
+
+                    //data for overall per grade level
+                    push_data_to_chart(value);
+
+                    //data for By Section
+                    section_labels.push(value.grade_level + ' - ' + value.section);
+                    section_total_data.push(value.total);
+                    section_male_data.push(value.male_count);
+                    section_female_data.push(value.female_count);
+                  });
+
+                  //build the list for the chart
+                  create_list_for_grade_level_chart();
+
+                  //draw the grade_level graph
+                  total_voters = data.summary.grand_total;
+                  draw_grade_level_graph();
+
+                  //populate summary Total
+                  $('#male_total').html("<h4><b>" + data.summary.male_count +"</b></h4>");
+                  $('#female_total').html("<h4><b>" + data.summary.female_count +"</b></h4>");
+                  $('#grand_total').html("<h4><b>" + data.summary.grand_total +"</b></h4>");
+
+                  //populate the list for gender chart
+                  //male first item, female second item
+                  gender_data.push(data.summary.male_count);
+                  gender_label.push('Male');
+                  gender_data.push(data.summary.female_count);
+                  gender_label.push('Female');
+                  draw_gender_graph();
+
+                  draw_by_section_graph();
+                  },
+        });
+  }
+
   $(document).ready( function () {
     var form = $('#id_school_year').closest("form");
 
     var table = $('#uploaded_students').DataTable( {
-  
+
       "processing": true,
+      "dom":  "<'row'<'col-md-6'l><'col-md-6'f>><'row'<'col-md-6'B><'col-md-6'p>><'row'<'col-md-12't>><'row'<'col-md-12'i>>",
+      "buttons": [
+          'print','copy', 'excel', 'pdf', 'colvis'
+            ],
       "ajax": {
           "processing": true,
           "url": "{% url 'registration:populate_table_uploaded_students_2_ajax' %}",
@@ -81,7 +465,9 @@
       ],
       "columnDefs": [
         { "render": function ( data, type, row ) {
-                    return '<a href="/registration/student/update/' + data  +'">' +'<button class="btn btn-success">Edit</button>' +"</a>";
+                    return '<a href="/registration/student/update/' + data  +'">'
+                            +'<button class="btn btn-sm btn-success">Edit</button>'
+                            +"</a>";
                 },
           "targets": -1 },
           { "render": function ( data, type, row ) { //changing date format dd/mm/yyyy
@@ -89,11 +475,24 @@
                       var newDate = dateAr[1] + '/' + dateAr[2] + '/' + dateAr[0];
                       return newDate;
                   },
-            "targets": -3 }
+            "targets": -3 },
+            {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                "targets": [-3,-1,-2,-4],
+                "className": "text-center",
+                // "width": "4%"
+           },
       ],
       "order": [[ 1, "asc" ]]
     });
-  } );
+  }
+  );
+
+  //popuplate summary panel
+    $(document).ready( function () {
+
+      populate_summary_panel();
+
+    });
 </script>
 
 <script> //filter option manipulation
@@ -130,6 +529,7 @@
         });
 
         $('#uploaded_students').DataTable().ajax.reload();
+        populate_summary_panel();
       });
 
     $('#id_grade_level').change( function(){
@@ -145,11 +545,16 @@
 
       clear_section();
       $('#uploaded_students').DataTable().ajax.reload();
+      populate_summary_panel();
     });
 
     $('#id_section').change( function(){
       $('#uploaded_students').DataTable().ajax.reload();
+      populate_summary_panel();
     });
+
+    $('#id_school_year').attr('data-live-search',"true");
+    $('#id_school_year').selectpicker('render');
 
     $('#id_grade_level').attr('data-live-search',"true");
     $('#id_grade_level').selectpicker('render');
@@ -158,6 +563,17 @@
     $('#id_section').selectpicker('render');
   });
 </script>
+<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'js/buttons.print.min.js' %}"></script>
+<!-- for other buttons of datatables -->
+<script src="{% static 'js/dataTables.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/buttons.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/jszip.min.js' %}"></script>
+<script src="{% static 'js/pdfmake.min.js' %}"></script>
+<script src="{% static 'js/vfs_fonts.js' %}"></script>
+<script src="{% static 'js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'js/buttons.colVis.min.js' %}"></script>
 
 <script src="{% static modal_ajax_location %}"></script>
 <script src="{% static 'js/bootstrap-select.min.js' %}"></script>

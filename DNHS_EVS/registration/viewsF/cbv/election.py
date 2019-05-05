@@ -170,16 +170,14 @@ def populate_table_voters_list_ajax(request, election_id):
     student_list = get_voters_list(election_id)
     return HttpResponse(json.dumps(student_list), content_type='application/json')
 
-@permission_required('registration.add_election', raise_exception=True)
-def populate_table_voters_summary_ajax(request, election_id):
-    return_dict = dict()
+def create_summary_json(summary):
     return_list_rows = []
     return_dict_summary = dict()
     return_dict_summary['female_count'] = 0
     return_dict_summary['male_count'] = 0
     return_dict_summary['grand_total'] = 0
     row_counter = 1
-    summary = get_student_summary_data(election = Election.objects.get(id = election_id))
+
     for row in summary:
         if row_counter % 2 != 0: # new section, create new row
             row_json_cleaned = {}
@@ -196,8 +194,13 @@ def populate_table_voters_summary_ajax(request, election_id):
             row_json_cleaned['total'] = row_json_cleaned['male_count'] + row_json_cleaned['female_count']
             return_list_rows.append(row_json_cleaned)
         row_counter += 1
-    return_dict['rows'] = return_list_rows
-    return_dict['summary'] = return_dict_summary
+    return return_list_rows,return_dict_summary
+
+@permission_required('registration.add_election', raise_exception=True)
+def populate_table_voters_summary_ajax(request, election_id):
+    return_dict = dict()
+    summary = get_student_summary_data(election = Election.objects.get(id = election_id))
+    return_dict['rows'],return_dict['summary'] = create_summary_json(summary)
 
     return HttpResponse(json.dumps(return_dict), content_type='application/json')
 

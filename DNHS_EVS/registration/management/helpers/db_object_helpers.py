@@ -8,21 +8,26 @@ import itertools
 class DatabaseObjectHelps():
     pass
 
-def get_student_summary_data(*args, **kwargs):
-    '''
-        get the student summary data given filter specied.
-        Return a namedtuple
-    '''
-    election = kwargs.get('election', None)
-    # print(**kwargs)
-    if election:
-        school_year = election.school_year
-        grade_levels = [ [grade_level.grade_level for grade_level in position.grade_levels.all()] \
-                   for position in election.positions.all()
-                ]
-        #https://stackoverflow.com/questions/716477/join-list-of-lists-in-python
-        grade_levels = set(list(itertools.chain.from_iterable(grade_levels))) #merge all items and remove duplicates
+def create_sql_query(**kwargs):
+    school_year = kwargs.get('school_year', None)
+    grade_levels = kwargs.get('grade_levels', None)
+    sections = kwargs.get('sections', None)
+    sql_query = ""
 
+    if sections:
+        sql_query = "select grade_level,grade_level_integer, section, sex, count(*) \
+                    from registration_student a , registration_student_classes b, \
+                        registration_class c, registration_sex d \
+                    where a.id = b.student_id and a.sex_id = d.id	\
+                        and b.class_id = c.id and c.school_year = '%s' \
+                        and c.section in (%s)                \
+                    group by grade_level, grade_level_integer, section, sex \
+                    order by grade_level_integer, section" \
+                    % (school_year,
+                    ", ".join( "'{}'".format(section) for section in sections)
+                    #to convery the set into a usable sql for in statement
+                    )
+    elif grade_levels:
         sql_query = "select grade_level,grade_level_integer, section, sex, count(*) \
                     from registration_student a , registration_student_classes b, \
                         registration_class c, registration_sex d \
@@ -35,14 +40,70 @@ def get_student_summary_data(*args, **kwargs):
                     ", ".join( "'{}'".format(grade_level) for grade_level in grade_levels)
                     #to convery the set into a usable sql for in statement
                     )
-
     else:
-        sql_query = "select grade_level, section, sex, count(*) \
+        sql_query = "select grade_level,grade_level_integer, section, sex, count(*) \
+                    from registration_student a , registration_student_classes b, \
+                        registration_class c, registration_sex d \
+                    where a.id = b.student_id and a.sex_id = d.id	\
+                        and b.class_id = c.id and c.school_year = '%s' \
+                    group by grade_level, grade_level_integer, section, sex \
+                    order by grade_level_integer, section" \
+                    % (school_year)
+
+    return sql_query
+
+def get_student_summary_data(*args, **kwargs):
+    '''
+        get the student summary data given filter specied.
+        Return a namedtuple
+    '''
+    election = kwargs.get('election', None)
+    #used for student List
+    school_year_p = kwargs.get('school_year', None)
+    grade_levels_p = kwargs.get('grade_levels', None)
+    sections_p = kwargs.get('sections', None)
+    if election:
+        school_year = election.school_year
+        grade_levels = [ [grade_level.grade_level for grade_level in position.grade_levels.all()] \
+                   for position in election.positions.all()
+                ]
+        #https://stackoverflow.com/questions/716477/join-list-of-lists-in-python
+        grade_levels = set(list(itertools.chain.from_iterable(grade_levels))) #merge all items and remove duplicates
+        sql_query = create_sql_query(
+                        school_year=school_year,
+                        grade_levels=grade_levels
+        )
+    elif school_year_p:
+        if sections_p:
+            if isinstance(sections_p, list):
+                sections_p = set(sections_p)
+            else:
+                sections_p = {sections_p}
+            sql_query = create_sql_query(
+                            school_year=school_year_p,
+                            sections = sections_p
+            )
+        elif grade_levels_p:
+            if isinstance(grade_levels_p, list):
+                grade_levels_p = set(grade_levels_p)
+            else:
+                grade_levels_p = {grade_levels_p}
+            sql_query = create_sql_query(
+                            school_year=school_year_p,
+                            grade_levels = grade_levels_p
+            )
+        else:
+            sql_query = create_sql_query(
+                            school_year=school_year_p
+            )
+    else:
+        sql_query = "select grade_level,grade_level_integer, section, sex, count(*) \
                     from registration_student a , registration_student_classes b, \
                         registration_class c, registration_sex d \
                     where a.id = b.student_id and a.sex_id = d.id	\
                         and b.class_id = c.id  \
-                    group by grade_level, section, sex order by grade_level, section"
+                    group by grade_level, grade_level_integer, section, sex \
+                    order by grade_level_integer, section"
 
     #https://django.readthedocs.io/en/2.1.x/topics/db/sql.html
 
