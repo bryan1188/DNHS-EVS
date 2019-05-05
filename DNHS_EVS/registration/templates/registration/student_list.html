@@ -217,7 +217,7 @@
           data: {
               labels: grade_level_label,
               datasets: [{
-                  label: '# Voters per Grade Level',
+                  label: 'Students per Grade Level',
                   data: grade_level_data,
                   backgroundColor: solid_color.slice([0, Object.keys(grade_level_dict).length]),
                   borderWidth: 1
@@ -226,7 +226,7 @@
           options: {
               title: {
                   display: true,
-                  text: 'Voters per Grade Level',
+                  text: 'Students per Grade Level',
                   position: 'top',
                   fontSize: 20
               },
@@ -265,7 +265,7 @@
           data: {
               labels: gender_label,
               datasets: [{
-                  label: 'Voters per Gender',
+                  label: 'Students per Gender',
                   data: gender_data,
                   backgroundColor: [
                       'rgba(96, 96, 255)',
@@ -277,7 +277,7 @@
           options: {
               title: {
                   display: true,
-                  text: 'Voters per Gender',
+                  text: 'Students per Gender',
                   position: 'top',
                   fontSize: 20
               },
@@ -329,7 +329,7 @@
           options: {
               title: {
                   display: true,
-                  text: 'Voters per Section',
+                  text: 'Students per Section',
                   position: 'top',
                   fontSize: 20
               },
@@ -345,6 +345,11 @@
             },
             scales: {
                 yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }],
+                xAxes: [{
                     ticks: {
                         beginAtZero: true
                     }
@@ -482,7 +487,10 @@
                 // "width": "4%"
            },
       ],
-      "order": [[ 1, "asc" ]]
+      "order": [[ 1, "asc" ]],
+      scrollY:        "400px",
+      scrollX:        true,
+      scrollCollapse: true,
     });
   }
   );
