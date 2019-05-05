@@ -78,6 +78,17 @@ def populate_table_uploaded_students_2(request): # will be called by ajax reques
     return HttpResponse(json, content_type='application/json')
 
 @permission_required('registration.add_student', raise_exception=True)
+def populate_hmtl_summary_panel_ajax(request):
+    data = dict()
+    context = dict()
+    data['html_form'] = render_to_string(
+        'registration/partial_student_list_summary_panel.html',
+        context,
+        request = request
+    )
+    return JsonResponse(data)
+
+@permission_required('registration.add_student', raise_exception=True)
 def populate_summary_panel_ajax(request):
     school_year =  request.GET.get('school_year', None)
     grade_levels = request.GET.get('grade_level', None)
@@ -95,15 +106,8 @@ def populate_summary_panel_ajax(request):
         )
     return_dict = dict()
     return_dict['rows'],return_dict['summary'] = create_summary_json(summary)
-    return HttpResponse(json.dumps(return_dict), content_type='application/json')
-
-@permission_required('registration.add_student', raise_exception=True)
-def populate_hmtl_summary_panel_ajax(request):
-    data = dict()
-    context = dict()
-    data['html_form'] = render_to_string(
+    return_dict['panel_html_form'] = render_to_string(
         'registration/partial_student_list_summary_panel.html',
-        context,
         request = request
     )
-    return JsonResponse(data)
+    return HttpResponse(json.dumps(return_dict), content_type='application/json')

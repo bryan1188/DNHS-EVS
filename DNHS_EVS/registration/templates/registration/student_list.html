@@ -434,10 +434,11 @@
         data: data_to_send,
         dataSrc: "",
         beforeSend: function(){
-                      populate_html_of_summary_panel();
+                      // populate_html_of_summary_panel();
                     },
         success: function(data){
                   clear_global_variables();
+                  $('#summary-panel').html(data.panel_html_form);
                   $('#students_summary_table_body').html("");
                   $.each(data.rows, function(key, value){
                     var append_html = "<tr>";
