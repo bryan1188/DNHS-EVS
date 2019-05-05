@@ -58,14 +58,19 @@ def populate_table_uploaded_students_2(request): # will be called by ajax reques
     school_year =  request.GET.get('school_year', None)
     grade_level = request.GET.get('grade_level', None)
     section = request.GET.get('section', None)
-    if school_year and grade_level and section: #all filters are available
-        student_list = models.Student.objects.filter(classes__school_year=school_year, classes__grade_level=grade_level,classes__section=section)
-    elif school_year and grade_level: #school year and grade level filter is available
-        student_list = models.Student.objects.filter(classes__school_year=school_year, classes__grade_level=grade_level)
-    elif school_year:  #school year
-        student_list = models.Student.objects.filter(classes__school_year=school_year)
-    else: #no filter
-        student_list = models.Student.objects.all() #filter(classes__school_year=school_year)
+    student_ids = request.GET.getlist('student_ids[]', None) #[] format from front-end
+    print(request.GET)
+    if student_ids != [''] and student_ids:
+        student_list = models.Student.objects.filter(id__in=student_ids)
+    else:
+        if school_year and grade_level and section: #all filters are available
+            student_list = models.Student.objects.filter(classes__school_year=school_year, classes__grade_level=grade_level,classes__section=section)
+        elif school_year and grade_level: #school year and grade level filter is available
+            student_list = models.Student.objects.filter(classes__school_year=school_year, classes__grade_level=grade_level)
+        elif school_year:  #school year
+            student_list = models.Student.objects.filter(classes__school_year=school_year)
+        else: #no filter
+            student_list = models.Student.objects.all() #filter(classes__school_year=school_year)
 
     #add def natural_key() method on Sex Object
     json = serializers.serialize('json', student_list, use_natural_foreign_keys=True, \

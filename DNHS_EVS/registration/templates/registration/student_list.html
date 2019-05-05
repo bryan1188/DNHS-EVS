@@ -178,6 +178,7 @@
               'rgba(239, 38, 108, .4)',
         ];
 
+      var student_ids = new Array();
 
       var grade_level_label = new Array();
       var grade_level_data = new Array();
@@ -500,6 +501,7 @@
                   d.school_year = $('#id_school_year').val();
                   d.grade_level = $('#id_grade_level').val();
                   d.section = $('#id_section').val();
+                  d.student_ids = student_ids;
                 },
           "dataSrc": ""
       },
@@ -629,7 +631,7 @@
       });
       // student_ids_for_upload = student_ids_for_upload_g;
 
-      var student_ids = new Array();
+      // var student_ids = new Array();
 
       /* 2. INITIALIZE THE FILE UPLOAD COMPONENT */
       $("#fileupload").fileupload({
@@ -637,13 +639,15 @@
         sequentialUploads: true,  /* 1. SEND THE FILES ONE BY ONE */
         start: function (e) {  /* 2. WHEN THE UPLOADING PROCESS STARTS, SHOW THE MODAL */
           $("#modal-progress").modal("show");
-          studend_ids = [];
+          student_ids = [];
         },
         stop: function (e) {  /* 3. WHEN THE UPLOADING PROCESS FINALIZE, HIDE THE MODAL */
           $("#modal-progress").modal("hide");
           // student_ids = new Set(student_ids);
           console.log(student_ids);
           populate_summary_panel(student_ids);
+          $('#uploaded_students').DataTable().ajax.reload();
+          student_ids = []; //clean array to clear after reaload and to prevent issue using  filter
         },
         progressall: function (e, data) {  /* 4. UPDATE THE PROGRESS BAR */
           var progress = parseInt(data.loaded / data.total * 100, 10);
