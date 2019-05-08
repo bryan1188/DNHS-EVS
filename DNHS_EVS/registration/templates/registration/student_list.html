@@ -24,6 +24,19 @@
     .adj-padding {
       padding: 5px;
     }
+    #uploaded_students, .btn-datatables, .btn, th, #uploaded_students_wrapper{
+      font-size: 10px;
+    }
+    .btn-datatables {
+      padding: 1px 5px 1px 5px;
+    }
+    .odd {
+      background-color: #f4f3f2;
+    }
+
+    #uploaded_students tr{
+      height: 10px;
+    }
   </style>
 {% endblock %}
 <h3><b>Student List</b></h3>
@@ -63,9 +76,9 @@
       </tr>
       <tr>
         <td>
-          <div class="well text-muted text-center" style="padding-top: 4rem; padding-bottom: 4rem;">
+          <div class="well text-muted text-center" style="padding-top: 1rem; padding-bottom: 1rem;">
             <span class="glyphicon glyphicon-arrow-down" style="font-size: 4rem;"></span>
-            <h3>Drop School Form-I Files Here to Upload</h3>
+            <h3 style="margin-top: 2px; margin-bottom: 2px;">Drop School Form-I Files Here to Upload</h3>
           </div>
           <input id="fileupload" type="file" name="file_field" multiple
              style="display: none;"
@@ -101,26 +114,30 @@
             <table id="uploaded_students" class="table table-bordered display">
               <thead>
                 <tr>
-                  <th>LRN</th>
-                  <th>Last Name</th>
-                  <th>First Name</th>
-                  <th>Middle Name</th>
-                  <th>Sex</th>
-                  <th>Birth Date</th>
-                  <th>Age</th>
-                  <th>Action</th>
+                  <div class="datatables-head-footer">
+                    <th>LRN</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Middle Name</th>
+                    <th>Sex</th>
+                    <th>Birth Date</th>
+                    <th>Age</th>
+                    <th>Action</th>
+                  </div>
                 </tr>
               </thead>
               <tfoot>
                 <tr>
-                  <th>LRN</th>
-                  <th>Last Name</th>
-                  <th>First Name</th>
-                  <th>Middle Name</th>
-                  <th>Sex</th>
-                  <th>Birth Date</th>
-                  <th>Age</th>
-                  <th>Action</th>
+                  <div class="datatables-head-footer">
+                    <th>LRN</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Middle Name</th>
+                    <th>Sex</th>
+                    <th>Birth Date</th>
+                    <th>Age</th>
+                    <th>Action</th>
+                  </div>
                 </tr>
               </tfoot>
               <tbody>
@@ -179,6 +196,7 @@
         ];
 
       var student_ids = new Array();
+      var school_year_student_ids;
 
       var grade_level_label = new Array();
       var grade_level_data = new Array();
@@ -422,7 +440,10 @@
       data_type = 'json';
     }
     else {
-      data_to_send = {'student_ids': student_ids};
+      data_to_send = {
+          'student_ids': student_ids,
+          'school_year_student_ids': school_year_student_ids 
+        };
       data_type = '';
     }
     $.ajax({
@@ -520,7 +541,7 @@
       "columnDefs": [
         { "render": function ( data, type, row ) {
                     return '<a href="/registration/student/update/' + data  +'">'
-                            +'<button class="btn btn-sm btn-success">Edit</button>'
+                            +'<button class="btn btn-sm btn-success btn-datatables">Edit</button>'
                             +"</a>";
                 },
           "targets": -1 },
@@ -537,9 +558,12 @@
            },
       ],
       "order": [[ 1, "asc" ]],
-      scrollY: "400px",
-      scrollX: true,
+      scrollY:true,
+      // scrollX: true,
       scrollCollapse: true,
+      scroller: {
+        rowHeight: 20
+    }
     });
   }
   );
@@ -625,13 +649,6 @@
 <script type="text/javascript">
 
   $(function () {
-      /* 1. OPEN THE FILE EXPLORER WINDOW */
-      $(".js-upload-photos").click(function () {
-        $("#fileupload").click();
-        console.log(student_ids_for_upload_g);
-      });
-      // student_ids_for_upload = student_ids_for_upload_g;
-
       // var student_ids = new Array();
 
       /* 2. INITIALIZE THE FILE UPLOAD COMPONENT */
@@ -639,13 +656,24 @@
         dataType: 'json',
         sequentialUploads: true,  /* 1. SEND THE FILES ONE BY ONE */
         start: function (e) {  /* 2. WHEN THE UPLOADING PROCESS STARTS, SHOW THE MODAL */
+          var modal_progress_html = '<div class="modal-dialog"> \
+                         <div class="modal-content"> \
+                           <div class="modal-header"> \
+                             <h4 class="modal-title">Uploading...</h4> \
+                           </div> \
+                           <div class="modal-body"> \
+                             <div class="progress"> \
+                               <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div> \
+                             </div> \
+                           </div> \
+                         </div> \
+                      </div>';
+          $("#modal-progress").html(modal_progress_html);
           $("#modal-progress").modal("show");
           student_ids = [];
         },
         stop: function (e) {  /* 3. WHEN THE UPLOADING PROCESS FINALIZE, HIDE THE MODAL */
           $("#modal-progress").modal("hide");
-          // student_ids = new Set(student_ids);
-          console.log(student_ids);
           populate_summary_panel(student_ids);
           $('#uploaded_students').DataTable().ajax.reload();
           student_ids = []; //clean array to clear after reaload and to prevent issue using  filter
@@ -659,6 +687,7 @@
         done: function (e, data) {  /* 3. PROCESS THE RESPONSE FROM THE SERVER */
           if (data.result.is_valid) {
             student_ids = student_ids.concat(data.result.student_ids); //append all uploaded ids
+            school_year_student_ids = data.result.school_year;
           }
         }
       });

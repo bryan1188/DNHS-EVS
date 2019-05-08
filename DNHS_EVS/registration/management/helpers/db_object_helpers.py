@@ -13,6 +13,7 @@ def create_sql_query(**kwargs):
     grade_levels = kwargs.get('grade_levels', None)
     sections = kwargs.get('sections', None)
     student_ids = kwargs.get('student_ids', None)
+    school_year_student_ids = kwargs.get('school_year_student_ids', None)
     sql_query = ""
 
     if sections:
@@ -46,11 +47,11 @@ def create_sql_query(**kwargs):
                     from registration_student a , registration_student_classes b, \
                         registration_class c, registration_sex d \
                     where a.id = b.student_id and a.sex_id = d.id	\
-                        and b.class_id = c.id  \
+                        and b.class_id = c.id  and c.school_year = '%s' \
                         and a.id in (%s)                \
                     group by grade_level, grade_level_integer, section, sex \
                     order by grade_level_integer, section" \
-                    % (", ".join( "'{}'".format(student_id) for student_id in student_ids)
+                    % (school_year_student_ids, ", ".join( "'{}'".format(student_id) for student_id in student_ids)
                     #to convery the set into a usable sql for in statement
                     )
     else:
@@ -76,6 +77,7 @@ def get_student_summary_data(*args, **kwargs):
     grade_levels_p = kwargs.get('grade_levels', None)
     sections_p = kwargs.get('sections', None)
     student_ids = kwargs.get('student_ids', None)
+    school_year_student_ids = kwargs.get('school_year_student_ids', None)
     if election:
         school_year = election.school_year
         grade_levels = [ [grade_level.grade_level for grade_level in position.grade_levels.all()] \
@@ -116,7 +118,8 @@ def get_student_summary_data(*args, **kwargs):
         else:
             student_ids = {student_ids}
         sql_query = create_sql_query(
-                    student_ids=student_ids
+                    student_ids=student_ids,
+                    school_year_student_ids=school_year_student_ids
         )
     else:
         sql_query = "select grade_level,grade_level_integer, section, sex, count(*) \

@@ -59,7 +59,6 @@ def populate_table_uploaded_students_2(request): # will be called by ajax reques
     grade_level = request.GET.get('grade_level', None)
     section = request.GET.get('section', None)
     student_ids = request.GET.getlist('student_ids[]', None) #[] format from front-end
-    print(request.GET)
     if student_ids != [''] and student_ids:
         student_list = models.Student.objects.filter(id__in=student_ids)
     else:
@@ -94,9 +93,11 @@ def populate_summary_panel_ajax(request):
     grade_levels = request.GET.get('grade_level', None)
     sections = request.GET.get('section', None)
     student_ids = request.GET.getlist('student_ids[]', None) #[] format from front-end
+    school_year_student_ids = request.GET.get('school_year_student_ids', None)
     if student_ids != [''] and student_ids:
         summary = get_student_summary_data(
-                    student_ids=student_ids
+                    student_ids=student_ids,
+                    school_year_student_ids=school_year_student_ids
         )
     else:
         summary = get_student_summary_data(

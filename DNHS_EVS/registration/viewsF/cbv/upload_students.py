@@ -26,6 +26,7 @@ class UploadStudentsAjax(PermissionRequiredMixin,View):
 
     def post(self,request):
         student_list= []
+        school_year = None
         data = dict()
         form = UploadStudentsForm(request.POST, request.FILES)
         files = request.FILES.getlist('file_field')
@@ -38,8 +39,10 @@ class UploadStudentsAjax(PermissionRequiredMixin,View):
                 uploader = XlsUploader(file_path="{}/{}".format(file_path,name),index=0) #index 0 means open the first sheet in the workbook.
                 uploader.uploadAllData()
                 student_list.extend(uploader.student_list)
+                school_year = uploader.class_data.get('school_year', None)
                 fs.delete(name) #delete after upload
             data['student_ids'] = student_list
+            data['school_year'] = school_year
             data['is_valid'] = True
         else:
             data = {'is_valid': False}
