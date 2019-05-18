@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_2.html' %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 {% load bootstrap4 %}
@@ -15,13 +15,13 @@
 
 {% block content %}
 
-<h2>
+<h3> <b>
   {% if not form.instance.pk %}
     Add Student
   {% else %}
     Update Student
   {% endif %}
-</h2>
+</b></h3>
 <form method="post">
   {% csrf_token %}
 
@@ -38,7 +38,7 @@
      <input type="submit" class="btn btn-primary" name="add_more_button" value="Add and add more">
      {% else %}
       <input type="submit" class="btn btn-primary" name="update_cancel" value="Cancel">
-      <a href="{% url 'registration:delete_student' pk=form.instance.pk %}"><button type="button" class="btn btn-danger">Delete</button></a>
+      <!-- <a href="{% url 'registration:delete_student' pk=form.instance.pk %}"><button type="button" class="btn btn-danger">Delete</button></a> -->
 
    {% endif %}
   </p>
@@ -51,7 +51,8 @@
      var newDate = date[1] + '/' + date[2] + '/' + date[0];
 
      //assign the new value to the field
-     $("#id_birth_date").val(newDate);
+     if (date != "")
+         $("#id_birth_date").val(newDate);
   });
 </script>
 
