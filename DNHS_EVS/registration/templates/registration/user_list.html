@@ -1,54 +1,93 @@
 {% extends 'base_2.html' %}
 {% load bootstrap3 %}
 {% load staticfiles %}
+{% load crispy_forms_tags %}
 
 {% block heading  %}
 
-  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.dataTables.min.css' %}">
+
+  <!-- for more datatables buttons -->
+  <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'registration/css/user_list.css' %}">
-  <!-- <script src="{% static 'js/jquery.min.js' %}"></script> -->
-  <!-- <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script> -->
+
+
   <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+
+  <style media="screen">
+        #user_list_wrapper, .btn{
+          font-size: 11px;
+        }
+  </style>
 
 {% endblock %}
 
 {% block content %}
-<h2>User Management</h2>
-  <form method="post">
-    {% csrf_token %}
-      {% bootstrap_form user_filter_form %}
-  </form>
-  <p>
-     <button type="button" class="btn btn-primary js-create-user" data-url="{% url 'registration:create_user_ajax' %}">
-       <span class="glyphicon glyphicon-plus"></span>
-       New User
-     </button>
-   </p>
-  <table id="user_list" class="table table-bordered display">
-    <thead>
-      <tr>
-        <th>username</th>
-        <th>Last Name</th>
-        <th>First Name</th>
-        <th>Groups</th>
-        <th>Active</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tfoot>
-      <tr>
-        <th>username</th>
-        <th>Last Name</th>
-        <th>First Name</th>
-        <th>Groups</th>
-        <th>Active</th>
-        <th>Action</th>
-      </tr>
-    </tfoot>
-    <tbody>
+<h3><b>User Management</b></h3>
 
-    </tbody>
-  </table>
+<div class="row">
+    <div class="col-md-3">
+      <div class="panel panel-info">
+          <div class="panel-heading">
+              <a data-toggle=collapse href="#collapseFilter">Filter</a>
+          </div>
+          <div id="collapseFilter" class="panel-collapse collapse in" >
+              <div class="panel-body">
+                <form method="post">
+                  {% csrf_token %}
+                    {{ user_filter_form|crispy }}
+                </form>
+              </div>
+          </div>
+      </div>
+    </div>
+    <div class="col-md-9">
+      <div class="panel panel-info">
+          <div class="panel-heading">
+              <a data-toggle=collapse href="#collapseUserList">User List</a>
+          </div>
+          <div id="collapseUserList" class="panel-collapse collapse in" >
+              <div class="panel-body">
+                    <p>
+                       <button type="button" class="btn btn-primary js-create-user" data-url="{% url 'registration:create_user_ajax' %}">
+                          <span class="glyphicon glyphicon-plus"></span>
+                          New User
+                       </button>
+                     </p>
+                     <div class="table-responsive">
+                         <table id="user_list" class="table table-bordered display">
+                             <thead>
+                               <tr>
+                                 <th>username</th>
+                                 <th>Last Name</th>
+                                 <th>First Name</th>
+                                 <th>Groups</th>
+                                 <th>Active</th>
+                                 <th>Action</th>
+                               </tr>
+                             </thead>
+                             <tfoot>
+                               <tr>
+                                 <th>username</th>
+                                 <th>Last Name</th>
+                                 <th>First Name</th>
+                                 <th>Groups</th>
+                                 <th>Active</th>
+                                 <th>Action</th>
+                               </tr>
+                             </tfoot>
+                             <tbody>
+
+                             </tbody>
+                         </table>
+                     </div>
+              </div>
+          </div>
+      </div>
+    </div>
+</div>
 
   <div class="modal fade" id="modal-section">
     <div class="modal-dialog">
@@ -72,6 +111,10 @@
       var form = $('#id_group').closest("form");
       var table = $('#user_list').DataTable({
         "processing": true,
+        "dom":  "<'row'<'col-md-6'l><'col-md-6'f>><'row'<'col-md-6'B><'col-md-6'p>><'row'<'col-md-12't>><'row'<'col-md-12'i>>",
+        "buttons": [
+            'print','copy', 'excel', 'pdf', 'colvis'
+              ],
         "ajax": {
             "processing": true,
             "url": "{% url 'registration:populate_table_user_list_ajax' %}",
@@ -177,6 +220,19 @@
     });
   });
 </script>
+
+<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'js/buttons.print.min.js' %}"></script>
+<!-- for other buttons of datatables -->
+<script src="{% static 'js/dataTables.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/buttons.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/jszip.min.js' %}"></script>
+<script src="{% static 'js/pdfmake.min.js' %}"></script>
+<script src="{% static 'js/vfs_fonts.js' %}"></script>
+<script src="{% static 'js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'js/buttons.colVis.min.js' %}"></script>
+
 
 <script src="{% static modal_ajax_location %}"></script>
 {% endblock %}

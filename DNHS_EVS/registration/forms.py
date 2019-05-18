@@ -170,52 +170,68 @@ class ClassFilterForm(forms.Form):
                         'data-placement': 'right',
                         'title': 'Apply filter by school year'
                         }
+                ),
+                required=False
                 )
-                )
-    grade_level = forms.ChoiceField(widget = forms.Select(
-                attrs = {
+    grade_level = forms.ChoiceField(
+                    widget = forms.Select(
+                        attrs = {
                     #removed, got crazy whene applying selectpicker
                     # 'data-toggle': 'tooltip',
                     # 'data-placement': 'right',
                     # 'title': 'Apply filter by grade level',
                     }
-    ))
-    section =  forms.ChoiceField(widget = forms.Select(
-                attrs = {
+                    ),
+                    required=False,
+    )
+    section =  forms.ChoiceField(
+                    widget = forms.Select(
+                        attrs = {
                     #removed, got crazy whene applying selectpicker
                     # 'data-toggle': 'tooltip',
                     # 'data-placement': 'right',
                     # 'title': 'Apply filter by section'
                     },
                     # initial = '---------'
-    ))
+                    ),
+                    required=False,
+    )
 
 class UserFilterForm(forms.Form):
     queryset_ =  Group.objects.all().order_by('name').values_list('name', flat=True).distinct()
-    group = forms.ModelChoiceField(widget=forms.CheckboxSelectMultiple(
-        attrs = {
-            'data-toggle': 'tooltip',
-            'data-placement': 'left',
-            'title': 'Check/uncheck to show specific user group'
-            }
-        ),
-        queryset=queryset_,\
-        empty_label=None
+    group = forms.ModelChoiceField(
+                widget=forms.CheckboxSelectMultiple(
+                    attrs = {
+                        'data-toggle': 'tooltip',
+                        'data-placement': 'left',
+                        'title': 'Check/uncheck to show specific user group'
+                        }
+                    ),
+                queryset=queryset_,\
+                empty_label=None,
+                required=False,
     )
-    active = forms.BooleanField(initial=True, widget=forms.CheckboxInput(
-            attrs = {
+    active = forms.BooleanField(
+                initial=True,
+                widget=forms.CheckboxInput(
+                    attrs = {
                 'data-toggle': 'tooltip',
                 'data-placement': 'left',
                 'title': 'Apply filter for active or inactive users'
                 }
-    ))
-    all_users = forms.BooleanField(initial=False, widget=forms.CheckboxInput(
-            attrs = {
-                'data-toggle': 'tooltip',
-                'data-placement': 'left',
-                'title': 'Toggle to show all users'
-                }
-    ))
+                ),
+                required=False,
+    )
+    all_users = forms.BooleanField(
+                    initial=False, widget=forms.CheckboxInput(
+                            attrs = {
+                                'data-toggle': 'tooltip',
+                                'data-placement': 'left',
+                                'title': 'Toggle to show all users'
+                                }
+                    ),
+                    required=False,
+    )
 
 class ElectionFilterForm(forms.Form):
     school_year = forms.ModelChoiceField(
