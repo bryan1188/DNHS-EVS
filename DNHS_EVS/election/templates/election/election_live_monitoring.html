@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_2.html' %}
 {% load staticfiles %}
 {% load widget_tweaks %}
 
@@ -13,7 +13,7 @@
 
 {% block content %}
   {% if object %}
-    <h2>Live Votes Monitoring for {{ object|title }} Election</h2>
+    <h3><b>Live Votes Monitoring for {{ object|title }} Election</b></h3>
     <div class="panel panel-info">
       <div class="panel-heading">
        <a data-toggle="collapse" href="#collapseCanidates"><h2>Live Monitoring</h2></a>

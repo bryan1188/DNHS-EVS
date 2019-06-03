@@ -1,55 +1,107 @@
-{% extends 'base.html' %}
-{% load bootstrap4 %}
+{% extends 'base_2.html' %}
+{% load bootstrap3 %}
 {% load staticfiles %}
+{% load crispy_forms_tags %}
 
 {% block heading  %}
 
-  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
-  <link rel="stylesheet" href="{% static 'registration/css/user_list.css' %}">
   <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.dataTables.min.css' %}">
+
+  <!-- for more datatables buttons -->
+  <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
+
   <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+
+  <style media="screen">
+        #candidate_list_wrapper, #candidate_list_wrapper .btn{
+          font-size: 11px;
+        }
+        .odd {
+          background-color: #f4f3f2;
+        }
+  </style>
 
 {% endblock %}
 
 {% block content %}
-<h2>{{ object_name|title }} Management</h2>
-<form method="post">
-  {% csrf_token %}
-    {% bootstrap_form filter_form %}
-</form>
-<p>
- <button type="button" class="btn btn-primary js-create-candidate"
-  data-toggle="tooltip" data-placement="right" title="Create new {{object_name}}"
-    data-url="{% url 'registration:create_candidate_ajax' %}">
-   <span class="glyphicon glyphicon-plus"></span>
-   New {{ object_name|title }}
- </button>
-</p>
-<table id="candidate_list" class="table table-bordered display">
-  <thead>
-    <tr>
-      <th>Election</th>
-      <th>School Year</th>
-      <th>Position</th>
-      <th>Candidate</th>
-      <th>Party</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tfoot>
-    <tr>
-      <th>Election</th>
-      <th>School Year</th>
-      <th>Position</th>
-      <th>Candidate</th>
-      <th>Party</th>
-      <th>Action</th>
-    </tr>
-  </tfoot>
-  <tbody>
+<h3><b>{{ object_name|title }} Management</b></h3>
 
-  </tbody>
-</table>
+<div class="row">
+    <!-- filter & create button-->
+    <div class="col-md-2">
+        <!-- create button -->
+        <div class="row " style="margin-bottom: 10px;">
+            <div class="col-md-12">
+              <button type="button" class="btn btn-block btn-primary js-create-candidate"
+               data-toggle="tooltip" data-placement="right" title="Create new {{object_name}}"
+                 data-url="{% url 'registration:create_candidate_ajax' %}">
+                <span class="glyphicon glyphicon-plus"></span>
+                New {{ object_name|title }}
+              </button>
+            </div>
+        </div>
+        <!-- filter -->
+        <div class="row ">
+            <div class="col-md-12">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <a data-toggle=collapse href="#collapseFilter">Filter</a>
+                    </div>
+                    <div id="collapseFilter" class="panel-collapse collapse in" >
+                        <div class="panel-body">
+                            <form method="post">
+                              {% csrf_token %}
+                                {{ filter_form | crispy }}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- list -->
+    <div class="col-md-10">
+      <div class="panel panel-info">
+          <div class="panel-heading">
+              <a data-toggle=collapse href="#collapseCandidateList">Candidate List</a>
+          </div>
+          <div id="collapseCandidateList" class="panel-collapse collapse in" >
+              <div class="panel-body">
+                     <div class="table-responsive">
+                         <table id="candidate_list" class="table table-bordered display">
+                           <thead>
+                             <tr>
+                               <th>Election</th>
+                               <th>School Year</th>
+                               <th>Position</th>
+                               <th>Candidate</th>
+                               <th>Party</th>
+                               <th>Action</th>
+                             </tr>
+                           </thead>
+                           <tfoot>
+                             <tr>
+                               <th>Election</th>
+                               <th>School Year</th>
+                               <th>Position</th>
+                               <th>Candidate</th>
+                               <th>Party</th>
+                               <th>Action</th>
+                             </tr>
+                           </tfoot>
+                           <tbody>
+
+                           </tbody>
+                         </table>
+                     </div>
+              </div>
+          </div>
+      </div>
+    </div>
+</div>
 
 <div class="modal fade" id="modal-section">
   <div class="modal-dialog">
@@ -74,6 +126,10 @@
                 $('[data-toggle="tooltip"]').tooltip();
                 },
         "processing": true,
+        "dom":  "<'row'<'col-md-6'l><'col-md-6'f>><'row'<'col-md-6'B><'col-md-6'p>><'row'<'col-md-12't>><'row'<'col-md-12'i>>",
+        "buttons": [
+            'print','copy', 'excel', 'pdf', 'colvis'
+              ],
         "ajax": {
             "processing": true,
             "url": "{% url 'registration:populate_table_candidate_list_ajax' %}",
@@ -101,32 +157,32 @@
              var toggleButton = ""
              if (row['fields']['is_active']) {
               toggleButton = '<button id="button-change-password" type="button" '
-                    + 'class="btn btn-danger btn-sm js-toggle-candidate"'
-                    + 'data-toggle="tooltip" data-placement="right" title="Deactivate" '
+                    + 'class="btn btn-danger btn-xs js-toggle-candidate"'
+                    + 'data-toggle="tooltip" data-placement="top" title="Deactivate" '
                     + 'data-url="/registration/ajax/candidate/toggle_status/'
                     + row['pk']  +'/">' +'<span class="glyphicon glyphicon-remove-sign"></span></button></div>';
               }
               else {
-                toggleButton = '<button  type="button" class="btn btn-success btn-sm js-toggle-candidate"'
-                    + 'data-toggle="tooltip" data-placement="right" title="Activate" '
+                toggleButton = '<button  type="button" class="btn btn-success btn-xs js-toggle-candidate"'
+                    + 'data-toggle="tooltip" data-placement="top" title="Activate" '
                     + 'data-url="/registration/ajax/candidate/toggle_status/'
                     + row['pk']  +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span></button></div>';
               }
              return '<div class="btn-group"><button id="button-edit" type="button" '
                      + 'data-toggle="tooltip" data-placement="left" title="Edit" '
-                     + 'class="btn btn-secondary btn-sm js-update-candidate" '
+                     + 'class="btn btn-secondary btn-xs js-update-candidate" '
                      + 'data-url="/registration/ajax/candidate/update/'
                      + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
                      + '<button type="button" '
                      + 'data-toggle="tooltip" data-placement="top" title="Show More Details" '
-                     + 'class="btn btn-primary btn-sm js-show-more-details-candidate" '
+                     + 'class="btn btn-primary btn-xs js-show-more-details-candidate" '
                      + 'data-url="/registration/ajax/candidate/more_details/'
                      + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button>'
-                     + '<button type="button" '
-                     + 'data-toggle="tooltip" data-placement="top" title="Show List of Voters" '
-                     + 'class="btn btn-primary btn-sm js-show-more-voters" '
-                     + 'data-url="/registration/ajax/candidate/more_details/'
-                     + data  +'/">' +'<span class="glyphicon glyphicon-th-list"></span></button>'
+                     // + '<button type="button" '
+                     // + 'data-toggle="tooltip" data-placement="top" title="Show List of Voters" '
+                     // + 'class="btn btn-primary btn-xs js-show-more-voters" '
+                     // + 'data-url="/registration/ajax/candidate/more_details/'
+                     // + data  +'/">' +'<span class="glyphicon glyphicon-th-list"></span></button>'
                      + toggleButton ;
                    },
              "targets": -1
@@ -151,6 +207,18 @@
 
     });
 </script>
+
+  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'js/dataTables.buttons.min.js' %}"></script>
+  <script src="{% static 'js/buttons.print.min.js' %}"></script>
+  <!-- for other buttons of datatables -->
+  <script src="{% static 'js/dataTables.bootstrap.min.js' %}"></script>
+  <script src="{% static 'js/buttons.bootstrap.min.js' %}"></script>
+  <script src="{% static 'js/jszip.min.js' %}"></script>
+  <script src="{% static 'js/pdfmake.min.js' %}"></script>
+  <script src="{% static 'js/vfs_fonts.js' %}"></script>
+  <script src="{% static 'js/buttons.html5.min.js' %}"></script>
+  <script src="{% static 'js/buttons.colVis.min.js' %}"></script>
 
  <script src="{% static modal_ajax_location %}"></script>
  <script src="{% static 'js/bootstrap-select.min.js' %}"></script>

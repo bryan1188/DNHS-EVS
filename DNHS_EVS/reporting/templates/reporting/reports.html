@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_2.html' %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
@@ -17,11 +17,16 @@
 <script src="{% static 'js/Chart.min.js' %}"></script>
 <script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script>
 
+<style media="screen">
+      #election-winner-table_wrapper, .btn{
+        font-size: 11px;
+      }
+</style>
 
 {% endblock %}
 
 {% block content %}
-  <h2>Reportings</h2>
+  <h3><b>Reportings</b></h3>
   <div class="tabbable">
       <div class="row">
         <div class="col-md-2">
@@ -325,6 +330,8 @@
                         });
                         table.buttons().container().appendTo('#' + data.nav_pill + '-tabular-data-' + value.object_id +'_wrapper .col-md-6:eq(0)' );
 
+                        // adjust font-size
+                        $('#' + data.nav_pill + '-tabular-data-'+ value.object_id + "_wrapper").css("font-size","11px")
                       });
 
                   }

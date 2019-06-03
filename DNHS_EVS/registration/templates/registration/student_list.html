@@ -24,9 +24,12 @@
     .adj-padding {
       padding: 5px;
     }
-    #uploaded_students, .btn-datatables, .btn, th, #uploaded_students_wrapper{
+    /* #uploaded_students, .btn-datatables, .btn,  #uploaded_students_wrapper{
       font-size: 10px;
-    }
+    } */
+     #uploaded_students_wrapper .btn,  #uploaded_students_wrapper{
+       font-size: 10px;
+     }
     .btn-datatables {
       padding: 1px 5px 1px 5px;
     }
@@ -40,6 +43,8 @@
   </style>
 {% endblock %}
 <h3><b>Student List</b></h3>
+
+<!-- Summary Pane -->
 <div class="row">
   <div class="adj-padding" >
     <div class="panel panel-info" style="margin-bottom: 5px;">
@@ -54,9 +59,13 @@
     </div>
   </div>
 </div>
+
+<!-- Filter and List -->
 <div class="row">
+  <!-- Filter and drag and drop  -->
   <div class="col-md-2 adj-padding">
     <table>
+      <!-- Filter -->
       <tr>
         <td>
           <div class="panel panel-info">
@@ -74,6 +83,7 @@
           </div>
         </td>
       </tr>
+      <!-- Drop and Drag pane -->
       <tr>
         <td>
           <div class="well text-muted text-center" style="padding-top: 1rem; padding-bottom: 1rem;">
@@ -103,6 +113,8 @@
     </table>
 
   </div>
+
+  <!-- List -->
   <div class="col-md-10 adj-padding">
     <div class="panel panel-info">
       <div class="panel-heading">
@@ -558,12 +570,12 @@
            },
       ],
       "order": [[ 1, "asc" ]],
-      scrollY:true,
+      // scrollY:true,
       // scrollX: true,
-      scrollCollapse: true,
-      scroller: {
-        rowHeight: 20
-    }
+      // scrollCollapse: true,
+    //   scroller: {
+    //     rowHeight: 20
+    // }
     });
   }
   );

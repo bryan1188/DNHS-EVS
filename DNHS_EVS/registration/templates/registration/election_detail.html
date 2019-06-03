@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_2.html' %}
 {% load bootstrap3 %}
 {% load staticfiles %}
 {% load widget_tweaks %}
@@ -17,6 +17,15 @@
   <!-- chart.js -->
   <script src="{% static 'js/Chart.min.js' %}"></script>
   <script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script>
+
+  <style media="screen">
+        .dataTables_wrapper .btn, .dataTables_wrapper{
+          font-size: 11px;
+        }
+        .odd {
+          background-color: #f4f3f2;
+        }
+  </style>
 
 {% endblock %}
 
@@ -41,58 +50,74 @@
   </div>
   <div id="collapseDetails" class="panel-collapse collapse in">
     <div class="panel-body">
-        <div class="panel panel-success">
-           <div class="panel-heading">
-             Name
-           </div>
-           <div class="panel-body">
-             {{object.name}}
-           </div>
-         </div>
-        <div class="panel panel-success">
-            <div class="panel-heading">
-              School Year
+        <div class="row">
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-success">
+                   <div class="panel-heading">
+                     Name
+                   </div>
+                   <div class="panel-body">
+                     {{object.name}}
+                   </div>
+                 </div>
             </div>
-            <div class="panel-body">
-              {{object.school_year}}
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                      School Year
+                    </div>
+                    <div class="panel-body">
+                      {{object.school_year}}
+                    </div>
+                  </div>
             </div>
-          </div>
-          <div class="panel panel-success">
-            <div class="panel-heading">
-              Status
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-success">
+                  <div class="panel-heading">
+                    Status
+                  </div>
+                  <div id="election_status" class="panel-body">
+                     {{object.status}}
+                  </div>
+                </div>
             </div>
-            <div id="election_status" class="panel-body">
-               {{object.status}}
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-success">
+                  <div class="panel-heading">
+                    Schedule
+                  </div>
+                  <div class="panel-body">
+                     {{object.election_day_from}} - {{object.election_day_to}}
+                  </div>
+                </div>
             </div>
-          </div>
-          <div class="panel panel-success">
-            <div class="panel-heading">
-              Description
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-success">
+                  <div class="panel-heading">
+                     <a data-toggle="collapse" href="#collapsePosition">Positions</a>
+                  </div>
+                  <div id="collapsePosition" class="panel-collapse collapse in">
+                    <ul class='list-group'>
+                      {% for position in object.positions.all %}
+                       <li class="list-group-item"> {{position}} </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
             </div>
-            <div class="panel-body">
-               {{object.description}}
+            <div class="col-md-12">
+                <div class="panel panel-success">
+                  <div class="panel-heading">
+                    Description
+                  </div>
+                  <div class="panel-body">
+                     {{object.description}}
+                  </div>
+                </div>
             </div>
-          </div>
-          <div class="panel panel-success">
-            <div class="panel-heading">
-              Schedule
-            </div>
-            <div class="panel-body">
-               {{object.election_day_from}} - {{object.election_day_to}}
-            </div>
-          </div>
-          <div class="panel panel-success">
-            <div class="panel-heading">
-               <a data-toggle="collapse" href="#collapsePosition">Positions</a>
-            </div>
-            <div id="collapsePosition" class="panel-collapse collapse in">
-              <ul class='list-group'>
-                {% for position in object.positions.all %}
-                 <li class="list-group-item"> {{position}} </li>
-                {% endfor %}
-              </ul>
-            </div>
-          </div>
+        </div>
     </div>
   </div>
 </div>
@@ -165,11 +190,11 @@
                <div id="graph_tab" class="tab-pane fade in active">
                  <h4>Graphical Data</h4>
                  <div class="tabbable">
-                     <ul class="nav nav-pills nav-stacked col-md-2">
+                     <ul class="nav nav-pills nav-stacked col-md-1">
                         <li class="active"><a href="#overall" data-toggle="tab">Overall</a></li>
-                        <li ><a href="#by-section" data-toggle="tab">By Section</a></li>
+                        <li ><a href="#by-section" data-toggle="tab">Section</a></li>
                     </ul>
-                    <div class="tab-content col-md-10">
+                    <div class="tab-content col-md-11">
                         <div class="tab-pane active" id="overall">
                           <div class="row">
                               <div class="col-md-6">
@@ -677,6 +702,10 @@
                 $('[data-toggle="tooltip"]').tooltip();
                 },
         "processing": true,
+        "dom":  "<'row'<'col-md-6'l><'col-md-6'f>><'row'<'col-md-6'B><'col-md-6'p>><'row'<'col-md-12't>><'row'<'col-md-12'i>>",
+        "buttons": [
+              'print','copy', 'excel', 'pdf', 'colvis'
+                ],
         "ajax": {
             "processing": true,
             "url": "{% url 'registration:populate_table_candidate_list_ajax' %}",
@@ -706,32 +735,32 @@
              var toggleButton = ""
              if (row['fields']['is_active']) {
               toggleButton = '<button id="button-change-password" type="button" '
-                    + 'class="btn btn-danger btn-sm js-toggle-candidate"'
+                    + 'class="btn btn-danger btn-xs js-toggle-candidate"'
                     + 'data-toggle="tooltip" data-placement="right" title="Deactivate" '
                     + 'data-url="/registration/ajax/candidate/toggle_status/'
                     + row['pk']  +'/">' +'<span class="glyphicon glyphicon-remove-sign"></span></button></div>';
               }
               else {
-                toggleButton = '<button  type="button" class="btn btn-success btn-sm js-toggle-candidate"'
+                toggleButton = '<button  type="button" class="btn btn-success btn-xs js-toggle-candidate"'
                     + 'data-toggle="tooltip" data-placement="right" title="Activate" '
                     + 'data-url="/registration/ajax/candidate/toggle_status/'
                     + row['pk']  +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span></button></div>';
               }
              return '<div class="btn-group"><button id="button-edit" type="button" '
                      + 'data-toggle="tooltip" data-placement="left" title="Edit" '
-                     + 'class="btn btn-secondary btn-sm js-update-candidate" '
+                     + 'class="btn btn-secondary btn-xs js-update-candidate" '
                      + 'data-url="/registration/ajax/candidate/update/'
                      + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
                      + '<button type="button" '
                      + 'data-toggle="tooltip" data-placement="top" title="Show More Details" '
-                     + 'class="btn btn-primary btn-sm js-show-more-details-candidate" '
+                     + 'class="btn btn-primary btn-xs js-show-more-details-candidate" '
                      + 'data-url="/registration/ajax/candidate/more_details/'
                      + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button>'
-                     + '<button type="button" '
-                     + 'data-toggle="tooltip" data-placement="top" title="Show List of Voters" '
-                     + 'class="btn btn-primary btn-sm js-show-more-voters" '
-                     + 'data-url="/registration/ajax/candidate/more_details/'
-                     + data  +'/">' +'<span class="glyphicon glyphicon-th-list"></span></button>'
+                     // + '<button type="button" '
+                     // + 'data-toggle="tooltip" data-placement="top" title="Show List of Voters" '
+                     // + 'class="btn btn-primary btn-xs js-show-more-voters" '
+                     // + 'data-url="/registration/ajax/candidate/more_details/'
+                     // + data  +'/">' +'<span class="glyphicon glyphicon-th-list"></span></button>'
                      + toggleButton ;
                    },
              "targets": -1

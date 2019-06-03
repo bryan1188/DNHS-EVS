@@ -244,7 +244,8 @@ class ElectionFilterForm(forms.Form):
                     'data-placement': 'left',
                     'title': 'Apply filter by school year'
                     }
-                    )
+                    ),
+                required=False,
                 )
 
 class ElectionForm(forms.ModelForm):
@@ -448,13 +449,16 @@ class PositionFormMoreDetails(PositionForm):
             self.fields['grade_level'].widget.attrs['disabled'] = True
 
 class GenericFilterForm(forms.Form):
-    show_all = forms.BooleanField(initial=False, widget=forms.CheckboxInput(
-            attrs = {
+    show_all = forms.BooleanField(
+                initial=False, widget=forms.CheckboxInput(
+                        attrs = {
                 'data-toggle': 'tooltip',
                 'data-placement': 'left',
                 'title': 'Toggle to show or hide inactive'
                 }
-    ))
+                ),
+                required=False,
+    )
 
 class PartyForm(forms.ModelForm):
     class Meta:

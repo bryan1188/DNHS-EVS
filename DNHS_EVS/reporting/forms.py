@@ -35,12 +35,14 @@ class ElectionFilterForm(forms.Form):
                             'title': 'Change Election'
                             }
                     ),
+                    required=False,
         )
         self.fields['distribution'] = forms.ChoiceField(
-                    choices=self.DISTRIBUTION_CHOICES
+                    choices=self.DISTRIBUTION_CHOICES,
+                    required=False,
                     )
 
-class ElectionResultFilterForm(forms.Form):    
+class ElectionResultFilterForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -53,4 +55,5 @@ class ElectionResultFilterForm(forms.Form):
                             'title': 'Change Election'
                             }
                     ),
+                    required=False,
         )
