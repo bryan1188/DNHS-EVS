@@ -464,7 +464,7 @@ class PartyForm(forms.ModelForm):
     class Meta:
         model = Party
         fields = (
-                'name',
+                'name','display_name'
         )
 
     def clean_name(self):
@@ -474,6 +474,16 @@ class PartyForm(forms.ModelForm):
             if Party.objects.filter(name__iexact=name).exists():
                 raise forms.ValidationError(
                 "Party " + name + " already exist."
+                )
+        return name
+
+    def clean_display_name(self):
+        cleaned_data = super().clean()
+        name = cleaned_data['display_name']
+        if self.instance.pk == None: #for insert
+            if Party.objects.filter(display_name__iexact=name).exists():
+                raise forms.ValidationError(
+                "Party display name " + name + " already exist."
                 )
         return name
 

@@ -579,6 +579,13 @@ class Party(BaseModel):
                 unique=True,
                 verbose_name="Name",
     )
+    display_name = models.CharField(
+                max_length=20,
+                null=True,
+                blank=True,
+                unique=True,
+                verbose_name="Display Name",
+    )
     created_by = models.ForeignKey(
             User,
             on_delete=models.SET_NULL,
@@ -695,6 +702,7 @@ class Candidate(BaseModel):
         return self.student.classes.filter(
                 school_year=self.election.school_year
                 ).first()
+
 
 class Voter(BaseModel):
     student = models.ForeignKey(

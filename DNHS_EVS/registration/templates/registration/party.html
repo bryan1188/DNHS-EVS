@@ -75,12 +75,14 @@
                            <thead>
                              <tr>
                                <th>Name</th>
+                               <th>Display Name</th>
                                <th>Action</th>
                              </tr>
                            </thead>
                            <tfoot>
                              <tr>
                                <th>Name</th>
+                               <th>Display Name</th>
                                <th>Action</th>
                              </tr>
                            </tfoot>
@@ -131,6 +133,7 @@
         },
         'columns': [
           {"data": "fields.name"},
+          {"data": "fields.display_name"},
           {"data": "pk"},
         ],
         fixedColumns: false,
@@ -176,7 +179,7 @@
                      else
                          return '<strike>' + data + '</strike>';
                    },
-             "targets": [0]
+             "targets": [0,1]
            },
            ],
         "order": [[ 0, "asc" ]]

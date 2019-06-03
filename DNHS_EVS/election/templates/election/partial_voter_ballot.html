@@ -56,6 +56,8 @@
         candidate_label.attr('data-original-title', title_text);
         candidate_label.attr('title','');
         candidate_label.attr('data-placement','right');
+        candidate_label.append("(" + "{{candidate.party.display_name}}" + ")");
+        candidate_label.css("font-size","120%");
       });
 
   </script>
