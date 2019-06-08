@@ -1,0 +1,59 @@
+{% load widget_tweaks %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+<form method="post" data-table-list-id="#party_list"
+  {% if mode == 'create' %}
+    action="{% url 'registration:create_party_ajax' %}"
+    class="js-{{object_name}}-create-form">
+  {% endif%}
+  {% if mode == 'update' %}
+    action="{% url 'registration:update_party_ajax' form.instance.pk  %}"
+    class="js-{{object_name}}-update-form">
+  {% endif %}
+  {% csrf_token %}
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
+      <span area-hidden="true">&times;</span>
+    </button>
+    <h4 class="modal-title">
+      {% if mode == 'create' %}
+          Create New {{object_name|title}}
+      {% endif %}
+      {% if mode == 'update' %}
+          Update {{object_name|title}}
+      {% endif %}
+
+      {% if mode == 'view' %}
+          More Details
+      {% endif %}
+
+    </h4>
+  </div>
+  <div class="modal-body">
+    {% for field in form %}
+      <div class="form-group {% if field.errors %} has-error {% endif%}">
+        {% for error in field.errors %}
+          <p class="help-block"> {{ error }}</p>
+        {% endfor %}
+
+        {{ field|as_crispy_field }}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    {% if mode != 'view' %}
+      <button type="submit" class="btn btn-primary">
+        {% if mode == 'create' %}
+          <span class="glyphicon glyphicon-plus"></span>
+          Create {{object_name|title}}
+        {% endif %}
+        {% if mode == 'update' %}
+          <span class="glyphicon glyphicon-pencil"></span>
+            Update {{object_name|title}}
+        {% endif %}
+      </button>
+    {% endif %}
+  </div>
+</form>

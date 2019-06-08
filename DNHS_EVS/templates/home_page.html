@@ -1,4 +1,220 @@
-{% extends 'base.html' %}
+{% extends 'base_2.html' %}
+{% load staticfiles %}
+
+
+
 {% block content %}
   <h1>Home Page</h1>
+
+  <!-- modal for Voting -->
+  <div class="modal  animated" id="modal-section">
+    <div class="modal-dialog">
+      <div class="modal-content">
+      </div>
+    </div>
+  </div>
+
+{% if is_election_day %}
+
+<div class="modal fade" id="modal-vote-confirmation">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-ballot">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<div class="modal animated zoomIn" id="modal-vote-casting-confirmation">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+
+<div class="" id="variable_container"
+  data-url-authenticate_voter_ajax="{% url 'election:authenticate_voter_ajax' %}"
+  >
+</div>
+
+  <script type="text/javascript">
+    //this will not show on other browser if extracted to other file.js.
+    //Try to figure it out if have more time.
+    var variable_container = $('#variable_container');
+
+    function animateModal(modal_id, animation) {
+      $('#' + modal_id + ' .modal-dialog').attr('class', 'modal-dialog  ' + animation + '  animated');
+    };
+
+
+    $(window).on('load',function(){
+      // show modal to authenticate
+        $.ajax({
+            url: variable_container.attr("data-url-authenticate_voter_ajax"),
+            type: 'get',
+            dataType: 'json',
+            beforeSend: function(){
+                // don't close model on click outside of the modal
+                          $('#modal-section').modal({backdrop: 'static', keyboard: false});
+                          $("#modal-section").modal("show");
+                        },
+            success: function(data){
+                        $("#modal-section .modal-content").html(data.html_form);
+                      },
+        });
+    });
+
+    function show_confirmation(voter_id){
+      $.ajax({
+        url: "/election/ajax/voter/confirmation/" + voter_id,
+        type: 'get',
+        dataType: 'json',
+        beforeSend: function(){
+                      // don't close model on click outside of the modal
+                      // $('#modal-vote-confirmation').modal({backdrop: 'static', keyboard: false});
+                      // $("#modal-vote-confirmation").modal("show");
+                    },
+        success: function(data){
+           // $("#modal-vote-confirmation .modal-content").html(data.html_form);
+
+           // $("#modal-section .modal-content").html(data.html_form);
+            $("#modal-section .modal-content").fadeOut(300, function(){
+              $(this).html(data.html_form).fadeIn(300);
+            });
+
+           // alert("test");
+        }
+      });
+
+    }
+
+    $(function () {
+      var authenticateVoter = function(){
+        var form = $(this);
+        $.ajax({
+          url: form.attr("action"),
+          data: form.serialize(),
+          type: form.attr("method"),
+          dataType: 'json',
+          success: function(data){
+            if (data.form_is_valid){
+              // convert data.voter string to javascript json format
+              var voter = jQuery.parseJSON(data.voter)[0];
+              // $("#modal-section").modal("hide");
+
+              //show confirmation page
+              show_confirmation(voter.pk);
+            }
+            else {
+              $("#modal-section .modal-content").html(data.html_form);
+            }
+          }
+        });
+
+        //return false to not display the json data value.
+        //data should be processed accordingly through ajax's call 'success'
+        return false;
+      };
+
+      var userConfirmed = function(){
+        var btn = $(this);
+        $.ajax({
+          url: btn.attr("action"),
+          type: btn.attr("method"),
+          dataType: 'json',
+          beforeSend: function(){
+                        // $("#modal-vote-confirmation").modal("hide");
+                        // don't close model on click outside of the modal
+                        // $('#modal-ballot').modal({backdrop: 'static', keyboard: false});
+                        // $("#modal-ballot").modal("show");
+                      },
+          success: function(data){
+             // $("#modal-ballot .modal-content").html(data.html_form);
+             $("#modal-section").addClass("zoomIn");
+             $("#modal-section .modal-content").html(data.html_form);
+             // alert("test");
+          }
+        });
+
+        //return false to not display the json data value.
+        //data should be processed accordingly through ajax's call 'success'
+        return false;
+      };
+
+      var castVote = function(){
+        var form = $(this);
+        $.ajax({
+          url: form.attr("action"),
+          data: form.serialize(),
+          type: form.attr("method"),
+          dataType: 'json',
+          success: function(data){
+            if (data.form_is_valid){
+              //hide #modal-ballot
+              // $("#modal-ballot").modal("hide");
+              $("#modal-section").addClass("zoomOutUp");
+
+              setTimeout( function() {
+                  $("#modal-section").modal("hide");
+                  $("#modal-vote-casting-confirmation").modal("show");
+                },1300);
+              //show confirmation
+
+
+              //give the voter his/her new token to validate his/her vote
+              $("#modal-vote-casting-confirmation .modal-content").html(data.html_form);
+            }
+            else {
+              $("#modal-ballot .modal-content").html(data.html_form);
+            }
+          }
+        });
+
+        //return false to not display the json data value.
+        //data should be processed accordingly through ajax's call 'success'
+        return false;
+
+      };
+
+      //bind
+      $("#modal-section").on("submit", ".js-authenticate-voter-form", authenticateVoter);
+      // $('#modal-vote-confirmation').on('click','.js-not-me', function(){
+      //     //refresh current page to show again modal-section
+      //     //so voter will enter again the token
+      //     location.reload();
+      // });
+      $('#modal-section').on('click','.js-not-me', function(){
+          //refresh current page to show again modal-section
+          //so voter will enter again the token
+          location.reload();
+      });
+      // $('#modal-vote-confirmation').on("click",".js-this-is-me", userConfirmed);
+      $('#modal-section').on("click",".js-this-is-me", userConfirmed);
+      $("#modal-section").on("submit", ".js-cast-vote-form", castVote);
+      $('#modal-vote-casting-confirmation').on('click','.btn-close', function(){
+          //refresh current page to show again modal-section
+          //so voter will enter again the token
+          location.reload();
+      });
+
+      $('#modal-section').on('show.bs.modal', function (e) {
+            var animation ='fadeIn';
+            animateModal('modal-section', animation);
+      });
+
+      // $('#modal-section').on('hide.bs.modal', function (e) {
+      //   var animation ='fadeOutRightBig';
+      //   animateModal('modal-section', animation);
+      // });
+
+    });
+  </script>
+
+{% endif %}
+
+
 {% endblock %}

@@ -9,10 +9,12 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap-theme.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/mystyle.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animate.css' %}">
     <!-- <link href="{% static 'css/bootstrap-toggle.min.css' %}" rel="stylesheet"> -->
 
       <!-- <script src="{% static 'js/bootstrap.min.js' %}"></script> -->
     <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+    <!-- <script src="{% static 'js/popper.min.js' %}"></script> -->
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
     {% block heading %}
     {% endblock %}
@@ -26,51 +28,93 @@
           <li ><a class="navbar-brand" href="{%url 'home' %}">DNHS E-Voting</a></li>
           <!-- <li><a class="navbar-link" href="">Admin</a></li>
           <li><a class="navbar-link" href="">Other</a></li> -->
+          {% if  perms.registration.add_student %}
+            <li>
+              <div class="dropdown">
+                <button class="dropbtn">Student</button>
+                <div class="dropdown-content">
+                  <a href="{%url 'registration:upload_students' %}">Upload Students</a>
+                  <a href="{%url 'registration:add_student' %}">Add Student</a>
+                  <!-- <a href="{%url 'registration:list_student' %}">Update Student</a> -->
+                    <a href="{%url 'registration:list_student' %}">List of Students</a>
+                </div>
+              </div>
+            </li>
+          {% endif %}
+          {% if perms.auth.add_user %}
+            <li>
+              <div class="dropdown">
+                <button class="dropbtn">User</button>
+                <div class="dropdown-content">
+                  <!-- <a href="{#%url 'registration:create_user' %}">Create User</a> -->
+                  <!-- <a href="{#%url 'registration:create_election_officer' %}">Create Election Officer</a> -->
+                  <a href="{%url 'registration:list_user' %}">User Management</a>
+                  <!-- <a href="#">Update Election Officer</a> -->
+                  <!-- <a href="#">Link 2</a>
+                  <a href="#">Link 3</a> -->
+                </div>
+              </div>
+            </li>
+          {% endif %}
+
+        {% if perms.registration.add_election or perms.registration.view_vote %}
           <li>
             <div class="dropdown">
-              <button class="dropbtn">Student Management</button>
+              <button class="dropbtn">Election</button>
               <div class="dropdown-content">
-                <a href="{%url 'registration:upload_students' %}">Upload Students</a>
-                <a href="{%url 'registration:add_student' %}">Add Student</a>
-                <a href="{%url 'registration:list_student' %}">Update Student</a>
-                  <a href="{%url 'registration:list_student' %}">List of Students</a>
+                {% if perms.registration.add_election %}
+                <a href="{%url 'registration:position' %}">Position Management</a>
+                <a href="{%url 'registration:list_election' %}">Election Management</a>
+                <a href="{%url 'registration:party' %}">Party Management</a>
+                <a href="{%url 'registration:candidate' %}">Candidate Management</a>
+                {% endif %}
+                {% if perms.registration.view_vote %}
+                <a href="{%url 'election:election_live_monitoring' %}">Live Monitoring</a>
+                {% endif %}
+                <!-- <a href="#">Review List Voters and Candidates</a>
+                <a href="#">Generate Voter's Token</a>
+                <a href="#">Add Candidate</a>
+                <a href="#">Update Candidate</a>
+                <a href="#">Update Candidate Profile</a>
+                <a href="#">Create Position</a>
+                <a href="#">Update Position</a> -->
               </div>
-          </div>
-        </li>
+            </div>
+          </li>
+        {% endif %}
+
+        {% if perms.registration.view_vote %}
         <li>
           <div class="dropdown">
-            <button class="dropbtn">User Management</button>
+            <button class="dropbtn">Data Analytics</button>
             <div class="dropdown-content">
-              <a href="{%url 'registration:create_user' %}">Create User</a>
-              <a href="{%url 'registration:create_election_officer' %}">Create Election Officer</a>
-              <a href="{%url 'registration:list_user' %}">Update User</a>
-              <a href="#">Update Election Officer</a>
-              <!-- <a href="#">Link 2</a>
-              <a href="#">Link 3</a> -->
+              <a href="{%url 'reporting:reports' %}">Reports</a>
             </div>
           </div>
         </li>
-        <li>
-          <div class="dropdown">
-            <button class="dropbtn">Election Management</button>
-            <div class="dropdown-content">
-              <a href="#">Create Election</a>
-              <a href="#">Update Election</a>
-              <a href="#">Review List Voters and Candidates</a>
-              <a href="#">Generate Voter's Token</a>
-              <a href="#">Add Candidate</a>
-              <a href="#">Update Candidate</a>
-              <a href="#">Update Candidate Profile</a>
-              <a href="#">Create Position</a>
-              <a href="#">Update Position</a>
-            </div>
-          </div>
-        </li>
+        {% endif %}
+
         </ul>
         <ul class="nav navbar-nav navbar-right">
-         <li><a href="#"> Login</a>
+         <li>
+           {% if not user.is_authenticated %}
+           <a href="#" class="js-login" data-url="{% url 'login_ajax' %}">
+             <span class="glyphicon glyphicon-user"></span>
+             Login
+           </a>
+           {% else %}
+           <a href="#" class="js-logout" data-url="{% url 'logout_ajax' %}" redirect-url="{% url 'home' %}">
+             <span class="glyphicon glyphicon-log-out"></span>
+             Logout({{user}})
+           </a>
+           {% endif %}
          </li>
-         <li><a href="#"> Review my Vote</a>
+         <!-- <li><a href="#"><span class="glyphicon glyphicon-picture"></span> Candidate Profile</a>
+         </li> -->
+         <li><a href="#" class="js-review-vote" data-url="{% url 'election:review_voters_vote_auth_ajax' %}">
+                <span class="glyphicon glyphicon-ok"></span>
+                Review Vote
+             </a>
          </li>
        </ul>
       </div>
@@ -82,13 +126,37 @@
         {% endblock %}
       </div>
     </div>
+    <!-- {% if perms.registration.add_election %}
+      Student
+    {%endif%} -->
 
+    <!-- modal for login -->
+    <div class="modal fade" id="modal-login">
+      <div class="modal-dialog">
+        <div class="modal-content">
+        </div>
+      </div>
+    </div>
 
+    <!-- modal for review vote authentication-->
+    <div class="modal fade" id="modal-review-vote-auth">
+      <div class="modal-dialog">
+        <div class="modal-content">
+        </div>
+      </div>
+    </div>
 
-    <!-- Latest compiled and minified JavaScript -->
+    <!-- modal for review vote after authentication-->
+    <div class="modal fade" id="modal-review-vote">
+      <div class="modal-dialog">
+        <div class="modal-content">
+        </div>
+      </div>
+    </div>
+<script src="{% static 'base/js/base_1.js' %}"></script>
 
-    {% block javascript %}
-    {% endblock %}
+  {% block javascript %}
+  {% endblock %}
 
   <!-- Copyright -->
   <div class="footer-copyright text-center py-3">© 2019 Copyright:

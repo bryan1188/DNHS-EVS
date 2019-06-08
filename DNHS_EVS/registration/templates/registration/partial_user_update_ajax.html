@@ -1,7 +1,9 @@
 {% extends 'registration/partial_user_base_ajax.html' %}
 
 {% block form_content %}
-<form action="{% url 'registration:update_user_ajax' user_form.instance.pk %}" method="post" class="js-user-update-form">
+<form action="{% url 'registration:update_user_ajax' user_form.instance.pk %}"
+  data-table-list-id="#user_list"
+  method="post" class="js-user-update-form">
   {% csrf_token %}
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
@@ -14,7 +16,7 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-    <button type="submit" class="btn btn-primary">Update User</button>
+    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-pencil"></span>Update User</button>
   </div>
   <table id="uploaded_students" class="table table-bordered display" hidden>
     <thead>
@@ -50,13 +52,13 @@
   function check_group_checkbox(group){
     switch(group){
       case "Election Officer":
-        $('#id_for_student_0').prop('checked',true);
+        $('#id_for_student_1').prop('checked',true);
         break;
       case "System Administrator":
-        $('#id_other_groups_1').prop('checked',true);
+        $('#id_other_groups_2').prop('checked',true);
         break;
       case "Teacher":
-        $('#id_other_groups_0').prop('checked',true);
+        $('#id_other_groups_1').prop('checked',true);
         break;
     }
   };
@@ -68,6 +70,5 @@
     check_group_checkbox("{{group}}");
   </script>
 {% endfor %}
-
 
 {%endblock%}

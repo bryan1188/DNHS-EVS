@@ -1,54 +1,109 @@
-{% extends 'base.html' %}
+{% extends 'base_2.html' %}
 {% load bootstrap3 %}
 {% load staticfiles %}
+{% load crispy_forms_tags %}
 
 {% block heading  %}
 
-  <link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
-  <!-- <script src="{% static 'js/jquery.min.js' %}"></script> -->
-  <!-- <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script> -->
+  <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.dataTables.min.css' %}">
+
+  <!-- for more datatables buttons -->
+  <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'registration/css/user_list.css' %}">
+
+
   <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+
+  <style media="screen">
+        #user_list_wrapper .btn, #user_list_wrapper{
+          font-size: 11px;
+        }
+        .odd {
+          background-color: #f4f3f2;
+        }
+  </style>
 
 {% endblock %}
 
 {% block content %}
-  <form method="post">
-    {% csrf_token %}
-      {{ user_filter_form.as_p }}
-  </form>
-  <p>
-     <button type="button" class="btn btn-primary js-create-user" data-url="{% url 'registration:create_user_ajax' %}">
-       <span class="glyphicon glyphicon-plus"></span>
-       New User
-     </button>
-   </p>
-  <table id="user_list" class="table table-bordered display">
-    <thead>
-      <tr>
-        <th>username</th>
-        <th>Last Name</th>
-        <th>First Name</th>
-        <th>Groups</th>
-        <th>Active</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tfoot>
-      <tr>
-        <th>username</th>
-        <th>Last Name</th>
-        <th>First Name</th>
-        <th>Groups</th>
-        <th>Active</th>
-        <th>Action</th>
-      </tr>
-    </tfoot>
-    <tbody>
+<h3><b>User Management</b></h3>
 
-    </tbody>
-  </table>
+<div class="row">
+    <!-- filter & create button-->
+    <div class="col-md-2">
+        <!-- create button -->
+        <div class="row " style="margin-bottom: 10px;">
+            <div class="col-md-12">
+                <button type="button" class="btn btn-primary btn-block js-create-user" data-url="{% url 'registration:create_user_ajax' %}">
+                   <span class="glyphicon glyphicon-plus"></span>
+                   New User
+                </button>
+            </div>
+        </div>
+        <!-- filter -->
+        <div class="row ">
+            <div class="col-md-12">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <a data-toggle=collapse href="#collapseFilter">Filter</a>
+                    </div>
+                    <div id="collapseFilter" class="panel-collapse collapse in" >
+                        <div class="panel-body">
+                          <form method="post">
+                            {% csrf_token %}
+                              {{ user_filter_form|crispy }}
+                          </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <div class="modal fade" id="modal-user">
+    <!-- list -->
+    <div class="col-md-10">
+      <div class="panel panel-info">
+          <div class="panel-heading">
+              <a data-toggle=collapse href="#collapseUserList">User List</a>
+          </div>
+          <div id="collapseUserList" class="panel-collapse collapse in" >
+              <div class="panel-body">
+                     <div class="table-responsive">
+                         <table id="user_list" class="table table-bordered display">
+                             <thead>
+                               <tr>
+                                 <th>username</th>
+                                 <th>Last Name</th>
+                                 <th>First Name</th>
+                                 <th>Groups</th>
+                                 <th>Active</th>
+                                 <th>Action</th>
+                               </tr>
+                             </thead>
+                             <tfoot>
+                               <tr>
+                                 <th>username</th>
+                                 <th>Last Name</th>
+                                 <th>First Name</th>
+                                 <th>Groups</th>
+                                 <th>Active</th>
+                                 <th>Action</th>
+                               </tr>
+                             </tfoot>
+                             <tbody>
+
+                             </tbody>
+                         </table>
+                     </div>
+              </div>
+          </div>
+      </div>
+    </div>
+</div>
+
+  <div class="modal fade" id="modal-section">
     <div class="modal-dialog">
       <div class="modal-content">
       </div>
@@ -56,10 +111,28 @@
   </div>
 
 <script> //initialize script
+
+  function strike_trough(data, row){
+    if ((row['fields']['is_active'])){
+        return data;
+    }
+    else {
+      return '<strike>' + data + '</strike>';
+    }
+  }
+
     $(document).ready( function () {
       var form = $('#id_group').closest("form");
       var table = $('#user_list').DataTable({
+        "drawCallback": function( settings ) {
+            //https://stackoverflow.com/questions/39240361/datatables-and-bootstrap-tooltips
+                $('[data-toggle="tooltip"]').tooltip();
+                },
         "processing": true,
+        "dom":  "<'row'<'col-md-6'l><'col-md-6'f>><'row'<'col-md-6'B><'col-md-6'p>><'row'<'col-md-12't>><'row'<'col-md-12'i>>",
+        "buttons": [
+            'print','copy', 'excel', 'pdf', 'colvis'
+              ],
         "ajax": {
             "processing": true,
             "url": "{% url 'registration:populate_table_user_list_ajax' %}",
@@ -79,26 +152,54 @@
           {"data": "fields.pk"},
         ],
         "columnDefs": [
+          {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+              "targets": [-1,-2],
+              "className": "text-center",
+              // "width": "4%"
+         },
           { "render": function ( data, type, row ) {
                     if (data) {
-                        return '<button type="button" class="btn btn-danger btn-sm js-toggle-user" data-url="/registration/ajax/user/deactivate_activate/' + row['pk']  +'/">' +'<span class="glyphicon glyphicon-remove-sign"></span> Deactivate </button>';
+                        return '<button type="button" class="btn btn-danger btn-xs js-toggle-user" '
+                                +'data-url="/registration/ajax/user/deactivate_activate/' + row['pk']  +'/">'
+                                +'<span class="glyphicon glyphicon-remove-sign"></span> Deactivate </button>';
                     }
                     else
-                        return '<button type="button" class="btn btn-success btn-sm js-toggle-user" data-url="/registration/ajax/user/deactivate_activate/' + row['pk']  +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span> Activate </button>';
+                        return '<button type="button" class="btn btn-success btn-xs js-toggle-user" '
+                                +'data-url="/registration/ajax/user/deactivate_activate/' + row['pk']
+                                +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span> Activate </button>';
                   },
                   "targets": -2
           },
           { "render": function ( data, type, row ) {
-                      return '<button type="button" class="btn btn-warning btn-sm js-update-user" data-url="/registration/ajax/user/update/' + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span> Edit </button>';
+                      return '<div class="btn-group"><button id="button-edit" type="button" '
+                              + 'data-toggle="tooltip" data-placement="top" title="Edit user" '
+                              + 'class="btn btn-secondary btn-xs js-update-user" data-url="/registration/ajax/user/update/'
+                              + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
+                              + '<button id="button-change-password" type="button" '
+                              + 'data-toggle="tooltip" data-placement="top" title="Change Password" '
+                              + 'class="btn btn-primary btn-xs js-reset-password-user" data-url="/registration/ajax/user/reset_password/'
+                              + data  +'/">' +'<span class="glyphicon glyphicon-lock"></span></button></div>';
                   },
                   "targets": -1
           },
+          { "render": function ( data, type, row ) {
+                    if ((row['fields']['is_active'])) {
+                        return data;
+                    }
+                    else
+                        return '<strike>' + data + '</strike>';
+                  },
+                  "targets": [0,1,2,3]
+          },
 
         ],
-        "order": [[ 0, "asc" ]]
+        "order": [[ 0, "asc" ]],
       });
       $('input:checkbox').prop('checked',true); //check all checkboxes filter by default
       $('#id_all_users').prop('checked',false);  //except all users
+
+      // adjust font on group filters
+      $("#div_id_group").find('.form-check').css({"font-size": "75%", "font-weight": "normal"});
     });
 
 </script>
@@ -148,5 +249,18 @@
   });
 </script>
 
-<script src="{% static 'registration/js/create_user_ajax_3.js' %}"></script>
+<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'js/buttons.print.min.js' %}"></script>
+<!-- for other buttons of datatables -->
+<script src="{% static 'js/dataTables.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/buttons.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/jszip.min.js' %}"></script>
+<script src="{% static 'js/pdfmake.min.js' %}"></script>
+<script src="{% static 'js/vfs_fonts.js' %}"></script>
+<script src="{% static 'js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'js/buttons.colVis.min.js' %}"></script>
+
+
+<script src="{% static modal_ajax_location %}"></script>
 {% endblock %}

@@ -1,0 +1,100 @@
+{% load widget_tweaks %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+<script type="text/javascript" src="{% static 'js/bootstrap-datepicker.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/bootstrap-datepicker.css' %}">
+<script>
+  $(function() {
+    $( ".datepicker" ).datepicker();
+    $(".datepicker").attr("readonly","readonly");
+  });
+</script>
+
+<form method="post" data-table-list-id="#election_list"
+  {% if mode == 'create' %}
+    action="{% url 'registration:create_election_ajax' %}"
+    class="js-election-create-form">
+  {% endif %}
+  {% if mode == 'update' %}
+    action="{% url 'registration:update_election_ajax' election_form.instance.pk  %}"
+    class="js-election-update-form">
+  {% endif %}
+  {% csrf_token %}
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
+      <span area-hidden="true">&times;</span>
+    </button>
+    <h4 class="modal-title">
+      {% if mode == 'create' %}
+          Create New Election
+      {% endif %}
+      {% if mode == 'update' %}
+          Update Election
+      {% endif %}
+      {% if mode == 'view' %}
+          More Details
+      {% endif %}
+
+    </h4>
+  </div>
+  <div class="modal-body">
+    {% for field in election_form %}
+      <div class="form-group {% if field.errors %} has-error {% endif%}">
+        {% for error in field.errors %}
+          <p class="help-block"> {{ error }}</p>
+        {% endfor %}
+        {{ field|as_crispy_field }}
+      </div>
+    {% endfor %}
+
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    {% if mode != 'view' %}
+      <button type="submit" class="btn btn-primary">
+        {% if mode == 'create' %}
+          <span class="glyphicon glyphicon-plus"></span>
+            Create Election
+        {% endif %}
+        {% if mode == 'update' %}
+          <span class="glyphicon glyphicon-pencil"></span>
+            Update Election
+        {% endif %}
+      </button>
+    {% endif %}
+  </div>
+</form>
+
+{% if mode == 'create' %}
+<script> //set default to position select box as select all
+
+    $(document).ready( function () {
+      $('#id_positions option').prop('selected', true);
+      });
+
+</script>
+
+{% endif %}
+
+<script> //listener
+
+    $(document).ready( function () { //add logic to the date fields
+        $('#id_election_day_from').change( function(){
+          if($('#id_election_day_to').val() == '' ||
+                new Date($('#id_election_day_to').val()) < new Date($(this).val())){
+                    //if to is blank or to is less than from
+            $('#id_election_day_to').val($(this).val());
+          }
+        });
+
+        $('#id_election_day_to').change( function(){
+          if($('#id_election_day_from').val() == '' ||
+                new Date($(this).val()) <new Date($('#id_election_day_from').val())){
+                    //if to is blank or to is less than from
+            $('#id_election_day_from').val($(this).val());
+          }
+        });
+    });
+
+</script>

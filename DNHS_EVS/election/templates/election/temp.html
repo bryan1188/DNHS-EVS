@@ -1,0 +1,13 @@
+<ul>
+  {% for position in positions_with_candidate %}
+    <li>{{position.position}} ({{position.number_of_slots}})</li>
+    <ul>
+      {% for candidate in position.candidates %}
+        <li>{{ candidate }}</li>
+      {% endfor %}
+    </ul>
+  {% endfor%}
+</ul>
+
+
+  <script src="{% static 'base/js/election_day.js' %}"></script>

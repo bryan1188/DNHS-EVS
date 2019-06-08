@@ -1,0 +1,430 @@
+{% extends 'base_2.html' %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block heading  %}
+<!-- For confirm dialog -->
+<link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
+
+<link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/buttons.dataTables.min.css' %}">
+
+<!-- for more datatables buttons -->
+<link rel="stylesheet" href="{% static 'css/dataTables.bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
+
+<!-- chart.js -->
+<script src="{% static 'js/Chart.min.js' %}"></script>
+<script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script>
+
+<style media="screen">
+      #election-winner-table_wrapper, .btn{
+        font-size: 11px;
+      }
+</style>
+
+{% endblock %}
+
+{% block content %}
+  <h3><b>Reportings</b></h3>
+  <div class="tabbable">
+      <div class="row">
+        <div class="col-md-2">
+            <ul class="nav nav-pills nav-stacked ">
+               <li class="active"><a href="#election-result" data-toggle="tab">Election Result</a></li>
+               <li ><a href="#votes-distribution" data-toggle="tab">Votes Distribution</a></li>
+               <li ><a href="#participation-report" data-toggle="tab">Participation Report</a></li>
+           </ul>
+        </div>
+        <div class="col-md-10">
+          <div class="tab-content">
+             <div class="tab-pane active" id="election-result">
+                 <h2 class='text-center' style="margin: 0px">Election Result</h2>
+                 <!-- filter form -->
+                 <form method="post" id="filter-form-result" data-url="{% url 'reporting:populate_result_graphs_ajax' %}">
+                   {% csrf_token %}
+                     {{ result_filter_form|crispy }}
+                 </form>
+
+                 <!-- Panel for Final Result -->
+                 <div class="panel panel-info">
+                     <div class="panel-heading">
+                        <a data-toggle="collapse" href="#collapse-election-winners"><h2>Winners</h2></a>
+                     </div>
+                     <div id="collapse-election-winners" class="panel-collapse collapse in">
+                         <div class="panel-body">
+                           <p>
+                            <!-- <button type="button" class="btn btn-primary js-override-tie"
+                             data-url="#">
+                              <span class="glyphicon glyphicon-edit"></span>
+                              Override Tie
+                            </button>
+                           </p> -->
+                           <div class="table-responsive">
+                             <table id="election-winner-table" class="table table-bordered display">
+                               <thead>
+                                 <tr>
+                                   <th>Position</th>
+                                   <th>Canidate</th>
+                                   <th>Party</th>
+                                   <th># of Votes</th>
+                                 </tr>
+                               </thead>
+                               <tfoot>
+                                 <tr>
+                                   <th>Position</th>
+                                   <th>Canidate</th>
+                                   <th>Party</th>
+                                   <th># of Votes</th>
+                                 </tr>
+                               </tfoot>
+                             </table>
+                           </div>
+                         </div>
+                     </div>
+                 </div>
+
+                 <!-- panel for election Result pill for every position-->
+                 <div id="election-result-panel">
+                               <!-- This portion is populated by javascript -->
+                 </div>
+             </div>
+
+             <div class="tab-pane fade" id="votes-distribution">
+                 <h2 class='text-center' style="margin: 0px">Votes Distribution Report</h2>
+
+                 <!-- filter form -->
+                 <form method="post" id="filter-form" data-url="{% url 'reporting:get_votes_distribution_ajax' %}">
+                   {% csrf_token %}
+                     {{ election_filter_form|crispy }}
+                 </form>
+
+                 <!-- panel for Votes distribution pill -->
+                 <div id="distrbution-by-panel">
+                               <!-- This portion is populated by javascript -->
+                 </div>
+
+             </div>
+             <div class="tab-pane fade" id="participation-report">
+                 <h2 class='text-center' style="margin: 0px">Participation Report</h2>
+                 <!-- filter form for participation report -->
+                 <form method="post" id="participation-filter-form"
+                    data-url="{% url 'reporting:populate_participation_report_graphs_ajax' %}"
+                  >
+                   {% csrf_token %}
+                     {{ participation_rate_filter|crispy }}
+                 </form>
+
+                 <!-- panel for participation report pill -->
+                 <div id="participation-report-panel">
+                               <!-- This portion is populated by javascript -->
+                 </div>
+             </div>
+         </div>
+        </div>
+     </div>
+  </div>
+
+<!-- function related to chart drawing  -->
+<script type="text/javascript">
+
+  function drawTotals(chart) {
+
+      var width = chart.chart.width,
+      height = chart.chart.height,
+      ctx = chart.chart.ctx;
+
+      ctx.restore();
+      var fontSize = (height / 114).toFixed(2);
+      ctx.font = fontSize + "em sans-serif";
+      ctx.textBaseline = "middle";
+
+      var text = chart.config.centerText.text,
+      textX = Math.round((width - ctx.measureText(text).width) / 2),
+      textY = height / 2;
+
+      ctx.fillText(text, textX, textY);
+      ctx.save();
+  }
+
+  function draw_graph_doughnut(id,graph_title,labels_list,datasets_list,chart_type,legend_display,center_text){
+    var ctx = $('#'+id);
+    var myChart = new Chart(ctx, {
+          plugins: [{
+              beforeDraw: function(chart, options) {
+                if (chart.config.centerText.display !== null &&
+                    typeof chart.config.centerText.display !== 'undefined' &&
+                    chart.config.centerText.display) {
+                    drawTotals(chart);
+                }
+              }
+          }],
+          type: chart_type,
+          data: {
+              labels: labels_list,
+              datasets: datasets_list
+          },
+          options: {
+              title: {
+                  display: true,
+                  text: graph_title,
+                  position: 'top',
+                  fontSize: 20
+              },
+              legend: {
+                display: legend_display,
+                position: 'bottom'
+              },
+              plugins: {
+              // Change options for ALL labels of THIS CHART
+              datalabels: {
+                  color: '#000000'
+                }
+            },
+          },
+          centerText: {
+              display: true,
+              text: center_text
+          }
+      });
+  }
+
+  function draw_graph_bar(id,graph_title,labels_list,datasets_list,chart_type,legend_display){
+    var ctx = $('#'+id);
+    var myChart = new Chart(ctx, {
+          type: chart_type,
+          data: {
+              labels: labels_list,
+              datasets: datasets_list
+          },
+          options: {
+              title: {
+                  display: true,
+                  text: graph_title,
+                  position: 'top',
+                  fontSize: 20
+              },
+              legend: {
+                display: legend_display,
+                position: 'top'
+              },
+              plugins: {
+              // Change options for ALL labels of THIS CHART
+              datalabels: {
+                  color: '#000000'
+                }
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }],
+                xAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+          },
+      });
+  }
+
+</script>
+
+<!-- scripts for updating data. ajax requests -->
+<script type="text/javascript">
+
+  function get_election(){
+    return $('#id_election').val();
+  }
+
+  function get_distribution_by(){
+    return $('#id_distribuion').val();
+  }
+
+  function populate_winner_table(){
+    var form = $('#filter-form-result');
+    var table = $('#election-winner-table').DataTable({
+      "bFilter" : false,
+      "bLengthChange": false,
+      "bPaginate": false,
+       "processing": true,
+       "ajax": {
+           "processing": true,
+           "url": "{% url 'reporting:populate_winner_table_ajax' %}",
+           "data": function(data){
+              data.election = form.find('#id_election').val();
+           },
+           "dataSrc": ""
+       },
+       'columns': [
+         {"data": "fields.candidate_position"},
+         {"data": "fields.candidate_name"},
+          {"data": "fields.candidate_party"},
+         {"data": "fields.number_of_votes"},
+       ],
+       "dom":  "<'row'<'col-sm-6'l><'col-sm-6'f>><'row'<'col-sm-6'B><'col-sm-6'p>><'row'<'col-sm-12't>><'row'<'col-sm-12'i>>",
+       "buttons": [
+             'copy', 'print', 'excel', 'pdf'
+               ],
+      lengthChange: true,
+      fixedColumns: false,
+      "order": [],
+    });
+    table.buttons().container().appendTo('#election-winner-table_wrapper .col-md-6:eq(0)' );
+
+  }
+
+  function draw_graphs_ajax(filter_form_id, panel_id,chart_type,legend_display,append_flag,data_url){
+    var form = $('#' + filter_form_id);
+    var ajax_data_url = "";
+    if (data_url)
+      ajax_data_url = data_url;
+    else
+      ajax_data_url = form.attr("data-url");
+    console.log(ajax_data_url);
+    $.ajax({
+        url: ajax_data_url,
+        type: 'get',
+        "processing": true,
+        dataType: 'json',
+        data:form.serialize(),
+        success: function(data){
+                  //insert the needed html
+                  if (append_flag)
+                    $('#' + panel_id).append(data.html_panel);
+                  else
+                    $('#' + panel_id).html(data.html_panel);
+
+                  if ($.isArray(data.result_data)) { //multiple positions
+
+                      //loop in the distribution_by_data items
+                      $.each(data.result_data, function(key, value){
+
+                        if (chart_type == 'bar' || chart_type == 'horizontalBar')
+                            // draw the chart
+                            draw_graph_bar(data.nav_pill +"-" + value.object_id,
+                                                value.title_text,
+                                                value.labels,
+                                                value.dataset,chart_type,legend_display);
+                        else {
+                            draw_graph_doughnut(data.nav_pill +"-" + value.object_id,
+                                            value.title_text,
+                                            value.labels,
+                                            value.dataset,
+                                            chart_type,
+                                            legend_display,value.center_text);
+                          draw_graphs_ajax('participation-filter-form','participation-report-panel','bar',false,true);
+                        }
+                        //for tabular
+                        var table = $('#' + data.nav_pill + '-tabular-data-'+ value.object_id).DataTable({
+                           "iDisplayLength": 25,
+                           "processing": true,
+                           "dom":  "<'row'<'col-sm-6'l><'col-sm-6'f>><'row'<'col-sm-6'B><'col-sm-6'p>><'row'<'col-sm-12't>><'row'<'col-sm-12'i>>",
+                           "buttons": [
+                                 'copy', 'print', 'excel', 'pdf'
+                                   ],
+                          lengthChange: true,
+                          fixedColumns: false,
+                        });
+                        table.buttons().container().appendTo('#' + data.nav_pill + '-tabular-data-' + value.object_id +'_wrapper .col-md-6:eq(0)' );
+
+                        // adjust font-size
+                        $('#' + data.nav_pill + '-tabular-data-'+ value.object_id + "_wrapper").css("font-size","11px")
+                      });
+
+                  }
+                  else{ //single position
+                        if (chart_type == 'bar' || chart_type == 'horizontalBar')
+                            // draw the chart
+                            draw_graph_bar(   data.nav_pill + "-"  + data.result_data.object_id,
+                                                data.result_data.title_text,
+                                                data.result_data.labels,
+                                                data.result_data.dataset,chart_type,legend_display);
+                        else {
+                            draw_graph_doughnut(data.nav_pill +"-" + data.result_data.object_id,
+                                            data.result_data.title_text,
+                                            data.result_data.labels,
+                                            data.result_data.dataset,
+                                            chart_type,
+                                            legend_display,
+                                            data.result_data.center_text);
+                            draw_graphs_ajax('participation-filter-form','participation-report-panel','bar',false,true);
+                        }
+                        //for tabular
+                        var table = $('#' + data.nav_pill + '-tabular-data-'+ data.result_data.object_id).DataTable({
+                           "iDisplayLength": 25,
+                           "processing": true,
+                           "dom":  "<'row'<'col-sm-6'l><'col-sm-6'f>><'row'<'col-sm-6'B><'col-sm-6'p>><'row'<'col-sm-12't>><'row'<'col-sm-12'i>>",
+                           "buttons": [
+                                 'copy', 'print', 'excel', 'pdf'
+                                   ],
+                          lengthChange: true,
+                          fixedColumns: false,
+                        });
+                        table.buttons().container().appendTo('#' + data.nav_pill + '-tabular-data-'+ data.result_data.object_id +'_wrapper .col-md-6:eq(0)' );
+
+
+                  }
+                  },
+              error: function(){
+                  console.log("error");
+              },
+    });
+  }
+
+  $(document).ready( function () { //use this so buttons in tabular will apear upon load
+
+    if ($('#filter-form #id_election').val() != null){ //load only if there is completed election arleady
+      populate_winner_table();
+
+      //draw graphs upon load
+      // election_result
+      draw_graphs_ajax('filter-form-result','election-result-panel','horizontalBar',false);
+      // distribution_by
+      draw_graphs_ajax('filter-form','distrbution-by-panel','bar',true);
+      //participation_rate
+      draw_graphs_ajax('participation-filter-form','participation-report-panel','doughnut',true,true,"{% url 'reporting:populate_participation_report_graphs_overall_ajax' %}");
+
+    }
+    });
+
+
+  //listener
+  $('#filter-form #id_distribution').change( function(){
+    draw_graphs_ajax('filter-form','distrbution-by-panel','bar',true);
+  });
+  $('#filter-form #id_election').change( function(){
+    draw_graphs_ajax('filter-form','distrbution-by-panel','bar',true);
+  });
+  $('#participation-filter-form #id_election').change( function(){
+      draw_graphs_ajax('participation-filter-form','participation-report-panel','doughnut',true,true,"{% url 'reporting:populate_participation_report_graphs_overall_ajax' %}");
+  });
+
+  $('#filter-form-result #id_election').change( function(){
+    $('#election-winner-table').DataTable().ajax.reload();
+    draw_graphs_ajax('filter-form-result','election-result-panel','horizontalBar',false);
+  });
+
+</script>
+
+<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'js/buttons.print.min.js' %}"></script>
+
+<!-- for other buttons of datatables -->
+<script src="{% static 'js/dataTables.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/buttons.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/jszip.min.js' %}"></script>
+<script src="{% static 'js/pdfmake.min.js' %}"></script>
+<script src="{% static 'js/vfs_fonts.js' %}"></script>
+<script src="{% static 'js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'js/buttons.colVis.min.js' %}"></script>
+
+<!-- For confirm dialog -->
+<script src="{% static 'js/jquery-ui.js' %}"></script>
+
+<script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+
+{% endblock %}

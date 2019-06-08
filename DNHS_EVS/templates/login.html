@@ -1,0 +1,17 @@
+{% extends 'base_2.html' %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="jumbotron">
+  <h2>Login</h2>
+    <form method="post">
+      {% csrf_token %}
+      {{  form|crispy }}
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+{% endblock %}

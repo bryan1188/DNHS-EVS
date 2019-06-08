@@ -1,0 +1,151 @@
+<!-- this modal whill be shown after voter confirmed -->
+<!-- This serves as the voter's ballot and this is the page where the voter cast his vote -->
+<!-- This model should not be closed unless confrimation is clicked -->
+{% load staticfiles %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+
+<script src="{% static 'js/popper.min.js' %}"></script>
+
+<form method="post"
+    action="{% url 'election:voter_ballot_ajax' object.pk %}"
+    class="js-cast-vote-form">
+  {% csrf_token %}
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
+      <span area-hidden="true">&times;</span>
+    </button>
+    <h4 class="modal-title">Hi {{object.student.first_name|title}}, here is your OFFICIAL BALLOT!</h4>
+  </div>
+
+  <div class="modal-body">
+    {% for field in form %}
+      <div class="form-group {% if field.errors %} has-error {% endif%}">
+        {% for error in field.errors %}
+          <p class="help-block"> {{ error }}</p>
+        {% endfor %}
+
+        {{ field|as_crispy_field }}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal" style="display: inline-block;">Close</button>
+    <button id="cast-vote-btn" type="submit" class="btn btn-primary" style="display: inline-block;" disabled>
+        <span class="glyphicon glyphicon-send"></span>
+        Cast Vote
+    </button>
+    <div class="checkbox" style="display: inline-block;">
+          <label>
+            <input type="checkbox" id="vote-confirmation-checkbox"><b>Confirm Votes</b>
+          </label>
+    </div>
+  </div>
+</form>
+
+{% for candidate in candidates %}
+
+  <script type="text/javascript">
+    $(document).ready( function () {
+        var candidate_label = $('[value=' + {{candidate.id}} + ']').parent();
+        var title_text = "<img class='img-responsive img-thumbnail' src='/media/{{candidate.profile_pic}}'/>";
+        // title_text = "<img class='img-thumbnail' src='https://picsum.photos/200/100'/>sadfsadfssdf";
+        candidate_label.attr('data-toggle', 'tooltip');
+        candidate_label.attr('data-original-title', title_text);
+        candidate_label.attr('title','');
+        candidate_label.attr('data-placement','right');
+        candidate_label.append("(" + "{{candidate.party.display_name}}" + ")");
+        candidate_label.css("font-size","120%");
+      });
+
+  </script>
+
+
+{% endfor %}
+
+<script type="text/javascript">
+  $(function() {
+    $('[data-toggle="tooltip"]').tooltip({
+        html: true
+      });
+  });
+
+  $(function(){
+
+    $('#vote-confirmation-checkbox').change( function(){
+        if($(this).is(':checked')){
+            console.log($('#cast-vote-btn').attr('disabled'));
+            $('#cast-vote-btn').attr('disabled', false);
+        }
+        else{
+          console.log($('#cast-vote-btn').attr('disabled'));
+          $('#cast-vote-btn').attr('disabled', true);
+        }
+    });
+
+    //listener
+    // grab all checkbox inputs
+    //add some logic to auto uncheck based on the number of slots
+    $('input:checkbox').change( function() {
+      var number_of_slots = parseInt($(this).attr("number-of-slots"));
+
+      //track last checked
+      if($(this).is(':checked')){
+
+        //find the max last-checked-counter
+        max_checked_counter = 0;
+        $(this).parent().parent().siblings()
+                .find('input:checkbox:checked')
+                .each( function(index, value) {
+                  if (parseInt($(this).attr("last-checked-counter")) > max_checked_counter){
+                    max_checked_counter = parseInt($(this).attr("last-checked-counter"));
+                  }
+                });
+
+        $(this).attr("last-checked-counter",max_checked_counter + 1); //set to track as this is the latest checked element
+
+        //get other checkboxes
+        //get count of checked checkboxes
+        //find the least recent checked element to tbe unchecked
+        var siblings_checked_count = 0;
+        var least_counter;
+        var least_checked_id;
+        $(this).parent().parent().siblings()
+                .find('input:checkbox:checked')
+                .each( function(index, value) {
+
+                    // find the least element to be unchecked
+                    if (least_counter === undefined) {
+                      least_counter = parseInt($(this).attr("last-checked-counter"));
+                      least_checked_id = $(this).attr("id");
+                    }
+                    else {
+                      if (parseInt($(this).attr("last-checked-counter")) < least_counter) {
+                        least_counter = parseInt($(this).attr("last-checked-counter"));
+                        least_checked_id = $(this).attr("id");
+                      }
+                    }
+                    siblings_checked_count += 1;
+
+                });
+
+        if (siblings_checked_count >= number_of_slots){
+          //unchecked the least recent candidate
+          $('#' + least_checked_id).prop('checked', false);
+
+        }
+
+      }
+      else { //reset to 0
+        last_checked_counter = 0; //reset
+        $(this).attr("last-checked-counter",last_checked_counter); //then set again
+      }
+
+    });
+
+  });
+
+
+</script>

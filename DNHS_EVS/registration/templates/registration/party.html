@@ -1,0 +1,208 @@
+{% extends 'base_2.html' %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block heading  %}
+
+  <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.dataTables.min.css' %}">
+
+  <!-- for more datatables buttons -->
+  <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'registration/css/user_list.css' %}">
+
+  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+
+  <style media="screen">
+        #party_list_wrapper .btn, #party_list_wrapper{
+          font-size: 11px;
+        }
+        .odd {
+          background-color: #f4f3f2;
+        }
+  </style>
+
+{% endblock %}
+
+{% block content %}
+<h3><b>Party Management</b></h3>
+<div class="row">
+    <!-- filter & create button-->
+    <div class="col-md-2">
+        <!-- create button -->
+        <div class="row " style="margin-bottom: 10px;">
+            <div class="col-md-12">
+              <button type="button" class="btn btn-block btn-primary js-create-party"
+                 data-toggle="tooltip" data-placement="right" title="Create new party"
+                   data-url="{% url 'registration:create_party_ajax' %}">
+                  <span class="glyphicon glyphicon-plus"></span>
+                  New Party
+              </button>
+            </div>
+        </div>
+        <!-- filter -->
+        <div class="row ">
+            <div class="col-md-12">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <a data-toggle=collapse href="#collapseFilter">Filter</a>
+                    </div>
+                    <div id="collapseFilter" class="panel-collapse collapse in" >
+                        <div class="panel-body">
+                          <form method="post">
+                            {% csrf_token %}
+                              {{ filter_form|crispy }}
+                          </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- list -->
+    <div class="col-md-10">
+      <div class="panel panel-info">
+          <div class="panel-heading">
+              <a data-toggle=collapse href="#collapsePartyList">Party List</a>
+          </div>
+          <div id="collapsePartyList" class="panel-collapse collapse in" >
+              <div class="panel-body">
+                     <div class="table-responsive">
+                         <table id="party_list" class="table table-bordered display">
+                           <thead>
+                             <tr>
+                               <th>Name</th>
+                               <th>Display Name</th>
+                               <th>Action</th>
+                             </tr>
+                           </thead>
+                           <tfoot>
+                             <tr>
+                               <th>Name</th>
+                               <th>Display Name</th>
+                               <th>Action</th>
+                             </tr>
+                           </tfoot>
+                           <tbody>
+                           </tbody>
+                         </table>
+                     </div>
+              </div>
+          </div>
+      </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-section">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<script> //initialize script
+
+  function get_all_checkbox(){
+    if ($('#id_show_all').prop('checked'))
+      return true;
+    else
+      return false;
+  }
+
+    $(document).ready( function () {
+      var table = $('#party_list').DataTable({
+        "drawCallback": function( settings ) {
+            //https://stackoverflow.com/questions/39240361/datatables-and-bootstrap-tooltips
+                $('[data-toggle="tooltip"]').tooltip();
+                },
+        "processing": true,
+        "dom":  "<'row'<'col-md-6'l><'col-md-6'f>><'row'<'col-md-6'B><'col-md-6'p>><'row'<'col-md-12't>><'row'<'col-md-12'i>>",
+        "buttons": [
+            'print','copy', 'excel', 'pdf', 'colvis'
+              ],
+        "ajax": {
+            "processing": true,
+            "url": "{% url 'registration:populate_table_party_list_ajax' %}",
+            "data": function( d ) {
+                    d.select_all = get_all_checkbox();
+                  },
+            "dataSrc": ""
+        },
+        'columns': [
+          {"data": "fields.name"},
+          {"data": "fields.display_name"},
+          {"data": "pk"},
+        ],
+        fixedColumns: false,
+        'columnDefs': [
+            {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                "targets": [-1],
+                "className": "text-center",
+                // "width": "4%"
+           },
+           { "render": function ( data, type, row ) {
+             var toggleButton = ""
+             if (row['fields']['is_active']) {
+              toggleButton = '<button id="button-change-password" type="button" '
+                    + 'class="btn btn-danger btn-xs js-toggle-party"'
+                    + 'data-toggle="tooltip" data-placement="right" title="Deactivate" '
+                    + 'data-url="/registration/ajax/party/toggle_status/'
+                    + row['pk']  +'/">' +'<span class="glyphicon glyphicon-remove-sign"></span></button></div>';
+              }
+              else {
+                toggleButton = '<button  type="button" class="btn btn-success btn-xs js-toggle-party"'
+                    + 'data-toggle="tooltip" data-placement="right" title="Activate" '
+                    + 'data-url="/registration/ajax/party/toggle_status/'
+                    + row['pk']  +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span></button></div>';
+              }
+             return '<div class="btn-group"><button id="button-edit" type="button" '
+                     + 'data-toggle="tooltip" data-placement="left" title="Edit" '
+                     + 'class="btn btn-secondary btn-xs js-update-party" '
+                     + 'data-url="/registration/ajax/party/update/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
+                     + '<button type="button" '
+                     + 'data-toggle="tooltip" data-placement="top" title="Show More Details" '
+                     + 'class="btn btn-primary btn-xs js-show-more-details-party" '
+                     + 'data-url="/registration/ajax/party/more_details/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button>'
+                     + toggleButton ;
+                   },
+             "targets": -1
+           },
+           { "render": function ( data, type, row ) {
+                     if ((row['fields']['is_active'])) {
+                         return data;
+                     }
+                     else
+                         return '<strike>' + data + '</strike>';
+                   },
+             "targets": [0,1]
+           },
+           ],
+        "order": [[ 0, "asc" ]]
+      });
+
+      //listener
+      $(':checkbox').change( function(){
+          $('#party_list').DataTable().ajax.reload();
+      });
+
+    });
+</script>
+  <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'js/dataTables.buttons.min.js' %}"></script>
+  <script src="{% static 'js/buttons.print.min.js' %}"></script>
+  <!-- for other buttons of datatables -->
+  <script src="{% static 'js/dataTables.bootstrap.min.js' %}"></script>
+  <script src="{% static 'js/buttons.bootstrap.min.js' %}"></script>
+  <script src="{% static 'js/jszip.min.js' %}"></script>
+  <script src="{% static 'js/pdfmake.min.js' %}"></script>
+  <script src="{% static 'js/vfs_fonts.js' %}"></script>
+  <script src="{% static 'js/buttons.html5.min.js' %}"></script>
+  <script src="{% static 'js/buttons.colVis.min.js' %}"></script>
+
+ <script src="{% static modal_ajax_location %}"></script>
+{% endblock %}

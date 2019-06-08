@@ -1,19 +1,25 @@
 from django.views.generic import TemplateView
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.decorators import permission_required
 from registration import forms
 from django.contrib.auth.models import User,Group
 from django.core import serializers
 from django.http import HttpResponse
+from django.conf import settings
 import json
 
-class UserList(TemplateView):
+class UserList(PermissionRequiredMixin,TemplateView):
     template_name = 'registration/user_list.html'
+    permission_required = 'auth.add_user'
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(**kwargs)
         user_filter_form = forms.UserFilterForm()
         context['user_filter_form'] = user_filter_form
+        context['modal_ajax_location'] = settings.MODAL_AJAX_LOCATION
         return context
 
+@permission_required('auth.add_user', raise_exception=True)
 def populate_table_user_list_ajax(request):
     selected_group = request.GET.getlist('group[]')
     active = request.GET.get('is_active')
@@ -31,7 +37,7 @@ def populate_table_user_list_ajax(request):
     if select_all_users == "true":
         user_list = User.objects.all()
 
-    user_list = user_list.distinct('username')    
+    user_list = user_list.distinct('username')
 
     return_list = []
     for user in user_list:

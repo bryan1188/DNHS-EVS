@@ -1,0 +1,36 @@
+<!-- this modal whill be shown after voter authenticated -->
+<!-- It will show voter information, and click confirm to proceed casting votes -->
+
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
+    <span area-hidden="true">&times;</span>
+  </button>
+  <h4 class="modal-title">
+    Hi {{object.student.first_name|title}}, please confirm your information below!
+  </h4>
+</div>
+<div class="modal-body">
+  {% for field in form %}
+    <div class="form-group {% if field.errors %} has-error {% endif%}">
+      {% for error in field.errors %}
+        <p class="help-block"> {{ error }}</p>
+      {% endfor %}
+      {{ field|as_crispy_field }}
+    </div>
+  {% endfor %}
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-danger js-not-me " data-dismiss="modal">
+    <span class="glyphicon glyphicon-remove-circle"></span>
+      This is NOT Me
+  </button>
+  <button type="button" class="btn btn-success js-this-is-me" method="get"
+    action="{% url 'election:voter_ballot_ajax' object.pk %}"
+    >
+      <span class="glyphicon glyphicon-ok-circle"></span>
+          This is me
+    </button>
+</div>

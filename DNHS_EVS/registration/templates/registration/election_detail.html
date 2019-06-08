@@ -1,0 +1,940 @@
+{% extends 'base_2.html' %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+{% load widget_tweaks %}
+
+{% block heading  %}
+  <!-- For confirm dialog -->
+  <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
+
+  <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.dataTables.min.css' %}">
+
+  <!-- for more datatables buttons -->
+  <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
+
+  <!-- chart.js -->
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+  <script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script>
+
+  <style media="screen">
+        .dataTables_wrapper .btn, .dataTables_wrapper{
+          font-size: 11px;
+        }
+        .odd {
+          background-color: #f4f3f2;
+        }
+  </style>
+
+{% endblock %}
+
+{% block content %}
+<!-- show elections details -->
+<div class="panel panel-info">
+  <div class="panel-heading">
+       <a data-toggle="collapse" href="#collapseDetails"><h2>Election Details</h2></a>
+       <!-- <button type="button" class="btn btn-primary js-update-election">
+         <span class="glyphicon glyphicon-edit"></span>
+           Update Election
+       </button> -->
+       {% if object.status == 'FINALIZED' and perms.registration.add_student %}
+       <button type="button" class="btn btn-primary js-complete-election"
+         data-toggle="tooltip" data-placement="right"
+         title="Tag this election as COMPLETED"
+        >
+         <span class="glyphicon glyphicon-check"></span>
+           Complete this Election
+       </button>
+       {% endif %}
+  </div>
+  <div id="collapseDetails" class="panel-collapse collapse in">
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-success">
+                   <div class="panel-heading">
+                     Name
+                   </div>
+                   <div class="panel-body">
+                     {{object.name}}
+                   </div>
+                 </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                      School Year
+                    </div>
+                    <div class="panel-body">
+                      {{object.school_year}}
+                    </div>
+                  </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-success">
+                  <div class="panel-heading">
+                    Status
+                  </div>
+                  <div id="election_status" class="panel-body">
+                     {{object.status}}
+                  </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-success">
+                  <div class="panel-heading">
+                    Schedule
+                  </div>
+                  <div class="panel-body">
+                     {{object.election_day_from}} - {{object.election_day_to}}
+                  </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-success">
+                  <div class="panel-heading">
+                     <a data-toggle="collapse" href="#collapsePosition">Positions</a>
+                  </div>
+                  <div id="collapsePosition" class="panel-collapse collapse in">
+                    <ul class='list-group'>
+                      {% for position in object.positions.all %}
+                       <li class="list-group-item"> {{position}} </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="panel panel-success">
+                  <div class="panel-heading">
+                    Description
+                  </div>
+                  <div class="panel-body">
+                     {{object.description}}
+                  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<!-- show candidates -->
+<div class="panel panel-info">
+  <div class="panel-heading">
+   <a data-toggle="collapse" href="#collapseCanidates"><h2>List of Canidates</h2></a>
+  </div>
+  <div id="collapseCanidates" class="panel-collapse collapse in">
+    <div class="panel-body">
+      <form method="post">
+        {% csrf_token %}
+          {{ filter_form.as_p }}
+      </form>
+      <p>
+       <button type="button" class="btn btn-primary js-create-candidate"
+        data-toggle="tooltip" data-placement="right" title="Create new Candidate"
+          data-url="{% url 'registration:create_candidate_ajax' %}">
+         <span class="glyphicon glyphicon-plus"></span>
+         New Canidate
+       </button>
+      </p>
+      <div class="table-responsive">
+        <table id="candidate_list" class="table table-bordered display">
+          <thead>
+            <tr>
+              <th>Election</th>
+              <th>School Year</th>
+              <th>Position</th>
+              <th>Candidate</th>
+              <th>Party</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <th>Election</th>
+              <th>School Year</th>
+              <th>Position</th>
+              <th>Candidate</th>
+              <th>Party</th>
+              <th>Action</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- show voters -->
+<div class="panel panel-info">
+  <div class="panel-heading">
+   <a data-toggle="collapse" href="#collapseVoters"><h2>List of all Voters</h2></a>
+  </div>
+  <div id="collapseVoters" class="panel-collapse collapse in">
+    <div class="panel-body">
+      <div class="panel panel-success">
+         <div class="panel-heading">
+           <a data-toggle="collapse" href="#collapseVotersSummary">Summary</a>
+         </div>
+         <div id="collapseVotersSummary" class="panel-collapse collapse in">
+           <div class="panel-body">
+             <ul class="nav nav-tabs">
+               <li class="active"><a data-toggle="tab" href="#graph_tab">Graph</a></li>
+               <li><a data-toggle="tab" href="#table_tab">Tabular</a></li>
+             </ul>
+             <div class="tab-content">
+               <div id="graph_tab" class="tab-pane fade in active">
+                 <h4>Graphical Data</h4>
+                 <div class="tabbable">
+                     <ul class="nav nav-pills nav-stacked col-md-1">
+                        <li class="active"><a href="#overall" data-toggle="tab">Overall</a></li>
+                        <li ><a href="#by-section" data-toggle="tab">Section</a></li>
+                    </ul>
+                    <div class="tab-content col-md-11">
+                        <div class="tab-pane active" id="overall">
+                          <div class="row">
+                              <div class="col-md-6">
+                                <canvas id="overall-graph-grade-level" width="100" height="100"></canvas>
+                              </div>
+                              <div class="col-md-6">
+                                <canvas id="overall-graph-gender" width="100" height="100"></canvas>
+                              </div>
+                          </div>
+                        </div>
+                        <div class="tab-pane fade" id="by-section">
+                          <div>
+                            <canvas id="by-section-graph" style='height:200px; width:300px'>
+                            </canvas>
+                          </div>
+                        </div>
+                    </div>
+                 </div>
+               </div>
+               <div id="table_tab" class="tab-pane fade">
+                 <div class="table-responsive">
+                   <table id="voters_sumarry_table" class="table table-hover display">
+                     <thead class='thead-dark'>
+                       <tr>
+                         <th>Grade Level</th>
+                         <th>Section</th>
+                         <th>M</th>
+                         <th>F</th>
+                         <th>Total</th>
+                       </tr>
+                     </thead>
+                     <tbody id='voters_summary_table_body'>
+
+                     </tbody>
+                     <tfoot>
+                       <tr>
+                         <th colspan="2"><h4><b>TOTAL</b></h4></th>
+                         <th id='male_total'></th>
+                         <th id='female_total'></th>
+                         <th id='grand_total'></th>
+                       </tr>
+                     </tfoot>
+                   </table>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
+       <div class="panel panel-success">
+          <div class="panel-heading">
+            <a data-toggle="collapse" href="#collapseVotersList">List</a>
+          </div>
+          <div id="collapseVotersList" class="panel-collapse collapse in">
+            <div class="panel-body">
+             <div class="table-responsive">
+               <table id="voter_list" class="table table-bordered display">
+                 <thead>
+                   <tr>
+                     <th>Grade Level</th>
+                     <th>Section</th>
+                     <th>Name</th>
+                     <th>Sex</th>
+                   </tr>
+                 </thead>
+                 <tfoot>
+                   <tr>
+                     <th>Grade Level</th>
+                     <th>Section</th>
+                     <th>Name</th>
+                     <th>Sex</th>
+                   </tr>
+                 </tfoot>
+               </table>
+             </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+{% if  perms.registration.add_student %}
+  <!-- show voters' token -->
+  <div class="panel panel-info">
+    <div class="panel-heading">
+      <a data-toggle="collapse"  href="#collapseTokens"><h2>Voters' Token</h2></a>
+    </div>
+    <div id="collapseTokens" class="panel-collapse collapse in">
+      <div class="panel-body">
+          {% if not object.is_token_generated %}
+          <div id="generate_button">
+            <p>
+             <button type="button" class="btn btn-primary js-generate-token"
+              data-toggle="tooltip" data-placement="right" title="Click to generate voters' tokens"
+                data-url="{% url 'registration:create_candidate_ajax' %}">
+               <span class="glyphicon glyphicon-qrcode"></span>
+               Generate Token
+             </button>
+            </p>
+          </div>
+          {% endif %}
+        <div class="table-responsive">
+          <table id="tokens_list" class="table table-bordered display">
+            <thead>
+              <tr>
+                <th>Grade Level</th>
+                <th>Section</th>
+                <th>Name</th>
+                <th>Sex</th>
+                <th>Token</th>
+              </tr>
+            </thead>
+            <tfoot>
+              <tr>
+                <th>Grade Level</th>
+                <th>Section</th>
+                <th>Name</th>
+                <th>Sex</th>
+                <th>Token</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- script for show dialog -->
+  <!-- https://jqueryui.com/dialog/#animated -->
+
+  <!-- generating token confirmation -->
+  <script> //script for showing the modal for confirmation of generating token
+      //after confirmation, token will be generated for the election
+    $( function() {
+      $( "#dialog-confirm" ).dialog({
+        resizable: false,
+        height: "auto",
+        width: 400,
+        modal: true,
+        autoOpen: false,
+        buttons: {
+          "Confirm": function() {
+            $( this ).dialog( "close" );
+            $.ajax({
+                url: "{% url 'registration:generate_batch_token_ajax' object.id %}",
+                type: 'get',
+                dataType: 'json',
+                beforeSend: function(){
+                            $('#generate_button').remove();
+                            // $('#loader').show(); find a very good loader
+                            },
+                complete: function(){
+                          // $('#loader').hide();
+                },
+                success: function(data){
+                        location.reload(); //refresh current page
+                        // $('#tokens_list').DataTable().ajax.reload();
+                        // $('#election_status').html("FINALIZED");
+                          },
+            });
+          },
+          Cancel: function() {
+            $( this ).dialog( "close" );
+          }
+        }
+      });
+
+      $( ".js-generate-token" ).on( "click", function() {
+        $( "#dialog-confirm" ).dialog( "open" );
+      });
+
+    } );
+  </script>
+  <!-- Dialog for generate token confirmation -->
+  <div id="dialog-confirm" title="Generate Voters' token for this election?">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+      This action will generate the token for all the voters listed above and will make this election as 'FINALIZED'.
+      Once it's done, this page will automatically be refreshed. Do you want to proceed?
+    </p>
+  </div>
+
+  <!-- Complete this election  -->
+  <script> //script for showing the modal for confirmation of completing the election
+      //after confirmation, token will be generated for the election
+    $( function() {
+      $( "#complete-election" ).dialog({
+        resizable: false,
+        height: "auto",
+        width: 400,
+        modal: true,
+        autoOpen: false,
+        buttons: {
+          "Confirm": function() {
+            $( this ).dialog( "close" );
+            $.ajax({
+                url: "{% url 'registration:complete_election_ajax' object.id %}",
+                type: 'get',
+                dataType: 'json',
+                beforeSend: function(){
+                            $('.js-complete-election').remove();
+                            // $('#loader').show();
+                            },
+                complete: function(){
+                          // $('#loader').hide();
+                },
+                success: function(data){
+                        location.reload(); //refresh currtokens_listent page
+                        // $('#tokens_list').DataTable().ajax.reload();
+                        // $('#election_status').html("FINALIZED");
+                          },
+            });
+          },
+          Cancel: function() {
+            $( this ).dialog( "close" );
+          }
+        }
+      });
+
+      $( ".js-complete-election" ).on( "click", function() {
+        $( "#complete-election" ).dialog( "open" );
+      });
+
+    } );
+  </script>
+
+  <!-- Dialog for confirmation in completing this elections -->
+  <div id="complete-election" title="Do you want to complete this Election?">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+      This action will complete this election and declare the winners.
+      Voters can no longer cast their votes.
+      Once it's done, this page will automatically be refreshed. Do you want to proceed?
+    </p>
+  </div>
+
+{% endif %}
+
+<!-- Modal -->
+<div class="modal fade" id="modal-section">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<!-- chartjs plugins to show text in middle -->
+<!-- http://www.authorcode.com/how-to-add-text-inside-the-doughnut-chart-using-chart-js/ -->
+<script>
+
+  function drawTotals(chart) {
+
+      var width = chart.chart.width,
+      height = chart.chart.height,
+      ctx = chart.chart.ctx;
+
+      ctx.restore();
+      var fontSize = (height / 114).toFixed(2);
+      ctx.font = fontSize + "em sans-serif";
+      ctx.textBaseline = "middle";
+
+      var text = chart.config.centerText.text,
+      textX = Math.round((width - ctx.measureText(text).width) / 2),
+      textY = height / 2;
+
+      ctx.fillText(text, textX, textY);
+      ctx.save();
+  }
+</script>
+
+<!-- global variables -->
+<script>
+    //variables for populating data in the graphs
+    var solid_color = [  'rgba(255, 99, 132)',
+            'rgba(54, 162, 235)',
+            'rgba(255, 206, 86)',
+            'rgba(75, 192, 192)',
+            'rgba(153, 102, 255)',
+            'rgba(255, 159, 64)',
+            'rgba(145, 142, 140)',
+            'rgba(239, 38, 108)',
+      ];
+      var transparent_color = [  'rgba(255, 99, 132, .4)',
+              'rgba(54, 162, 235, .4)',
+              'rgba(255, 206, 86, .4)',
+              'rgba(75, 192, 192, .4)',
+              'rgba(153, 102, 255, .4)',
+              'rgba(255, 159, 64, .4)',
+              'rgba(145, 142, 140, .4)',
+              'rgba(239, 38, 108, .4)',
+        ];
+
+      var grade_level_label = new Array();
+      var grade_level_data = new Array();
+      var grade_level_dict = {}; //push grade_level here. if object exist, then add value, if not then append
+
+      var gender_label = new Array();
+      var gender_data = new Array();
+
+      var total_voters;
+
+      var section_labels = new Array();
+      var section_total_data = new Array();
+      var section_male_data = new Array();
+      var section_female_data = new Array();
+
+</script>
+
+<!-- functions related to chartjs -->
+<script>
+  function push_data_to_chart(obj){ //get the data and push to
+      //use grade_level_dict
+      //if object exists in the dict, then add the value, if not, create new item
+      if(obj.grade_level in grade_level_dict) {
+        //add the value since they are the same garde level
+        grade_level_dict[obj.grade_level] = grade_level_dict[obj.grade_level] + obj.total;
+      }
+      else{
+        //create new item for this grade_level
+        grade_level_dict[obj.grade_level] = obj.total;
+      }
+  }
+
+  function create_list_for_grade_level_chart(){
+    //loop inside the dictionary and build the needed list
+    $.each(grade_level_dict, function(key, value){
+      grade_level_data.push(value);
+      grade_level_label.push(key);
+    });
+  }
+
+  function draw_grade_level_graph(){
+    var ctx = $('#overall-graph-grade-level');
+    var myChart = new Chart(ctx, {
+          plugins: [{
+              beforeDraw: function(chart, options) {
+                if (chart.config.centerText.display !== null &&
+                    typeof chart.config.centerText.display !== 'undefined' &&
+                    chart.config.centerText.display) {
+                    drawTotals(chart);
+                }
+              }
+          }],
+          type: 'doughnut',
+          data: {
+              labels: grade_level_label,
+              datasets: [{
+                  label: '# Voters per Grade Level',
+                  data: grade_level_data,
+                  backgroundColor: solid_color.slice([0, Object.keys(grade_level_dict).length]),
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              title: {
+                  display: true,
+                  text: 'Voters per Grade Level',
+                  position: 'top',
+                  fontSize: 20
+              },
+              legend: {
+                display: true,
+                position: 'bottom'
+              },
+              plugins: [{
+              // Change options for ALL labels of THIS CHART
+              datalabels: {
+                  color: '#000000'
+                }
+              },
+            ]
+          },
+          centerText: {
+              display: true,
+              text: total_voters
+          }
+      });
+  }
+
+  function draw_gender_graph(){
+    var ctx = $('#overall-graph-gender');
+    var myChart = new Chart(ctx, {
+          plugins: [{
+              beforeDraw: function(chart, options) {
+                if (chart.config.centerText.display !== null &&
+                    typeof chart.config.centerText.display !== 'undefined' &&
+                    chart.config.centerText.display) {
+                    drawTotals(chart);
+                }
+              }
+          }],
+          type: 'doughnut',
+          data: {
+              labels: gender_label,
+              datasets: [{
+                  label: 'Voters per Gender',
+                  data: gender_data,
+                  backgroundColor: [
+                      'rgba(96, 96, 255)',
+                      'rgba(242, 128, 191)',
+                  ],
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              title: {
+                  display: true,
+                  text: 'Voters per Gender',
+                  position: 'top',
+                  fontSize: 20
+              },
+              legend: {
+                display: true,
+                position: 'bottom'
+              },
+              plugins: {
+              // Change options for ALL labels of THIS CHART
+              datalabels: {
+                  color: '#000000'
+                }
+            }
+        },
+        centerText: {
+            display: true,
+            text: total_voters
+        }
+      });
+  }
+
+  function draw_by_section_graph(){
+    var ctx = $('#by-section-graph');
+    var myChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: section_labels,
+              datasets: [
+                  {
+                      label: 'Total',
+                      data: section_total_data,
+                      backgroundColor: "orange",
+                      borderWidth: 1
+                  },
+                  {
+                    label: 'Male',
+                    data: section_male_data,
+                    backgroundColor: "rgba(96, 96, 255)",
+                    borderWidth: 1
+                  },
+                  {
+                    label: 'Female',
+                    data: section_female_data,
+                    backgroundColor: 'rgba(242, 128, 191)',
+                    borderWidth: 1
+                  }
+              ]
+          },
+          options: {
+              title: {
+                  display: true,
+                  text: 'Voters per Section',
+                  position: 'top',
+                  fontSize: 20
+              },
+              legend: {
+                display: true,
+                position: 'top'
+              },
+              plugins: {
+              // Change options for ALL labels of THIS CHART
+              datalabels: {
+                  color: '#000000'
+                }
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+          },
+          centerText: {
+              display: false,
+              text: total_voters
+          }
+      });
+  }
+
+</script>
+
+<script> // script
+
+  function get_all_checkbox(){
+    if ($('#id_show_all').prop('checked'))
+      return true;
+    else
+      return false;
+    }
+
+    $(document).ready( function () {
+
+      //populate candidate_list
+      var table = $('#candidate_list').DataTable({
+        "drawCallback": function( settings ) {
+            //https://stackoverflow.com/questions/39240361/datatables-and-bootstrap-tooltips
+                $('[data-toggle="tooltip"]').tooltip();
+                },
+        "processing": true,
+        "dom":  "<'row'<'col-md-6'l><'col-md-6'f>><'row'<'col-md-6'B><'col-md-6'p>><'row'<'col-md-12't>><'row'<'col-md-12'i>>",
+        "buttons": [
+              'print','copy', 'excel', 'pdf', 'colvis'
+                ],
+        "ajax": {
+            "processing": true,
+            "url": "{% url 'registration:populate_table_candidate_list_ajax' %}",
+            "data": function( d ) {
+                    d.select_all = get_all_checkbox();
+                    d.election = "{{ object.id }}"; //filter for this election.
+                                            //get candidates for this election only
+                  },
+            "dataSrc": ""
+        },
+        'columns': [
+          {"data": "fields.election"},
+          {"data": "fields.school_year"},
+          {"data": "fields.position"},
+          {"data": "fields.student"},
+          {"data": "fields.party"},
+          {"data": "pk"},
+        ],
+        fixedColumns: false,
+        'columnDefs': [
+            {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                "targets": [1,-1,-2],
+                "className": "text-center",
+                // "width": "4%"
+           },
+           { "render": function ( data, type, row ) {
+             var toggleButton = ""
+             if (row['fields']['is_active']) {
+              toggleButton = '<button id="button-change-password" type="button" '
+                    + 'class="btn btn-danger btn-xs js-toggle-candidate"'
+                    + 'data-toggle="tooltip" data-placement="right" title="Deactivate" '
+                    + 'data-url="/registration/ajax/candidate/toggle_status/'
+                    + row['pk']  +'/">' +'<span class="glyphicon glyphicon-remove-sign"></span></button></div>';
+              }
+              else {
+                toggleButton = '<button  type="button" class="btn btn-success btn-xs js-toggle-candidate"'
+                    + 'data-toggle="tooltip" data-placement="right" title="Activate" '
+                    + 'data-url="/registration/ajax/candidate/toggle_status/'
+                    + row['pk']  +'/">' +'<span class="glyphicon glyphicon-ok-sign"></span></button></div>';
+              }
+             return '<div class="btn-group"><button id="button-edit" type="button" '
+                     + 'data-toggle="tooltip" data-placement="left" title="Edit" '
+                     + 'class="btn btn-secondary btn-xs js-update-candidate" '
+                     + 'data-url="/registration/ajax/candidate/update/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-pencil"></span></button>'
+                     + '<button type="button" '
+                     + 'data-toggle="tooltip" data-placement="top" title="Show More Details" '
+                     + 'class="btn btn-primary btn-xs js-show-more-details-candidate" '
+                     + 'data-url="/registration/ajax/candidate/more_details/'
+                     + data  +'/">' +'<span class="glyphicon glyphicon-list-alt"></span></button>'
+                     // + '<button type="button" '
+                     // + 'data-toggle="tooltip" data-placement="top" title="Show List of Voters" '
+                     // + 'class="btn btn-primary btn-xs js-show-more-voters" '
+                     // + 'data-url="/registration/ajax/candidate/more_details/'
+                     // + data  +'/">' +'<span class="glyphicon glyphicon-th-list"></span></button>'
+                     + toggleButton ;
+                   },
+             "targets": -1
+           },
+           { "render": function ( data, type, row ) {
+                     if ((row['fields']['is_active'])) {
+                         return data;
+                     }
+                     else
+                         return '<strike>' + data + '</strike>';
+                   },
+             "targets": [0,1,2,3]
+           },
+           ],
+        "order": [[ 1, "desc" ], [0, 'asc']]
+      });
+
+      //populate voter_list
+      $(document).ready( function () {
+        var table = $('#voter_list').DataTable({
+          "processing": true,
+          // "buttons": [ 'copy', 'excel', 'pdf', 'colvis' ],
+          "dom":  "<'row'<'col-md-6'l><'col-md-6'f>><'row'<'col-md-6'B><'col-md-6'p>><'row'<'col-md-12't>><'row'<'col-md-12'i>>",
+        "buttons": [
+              'print','copy', 'excel', 'pdf', 'colvis'
+                ],
+        lengthChange: true,
+          "ajax": {
+              "processing": true,
+              "url": "{% url 'registration:populate_table_voters_list_ajax' object.id %}",
+              "data": function( d ) {
+                      d.select_all = get_all_checkbox();
+                      d.election = "{{ object.id }}"; //filter for this election.
+                                              //get students for this election only
+                    },
+              "dataSrc": ""
+          },
+          'columns': [
+            {"data": "fields.grade_level"},
+            {"data": "fields.section"},
+            {"data": "fields.name"},
+            {"data": "fields.sex"},
+          ],
+          fixedColumns: false,
+          'columnDefs': [
+              {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                  "targets": [0,1,-1],
+                  "className": "text-center",
+                  "width": "15%"
+             },
+             ],
+          "order":  [[ 0, "asc" ], [1, 'asc'], [3, 'desc'], [2, 'asc']]
+          });
+
+          table.buttons().container().appendTo('#voter_list_wrapper .col-sm-6:eq(0)' );
+        });
+
+      //populate tokens_list
+      $(document).ready( function () {
+        var table = $('#tokens_list').DataTable({
+          "processing": true,
+          // "buttons": [ 'copy', 'excel', 'pdf', 'colvis' ],
+          "dom":  "<'row'<'col-md-6'l><'col-md-6'f>><'row'<'col-md-6'B><'col-md-6'p>><'row'<'col-md-12't>><'row'<'col-md-12'i>>",
+        "buttons": [
+              'print','copy', 'excel', 'pdf', 'colvis'
+                ],
+        lengthChange: true,
+          "ajax": {
+              "processing": true,
+              "url": "{% url 'registration:populate_voters_token_table_ajax' object.id %}",
+              "data":"",
+              "dataSrc": ""
+          },
+          'columns': [
+            {"data": "grade_level"},
+            {"data": "section"},
+            {"data": "name"},
+            {"data": "sex"},
+            {"data": "token"},
+          ],
+          fixedColumns: false,
+          'columnDefs': [
+              {   //https://stackoverflow.com/questions/45446910/jquery-datatables-align-center-1-column
+                  "targets": [0,1,-2],
+                  "className": "text-center",
+                  "width": "13%"
+             },
+             ],
+          "order":  [[ 0, "asc" ], [1, 'asc'], [3, 'desc'], [2, 'asc']]
+          });
+
+          table.buttons().container().appendTo('#tokens_list_wrapper .col-sm-6:eq(0)' );
+        });
+
+      //popuplate summary body
+      $(document).ready( function () {
+          $.ajax({
+              url: "{% url 'registration:populate_table_voters_summary_ajax' object.id %}",
+              type: 'get',
+              dataType: 'json',
+              success: function(data){
+                        $.each(data.rows, function(key, value){
+                          var append_html = "<tr>";
+                          append_html += "<td>" + value.grade_level + "</td>" ;
+                          append_html += "<td>" + value.section + "</td>" ;
+                          append_html += "<td>" + value.male_count + "</td>" ;
+                          append_html += "<td>" + value.female_count + "</td>" ;
+                          append_html += "<td>" + value.total + "</td>" ;
+                          append_html += "</tr>";
+                          $('#voters_summary_table_body').append(append_html);
+
+                          //data for overall per grade level
+                          push_data_to_chart(value);
+
+                          //data for By Section
+                          section_labels.push(value.grade_level + ' - ' + value.section);
+                          section_total_data.push(value.total);
+                          section_male_data.push(value.male_count);
+                          section_female_data.push(value.female_count);
+                        });
+
+                        //build the list for the chart
+                        create_list_for_grade_level_chart();
+
+                        //draw the grade_level graph
+                        total_voters = data.summary.grand_total;
+                        draw_grade_level_graph();
+
+                        //populate summary Total
+                        $('#male_total').html("<h4><b>" + data.summary.male_count +"</b></h4>");
+                        $('#female_total').html("<h4><b>" + data.summary.female_count +"</b></h4>");
+                        $('#grand_total').html("<h4><b>" + data.summary.grand_total +"</b></h4>");
+
+                        //populate the list for gender chart
+                        //male first item, female second item
+                        gender_data.push(data.summary.male_count);
+                        gender_label.push('Male');
+                        gender_data.push(data.summary.female_count);
+                        gender_label.push('Female');
+                        draw_gender_graph();
+
+                        draw_by_section_graph();
+                        },
+          });
+        });
+
+      //listener
+      $(':checkbox').change( function(){
+          $('#candidate_list').DataTable().ajax.reload();
+      });
+
+      //test
+      // $('#grand_total').html('20');
+
+    });
+</script>
+
+<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'js/buttons.print.min.js' %}"></script>
+
+<!-- for other buttons of datatables -->
+<script src="{% static 'js/dataTables.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/buttons.bootstrap.min.js' %}"></script>
+<script src="{% static 'js/jszip.min.js' %}"></script>
+<script src="{% static 'js/pdfmake.min.js' %}"></script>
+<script src="{% static 'js/vfs_fonts.js' %}"></script>
+<script src="{% static 'js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'js/buttons.colVis.min.js' %}"></script>
+
+<!-- For confirm dialog -->
+<script src="{% static 'js/jquery-ui.js' %}"></script>
+
+<script src="{% static modal_ajax_location %}"></script>
+<script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+
+{% endblock %}

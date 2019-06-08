@@ -1,0 +1,44 @@
+{% load widget_tweaks %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+<form method="post"
+    action="{% url 'election:authenticate_voter_ajax' %}"
+    class="js-authenticate-voter-form">
+  {% csrf_token %}
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
+      <span area-hidden="true">&times;</span>
+    </button>
+    <h4 class="modal-title">
+      Welcome to {{ object.name|title }} Election for School Year {{ object.school_year }}
+    </h4>
+  </div>
+  <div class="modal-body">
+    {% for field in form %}
+      <div class="form-group {% if field.errors %} has-error {% endif%}">
+        {% for error in field.errors %}
+          <p class="help-block"> {{ error }}</p>
+        {% endfor %}
+        {{ field|as_crispy_field }}
+      </div>
+    {% endfor %}
+  </div>  
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      <button type="submit" class="btn btn-primary">
+          <span class="glyphicon glyphicon-circle-arrow-right"></span>
+              Enter
+      </button>
+
+  </div>
+</form>
+
+<script> //initialize script
+
+    $(document).ready( function () {
+      $('#id_token').keyup(function() {
+        $(this).val($(this).val().toUpperCase());
+      });
+    });
+</script>

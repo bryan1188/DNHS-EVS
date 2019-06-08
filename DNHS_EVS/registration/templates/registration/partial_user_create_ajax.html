@@ -2,7 +2,8 @@
 
 
 {% block form_content %}
-<form method="post" action="{% url 'registration:create_user_ajax' %}" class="js-user-create-form">
+<form method="post" data-table-list-id="#user_list"
+  action="{% url 'registration:create_user_ajax' %}" class="js-user-create-form">
   {% csrf_token %}
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-lable="Close"">
@@ -15,7 +16,7 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-    <button type="submit" class="btn btn-primary">Create User</button>
+    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span>Create User</button>
   </div>
   <table id="uploaded_students" class="table table-bordered display" hidden>
     <thead>
@@ -46,5 +47,19 @@
     </tbody>
 </table>
 </form>
+
+<script type="text/javascript">
+  $(document).ready( function () {  //link my table,uploaded_students, to datable.js
+
+    $('.table tbody').on('click','.my-btn',function(){
+      var currow = $(this).closest('tr');
+      //populate suggested uername
+        $('#id_username').val(currow.find('td:eq(2)').text().replace(/ /g, '.').toLowerCase()
+                              +'.' + currow.find('td:eq(1)').text().replace(/ /g, '.').toLowerCase() );
+    });
+
+  });
+</script>
+
 
 {%endblock%}
