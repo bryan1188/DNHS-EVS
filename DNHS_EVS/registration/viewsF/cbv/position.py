@@ -15,7 +15,7 @@ import json
 
 class PositionList(PermissionRequiredMixin, TemplateView):
     template_name = 'registration/position.html'
-    permission_required = 'registration.add_election'
+    permission_required = 'registration.add_user'
 
     def get_context_data(self, *args, **kwargs):
         context =  super().get_context_data(**kwargs)
@@ -24,7 +24,7 @@ class PositionList(PermissionRequiredMixin, TemplateView):
         context['filter_form'] = filter_form
         return context
 
-@permission_required('registration.add_election', raise_exception=True)
+@permission_required('registration.add_user', raise_exception=True)
 def populate_table_position_list_ajax(request):
     select_all = request.GET.get('select_all')
 
@@ -53,7 +53,7 @@ def populate_table_position_list_ajax(request):
 
     return HttpResponse(json.dumps(return_list), content_type='application/json')
 
-@permission_required('registration.add_election', raise_exception=True)
+@permission_required('registration.add_user', raise_exception=True)
 def process_post_request(request, position_form, is_create):
     position = position_form.save(commit=False)
     if is_create:
@@ -69,7 +69,7 @@ def process_post_request(request, position_form, is_create):
                 position=position) for grade_level_ in grade_level_list ]
     PositionGradeLevel.objects.bulk_create(position_grade_level_list)
 
-@permission_required('registration.add_election', raise_exception=True)
+@permission_required('registration.add_user', raise_exception=True)
 def create_position_ajax(request, *args, **kwargs):
     data = dict()
     context = dict()
@@ -95,7 +95,7 @@ def create_position_ajax(request, *args, **kwargs):
     )
     return JsonResponse(data)
 
-@permission_required('registration.add_election', raise_exception=True)
+@permission_required('registration.add_user', raise_exception=True)
 def update_position_ajax(request, pk):
     data = dict()
     context = dict()
@@ -123,12 +123,12 @@ def update_position_ajax(request, pk):
     )
     return JsonResponse(data)
 
-@permission_required('registration.add_election', raise_exception=True)
+@permission_required('registration.add_user', raise_exception=True)
 def toggle_position_status_ajax(request,pk):
     data = toggle_object_status(object=Position, pk=pk)
     return JsonResponse(data)
 
-@permission_required('registration.add_election', raise_exception=True)
+@permission_required('registration.add_user', raise_exception=True)
 def show_more_details_ajax(request, pk):
     data = dict()
     context = dict()

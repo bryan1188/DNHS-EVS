@@ -107,7 +107,7 @@ class OfficialBallotForm(forms.Form):
                                 choices=candidates_for_this_position,
                                 required=False
                             )
-            self.fields[field_name].label = "{}({})".format(field_name.title(),number_of_slots)
+            self.fields[field_name].label = "{}(Choose {} only)".format(field_name,number_of_slots)
 
     def clean(self):
         cleaned_data = super().clean()

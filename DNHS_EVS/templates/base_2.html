@@ -65,8 +65,11 @@
                     <div class="dropdown">
                       <button class="dropbtn">Election <b class="caret"></b> </button>
                       <div class="dropdown-content">
-                        {% if perms.registration.add_election %}
+                        <!-- sysadmin can only update position. to prevent manipulation on number of slots -->
+                        {% if perms.auth.add_user %}
                         <a href="{%url 'registration:position' %}">Position Management</a>
+                        {% endif %}
+                        {% if perms.registration.add_election %}
                         <a href="{%url 'registration:list_election' %}">Election Management</a>
                         <a href="{%url 'registration:party' %}">Party Management</a>
                         <a href="{%url 'registration:candidate' %}">Candidate Management</a>
