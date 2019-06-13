@@ -60,6 +60,15 @@
         candidate_label.css("font-size","120%");
       });
 
+      //remove white spaces on IDs especially those for representatives
+      //this is to fix automatic uncheck feature depending of position's
+      //number of slots
+      var attr_id = $('[value=' + {{candidate.id}} + ']').attr('id');
+      //replace space with underscore
+      attr_id_replaced = attr_id.replace(/\s/g,'_');
+      $('[value=' + {{candidate.id}} + ']').attr('id',attr_id_replaced);
+
+
   </script>
 
 
@@ -83,6 +92,15 @@
           console.log($('#cast-vote-btn').attr('disabled'));
           $('#cast-vote-btn').attr('disabled', true);
         }
+    });
+
+    //get all form-check-label class and rename the ID. remove spaces.
+    //this is to work check/uncheck of checkbox if lable is checked.
+    //feature was disabled due to renaming of ID above inside for loop
+    $('.form-check-label').each(function(index, value){
+        var for_old = $(this).attr('for');
+        var for_new = for_old.replace(/\s/g,'_'); //remove space with _
+        $(this).attr('for', for_new);
     });
 
     //listener
