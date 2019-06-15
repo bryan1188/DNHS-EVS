@@ -87,6 +87,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'registration.context_processor.set_school_home'
             ],
         },
     },
@@ -101,7 +102,7 @@ WSGI_APPLICATION = 'DNHS_EVS.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'DNHSEVS_T',
+        'NAME': 'E_voting',
         'USER': 'django',
         'PASSWORD': 'ikpakduwoq!',
         'HOST': 'localhost',
