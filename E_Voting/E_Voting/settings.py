@@ -105,7 +105,7 @@ DATABASES = {
         'NAME': 'E_voting',
         'USER': 'django',
         'PASSWORD': 'ikpakduwoq!',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'PORT': '5454'
     }
 }
