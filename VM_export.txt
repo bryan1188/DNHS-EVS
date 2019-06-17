@@ -1,0 +1,5 @@
+Product:
+E-Voting System by Bryan Keith Jaralve
+
+License:
+Open-source product and free of charge to use. For code modification, please contact the creator Bryan Keith Jaralve through bbjaralve@up.edu.ph.
