@@ -7,6 +7,7 @@ from django.http import HttpResponse
 import json
 from django.utils import timezone
 from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 class ElectionLiveMonitoring(PermissionRequiredMixin, TemplateView):
     permission_required = 'registration.view_vote'
@@ -72,7 +73,7 @@ def populate_vote_count_ajax(request):
                     potential_winners_id.update(candidates_in_tie)
             counter += 1
             number_of_slots -= 1
-            
+
     #update the potential_winner field
     for candidate in return_list:
         if candidate['fields']['candidate_id'] in potential_winners_id:
@@ -94,3 +95,23 @@ def check_for_new_vote_ajax(request):
                         + str(last_vote_timestamp.minute) \
                         + str(last_vote_timestamp.second)
     return JsonResponse(data)
+
+@permission_required('registration.view_vote', raise_exception=True)
+def populate_participation_rate_ajax(request):
+    context = dict()
+
+        # get list of voters
+    election = Election.objects.get_current_election()
+    voters = election.voters.all().order_by(
+                'student_class__grade_level_integer',
+                'student__family_name'
+            )
+    context['voters'] = voters
+    html_panel = render_to_string(
+        'election/partial_election_live_participation_rate.html',
+        context,
+        request=request
+    )
+    return JsonResponse({
+        'html_panel': html_panel
+    })

@@ -31,4 +31,8 @@ urlpatterns = [
         vote.review_voters_vote_auth_ajax,
         name='review_voters_vote_auth_ajax'
     ),
+    path('ajax/populate_participation_rate_live/',
+        live_monitoring.populate_participation_rate_ajax,
+        name='election_live_populate_participation_rate'
+    ),
     ]

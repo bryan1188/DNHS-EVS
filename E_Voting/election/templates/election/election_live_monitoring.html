@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
 
     <style media="screen">
-          #vote_monitoring_wrapper, #vote_monitoring_wrapper .btn{
+          .dataTables_wrapper .btn, .dataTables_wrapper{
             font-size: 11px;
           }
           .odd {
@@ -79,49 +79,8 @@
                       </div>
                       <div id="collapseParticipationRate" class="panel-collapse collapse in">
                           <div class="panel-body">
-                              <div class="panel-group">
-                                    <!-- Overall -->
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading">
-                                            <a href="#collapseParticipationOverall" data-toggle="collapse">
-                                              Overall
-                                            </a>
-                                        </div>
-                                        <div id="collapseParticipationOverall" class="panel-collapse collapse in"">
-                                              <div class="panel-body">
-                                                <ul class="nav nav-tabs">
-                                                  <li class="active"><a data-toggle="tab" href="#{{nav_pill}}-graph-tab-{{object_id}}">Graph</a></li>
-                                                  <li><a data-toggle="tab" href="#{{nav_pill}}-table-tab-{{object_id}}">Tabular</a></li>
-                                                </ul>
-                                              </div>
-                                        </div>
-                                    </div>
-                                    <!-- by grade level -->
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading">
-                                            <a href="#collapseParticipationGrade" data-toggle="collapse">
-                                              By Grade Level
-                                            </a>
-                                        </div>
-                                        <div id="collapseParticipationGrade" class="panel-collapse collapse in"">
-                                              <div class="panel-body">
+                              <div id="panel_group_for_participation_rate" class="panel-group">
 
-                                              </div>
-                                        </div>
-                                    </div>
-                                    <!-- by section -->
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading">
-                                            <a href="#collapseParticipationSection" data-toggle="collapse">
-                                              By Section
-                                            </a>
-                                        </div>
-                                        <div id="collapseParticipationSection" class="panel-collapse collapse in"">
-                                              <div class="panel-body">
-
-                                              </div>
-                                        </div>
-                                    </div>
                               </div>
                           </div>
                       </div>
@@ -169,10 +128,20 @@
         $('#timestamp').html("(" + date_now.toLocaleString() +")");
     }
 
-    $(function () {
+    function update_participation_rate(){
+        $.ajax({
+          url: "{% url 'election:election_live_populate_participation_rate' %}",
+          type: 'get',
+          processing: true,
+          dataType: 'json',
+          success: function(data){
+              // populate html in panel_group_for_participation_rate
+              $('#panel_group_for_participation_rate').html(data.html_panel)
+          },
+        });
+    }
 
-      // set initial date to span timestamp
-      set_timestamp();
+    $(function () {
 
       var last_update = 0;
       var auto_refresh_interval = 60000;
@@ -249,6 +218,7 @@
           history.go(-1);
       });
 
+      //listener
       $('.js-refresh-count').click(function(){
         $('#vote_monitoring').DataTable().ajax.reload();
         set_timestamp();
@@ -269,6 +239,12 @@
                       },
         });
       }, auto_refresh_interval);
+
+      // set initial date to span timestamp
+      set_timestamp();
+
+      //populate participation_rate
+      // update_participation_rate();
 
     });
   </script>
