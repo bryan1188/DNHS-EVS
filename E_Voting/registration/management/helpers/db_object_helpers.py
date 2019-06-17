@@ -188,7 +188,8 @@ def live_monitoring_participation_rate(**kwargs):
             item_dictionary['grade_level_or_section'] = item
             item_dictionary['number_of_voters'] = number_of_voters
             item_dictionary['number_of_voters_voted'] = number_of_voters_voted
-            item_dictionary['participation_rate'] = (number_of_voters_voted/number_of_voters) * 100
+            item_dictionary['number_of_voters_not_voted'] = number_of_voters - number_of_voters_voted
+            item_dictionary['participation_rate'] = round((number_of_voters_voted/number_of_voters) * 100, 2)
             return_list.append(item_dictionary)
         return return_list
 

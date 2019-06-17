@@ -592,9 +592,19 @@ class Election(BaseModel):
     @property
     def participation_rate(self):
         '''
-            This is for active election
+            This is for active election.
+            Return dictionary
+                participation_rate:
+                number_voted:
+                number_not_voted:
         '''
-        return self.voters.get_participation_rate(self)
+        number_voted = self.voters.filter(is_vote_casted=True).count()
+        number_not_voted = self.voters.filter(is_vote_casted=False).count()
+        return {
+                'participation_rate': round(self.voters.get_participation_rate(self)  * 100 , 2),
+                'number_voted' : number_voted,
+                'number_not_voted': number_not_voted
+        }
 
     @property
     def grade_level_participation_rate_dict(self):

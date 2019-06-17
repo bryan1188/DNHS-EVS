@@ -8,6 +8,7 @@ import json
 from django.utils import timezone
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from reporting.management.helpers.color_picker import ColorPicker
 
 class ElectionLiveMonitoring(PermissionRequiredMixin, TemplateView):
     permission_required = 'registration.view_vote'
@@ -96,22 +97,109 @@ def check_for_new_vote_ajax(request):
                         + str(last_vote_timestamp.second)
     return JsonResponse(data)
 
+def bar_graph_data_creator(by_identifier, data):
+    # create dictionary needed for grade_level report
+    '''
+        Dictionary Format:
+        {
+            title_text: <Title of the chart. used in options.title.text>,
+            labels: [list of grade_level/section],
+            object_id: <object_identifier>
+            dataset:
+                {
+                    data: [participation_rate per grade_level/section],
+                    backgroundColor: [get from CollorPicker()],
+                    borderWidth: 1
+                }
+        }
+    '''
+    grade_level_graph_dict = dict()
+    grade_level_color_picker = ColorPicker()
+    grade_level_color_picker.opacity = .6
+    grade_level_graph_dict['title_text'] = "Participation Rate per {}".format(by_identifier)
+    grade_level_graph_dict['labels'] =[ item['grade_level_or_section'] \
+                     for item in data
+    ]
+    dataset_list = list()
+    dataset_dict = dict()
+    dataset_dict['data'] = [ item['participation_rate'] \
+                     for item in data
+    ]
+    dataset_dict['backgroundColor'] = [
+            grade_level_color_picker.get_random_color() \
+            for x in range(len(dataset_dict['data']))
+    ]
+    dataset_dict['borderWidth'] = 1
+    dataset_list.append(dataset_dict)
+    grade_level_graph_dict['dataset'] = dataset_list
+    return grade_level_graph_dict
+
 @permission_required('registration.view_vote', raise_exception=True)
 def populate_participation_rate_ajax(request):
     context = dict()
 
-        # get list of voters
+    # get list of voters
     election = Election.objects.get_current_election()
     voters = election.voters.all().order_by(
                 'student_class__grade_level_integer',
                 'student__family_name'
             )
     context['voters'] = voters
+
+    # get grade_level participation_rate
+    context['grade_level_participation_rate'] = election.grade_level_participation_rate_dict
+
+    # get section participation_rate
+    context['section_participation_rate'] =  election.section_participation_rate_dict
+
+    #get overall participation_rate
+    overall_participation_rate = election.participation_rate
+    overall_participation_rate_graph = dict()
+    # create dictionary needed for overall data
+    '''
+        Dictionary Format:
+        {
+            title_text: <Title of the chart. used in options.title.text>,
+            text_center: <percentage>
+            labels: ['voted', 'not voted'],
+            dataset:
+                {
+                    label: 'Participation Rate',
+                    data: [<#of voted>,<# not voted>],
+                    backgroundColor: [gree,red],
+                    borderWidth: 1
+                }
+        }
+    '''
+    overall_participation_rate_graph['title_text'] = 'Overall Participation Rate'
+    overall_participation_rate_graph['labels'] = ['Voted', 'Not Voted']
+    dataset_list = list()
+    dataset_dict = dict()
+    dataset_dict['label'] = 'Participation Rate'
+    dataset_dict['data'] = [
+                    overall_participation_rate['number_voted'],
+                    overall_participation_rate['number_not_voted']
+    ]
+    dataset_dict['backgroundColor'] = [
+                    "rgba(103, 201, 64, 1)",
+                    "rgba(252, 68, 86, 1)"
+    ]
+    dataset_dict['borderWidth'] = 1
+    overall_participation_rate_graph['center_text'] = "{}%".format(overall_participation_rate['participation_rate'])
+    dataset_list.append(dataset_dict)
+    overall_participation_rate_graph['dataset'] = dataset_list
+
+    grade_level_graph_dict = bar_graph_data_creator("Grade Level", context['grade_level_participation_rate'])
+    section_graph_dict = bar_graph_data_creator("Section", context['section_participation_rate'])
+
     html_panel = render_to_string(
         'election/partial_election_live_participation_rate.html',
         context,
         request=request
     )
     return JsonResponse({
-        'html_panel': html_panel
+        'html_panel': html_panel,
+        'overall_participation_rate_graph': overall_participation_rate_graph,
+        'grade_level_graph_dict': grade_level_graph_dict,
+        'section_graph_dict': section_graph_dict
     })

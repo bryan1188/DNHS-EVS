@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/buttons.bootstrap.min.css' %}">
 
+    <!-- chart.js -->
+    <script src="{% static 'js/Chart.min.js' %}"></script>
+    <script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script>
+
     <style media="screen">
           .dataTables_wrapper .btn, .dataTables_wrapper{
             font-size: 11px;
@@ -56,13 +60,20 @@
                           <div class="panel-body">
                                 <div class="table-responsive">
                                   <table id="vote_monitoring" class="table table-bordered display">
-                                    <thead>
-                                      <tr>
-                                        <th>Position</th>
-                                        <th>Candidate</th>
-                                        <th>Vote Count</th>
-                                      </tr>
-                                    </thead>
+                                      <thead>
+                                        <tr>
+                                          <th>Position</th>
+                                          <th>Candidate</th>
+                                          <th>Vote Count</th>
+                                        </tr>
+                                      </thead>
+                                      <tfoot>
+                                        <tr>
+                                          <th>Position</th>
+                                          <th>Candidate</th>
+                                          <th>Vote Count</th>
+                                        </tr>
+                                    </tfoot>
                                   </table>
                                 </div>
                           </div>
@@ -121,6 +132,31 @@
     </div>
   </div>
 
+  <!-- chartjs plugins to show text in middle -->
+  <!-- http://www.authorcode.com/how-to-add-text-inside-the-doughnut-chart-using-chart-js/ -->
+  <script>
+
+    function drawTotals(chart) {
+
+        var width = chart.chart.width,
+        height = chart.chart.height,
+        ctx = chart.chart.ctx;
+
+        ctx.restore();
+        var fontSize = (height / 114).toFixed(2);
+        ctx.font = fontSize + "em sans-serif";
+        ctx.textBaseline = "middle";
+
+        var text = chart.config.centerText.text,
+        textX = Math.round((width - ctx.measureText(text).width) / 2),
+        textY = height / 2;
+
+        ctx.fillText(text, textX, textY);
+        ctx.save();
+    }
+  </script>
+
+
   <script type="text/javascript">
 
     function set_timestamp(){
@@ -137,6 +173,128 @@
           success: function(data){
               // populate html in panel_group_for_participation_rate
               $('#panel_group_for_participation_rate').html(data.html_panel)
+
+              // for overall doughnut chart
+              var ctx = $('#overall-graph');
+              var overall_chart = new Chart(ctx, {
+                    plugins: [{
+                        beforeDraw: function(chart, options) {
+                          if (chart.config.centerText.display !== null &&
+                              typeof chart.config.centerText.display !== 'undefined' &&
+                              chart.config.centerText.display) {
+                              drawTotals(chart);
+                          }
+                        }
+                    }],
+                    type: 'doughnut',
+                    data: {
+                        labels: data.overall_participation_rate_graph.labels,
+                        datasets: data.overall_participation_rate_graph.dataset
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: data.overall_participation_rate_graph.title_text,
+                            position: 'top',
+                            fontSize: 20
+                        },
+                        legend: {
+                          display: data.overall_participation_rate_graph.labels,
+                          position: 'bottom'
+                        },
+                        plugins: {
+                        // Change options for ALL labels of THIS CHART
+                        datalabels: {
+                            color: '#000000'
+                          }
+                      },
+                    },
+                    centerText: {
+                        display: true,
+                        text: data.overall_participation_rate_graph.center_text,
+                    }
+                });
+
+              // for grade_level bar chart
+              var ctx = $('#grade-level-graph');
+              var grade_level_chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.grade_level_graph_dict.labels,
+                        datasets: data.grade_level_graph_dict.dataset
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: data.grade_level_graph_dict.title_text,
+                            position: 'top',
+                            fontSize: 20
+                        },
+                        legend: {
+                          display: false,
+                          position: 'top'
+                        },
+                        plugins: {
+                        // Change options for ALL labels of THIS CHART
+                        datalabels: {
+                            color: '#000000'
+                          }
+                      },
+                      scales: {
+                          yAxes: [{
+                              ticks: {
+                                  beginAtZero: true
+                              }
+                          }],
+                          xAxes: [{
+                              ticks: {
+                                  beginAtZero: true
+                              }
+                          }]
+                      }
+                    },
+                });
+
+                // for section bar chart
+                var ctx = $('#section-graph');
+                var section_chart = new Chart(ctx, {
+                      type: 'bar',
+                      data: {
+                          labels: data.section_graph_dict.labels,
+                          datasets: data.section_graph_dict.dataset
+                      },
+                      options: {
+                          title: {
+                              display: true,
+                              text: data.section_graph_dict.title_text,
+                              position: 'top',
+                              fontSize: 20
+                          },
+                          legend: {
+                            display: false,
+                            position: 'top'
+                          },
+                          plugins: {
+                          // Change options for ALL labels of THIS CHART
+                          datalabels: {
+                              color: '#000000'
+                            }
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                      },
+                  });
+
           },
         });
     }
@@ -222,6 +380,7 @@
       $('.js-refresh-count').click(function(){
         $('#vote_monitoring').DataTable().ajax.reload();
         set_timestamp();
+        update_participation_rate();
       });
 
       //auto refresh every auto_refresh_interval
@@ -236,6 +395,7 @@
                           $('#vote_monitoring').DataTable().ajax.reload();
                         }
                         set_timestamp();
+                        update_participation_rate();
                       },
         });
       }, auto_refresh_interval);
@@ -244,7 +404,7 @@
       set_timestamp();
 
       //populate participation_rate
-      // update_participation_rate();
+      update_participation_rate();
 
     });
   </script>
