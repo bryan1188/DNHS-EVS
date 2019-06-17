@@ -392,10 +392,10 @@
             success: function(data){
                         if (data.last_vote_timestamp != last_update) {
                           last_update = data.last_vote_timestamp;
-                          $('#vote_monitoring').DataTable().ajax.reload();
+                          $('#vote_monitoring').DataTable().ajax.reload();                          
+                          update_participation_rate();
                         }
                         set_timestamp();
-                        update_participation_rate();
                       },
         });
       }, auto_refresh_interval);
