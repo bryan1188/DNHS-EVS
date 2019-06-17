@@ -383,8 +383,6 @@ def populate_participation_report_graphs_ajax(request):
     '''
     '''
     election_id = request.GET.get('election')
-    # election_id = 1
-    print(election_id)
     result_data = list()
     # make the the html for the panels needed
     html_panel = ""

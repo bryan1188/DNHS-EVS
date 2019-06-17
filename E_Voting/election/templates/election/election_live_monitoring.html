@@ -27,12 +27,12 @@
     <div class="panel panel-info">
       <div class="panel-heading">
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-10">
                 <a data-toggle="collapse" href="#collapseCanidates">
-                  <h2 style="margin: 0px">Live Monitoring</h2>
+                  <h2 style="margin: 0px">Live Monitoring <span id="timestamp"></span></h2>
                 </a>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-2">
                 <button type="button" class="btn btn-primary js-refresh-count"
                 data-toggle="tooltip" data-placement="right" title="Create new Candidate"
                   data-url="{% url 'registration:create_candidate_ajax' %}"
@@ -44,26 +44,89 @@
         </div>
       </div>
       <div id="collapseCanidates" class="panel-collapse collapse in">
-        <div class="panel-body">
-          <form method="post">
-            {% csrf_token %}
-              {{ filter_form.as_p }}
-          </form>
-          <!-- <p>
+          <div class="panel-body">
+              <!-- votes count panel -->
+                <div class="panel panel-success">
+                      <div class="panel-heading">
+                          <a href="#collapseVoteCount" data-toggle="collapse">
+                              Votes Count
+                          </a>
+                      </div>
+                      <div id="collapseVoteCount" class="panel-collapse collapse in">
+                          <div class="panel-body">
+                                <div class="table-responsive">
+                                  <table id="vote_monitoring" class="table table-bordered display">
+                                    <thead>
+                                      <tr>
+                                        <th>Position</th>
+                                        <th>Candidate</th>
+                                        <th>Vote Count</th>
+                                      </tr>
+                                    </thead>
+                                  </table>
+                                </div>
+                          </div>
+                      </div>
+                </div>
 
-          </p> -->
-          <div class="table-responsive">
-            <table id="vote_monitoring" class="table table-bordered display">
-              <thead>
-                <tr>
-                  <th>Position</th>
-                  <th>Candidate</th>
-                  <th>Vote Count</th>
-                </tr>
-              </thead>
-            </table>
+                <!-- participation rate monitoring -->
+                <div class="panel panel-success">
+                      <div class="panel-heading">
+                          <a href="#collapseParticipationRate" data-toggle="collapse">
+                              Participation Rate
+                              <span id="participation_rate"></span>
+                          </a>
+                      </div>
+                      <div id="collapseParticipationRate" class="panel-collapse collapse in">
+                          <div class="panel-body">
+                              <div class="panel-group">
+                                    <!-- Overall -->
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <a href="#collapseParticipationOverall" data-toggle="collapse">
+                                              Overall
+                                            </a>
+                                        </div>
+                                        <div id="collapseParticipationOverall" class="panel-collapse collapse in"">
+                                              <div class="panel-body">
+                                                <ul class="nav nav-tabs">
+                                                  <li class="active"><a data-toggle="tab" href="#{{nav_pill}}-graph-tab-{{object_id}}">Graph</a></li>
+                                                  <li><a data-toggle="tab" href="#{{nav_pill}}-table-tab-{{object_id}}">Tabular</a></li>
+                                                </ul>
+                                              </div>
+                                        </div>
+                                    </div>
+                                    <!-- by grade level -->
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <a href="#collapseParticipationGrade" data-toggle="collapse">
+                                              By Grade Level
+                                            </a>
+                                        </div>
+                                        <div id="collapseParticipationGrade" class="panel-collapse collapse in"">
+                                              <div class="panel-body">
+
+                                              </div>
+                                        </div>
+                                    </div>
+                                    <!-- by section -->
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <a href="#collapseParticipationSection" data-toggle="collapse">
+                                              By Section
+                                            </a>
+                                        </div>
+                                        <div id="collapseParticipationSection" class="panel-collapse collapse in"">
+                                              <div class="panel-body">
+
+                                              </div>
+                                        </div>
+                                    </div>
+                              </div>
+                          </div>
+                      </div>
+                </div>
           </div>
-        </div>
       </div>
     </div>
 
@@ -100,7 +163,16 @@
   </div>
 
   <script type="text/javascript">
+
+    function set_timestamp(){
+        var date_now = new Date();
+        $('#timestamp').html("(" + date_now.toLocaleString() +")");
+    }
+
     $(function () {
+
+      // set initial date to span timestamp
+      set_timestamp();
 
       var last_update = 0;
       var auto_refresh_interval = 60000;
@@ -179,9 +251,10 @@
 
       $('.js-refresh-count').click(function(){
         $('#vote_monitoring').DataTable().ajax.reload();
+        set_timestamp();
       });
 
-      //auto refresh every
+      //auto refresh every auto_refresh_interval
       window.setInterval(function(){
         $.ajax({
             url: "{% url 'election:check_for_new_vote_ajax' %}",
@@ -192,6 +265,7 @@
                           last_update = data.last_vote_timestamp;
                           $('#vote_monitoring').DataTable().ajax.reload();
                         }
+                        set_timestamp();
                       },
         });
       }, auto_refresh_interval);
