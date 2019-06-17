@@ -27,6 +27,89 @@ class Reporting(PermissionRequiredMixin,TemplateView):
         context['participation_rate_filter'] = forms.ElectionResultFilterForm()
         return context
 
+def other_simplfier(input_dictionary):
+    '''
+        it will check a given dictionary and check for elements that are less than 10% in total.
+        THis will be used for graphs so less than 10% numbers will not be shown as individual graph
+            but a summary of them all
+        Example input:
+        {
+            'position': 'President',
+            'title_text': 'Voters Distribution by Age',
+            'labels': [12, 13, 14, 15, 16, 17, 18],
+            'object_id': 'president',
+            'dataset': [
+                    {
+                        'label': 'Candidate1',
+                        'data': [0, 0, 7, 6, 3, 1, 0],
+                        'backgroundColor': 'rgba(255, 99, 132, 0.5)',
+                        'borderWidth': 1
+                    },
+                    {
+                        'label': 'Candidate2',
+                        'data': [1, 3, 15, 11, 3, 2, 1],
+                        'backgroundColor': 'rgba(75, 192, 192, 0.5)',
+                        'borderWidth': 1
+                    }
+                        ]
+        }
+        Example output:
+        {
+                'position': 'President',
+                'title_text': 'Voters Distribution by Age',
+                'labels': [ 15, 16, 17, 'other'],
+                'object_id': 'president',
+                'dataset': [
+                        {
+                            'label': 'Candidate1',
+                            'data': [ 7, 6, 3, 1],
+                            'backgroundColor': 'rgba(255, 99, 132, 0.5)',
+                            'borderWidth': 1
+                        },
+                        {
+                            'label': 'Candidate2',
+                            'data': [ 15, 11, 3, 7],
+
+                            'backgroundColor': 'rgba(75, 192, 192, 0.5)',
+                            'borderWidth': 1
+                        }
+                            ]
+            }
+    '''
+    threshold_percentage = .1
+    index_to_consolidate = list()
+    #get the list of data under dataset
+    data_list = [item['data'] for item in input_dictionary['dataset']]
+
+    #check data_list and identify the indexes that are less than 10 in sum
+    total_data = sum([sum(item) for item in data_list])
+    number_identifier = round(total_data * threshold_percentage)
+
+    #check every element
+    data_length = len(data_list[0]) - 1 #just get first element. all should have the same length
+    while data_length >= 0 :
+        sum_of_all_elements = sum([data[data_length] for data in data_list])
+        if sum_of_all_elements <= number_identifier:
+            index_to_consolidate.append(data_length)
+        data_length -=1
+
+    #time to consolidate
+    if len(index_to_consolidate): #make sure it has an element to consolidate
+        #make changes to data
+        #direct change since dictionary is mutable
+        for item in input_dictionary['dataset']:
+            consolidation_sum = 0
+            for index in index_to_consolidate:
+                consolidation_sum += item['data'].pop(index)
+            #append the sum at the end
+            item['data'].append(consolidation_sum)
+        #make changes to  labels
+        for index in index_to_consolidate:
+            del input_dictionary['labels'][index]
+        #append 'others label'
+        input_dictionary['labels'].append('Others')
+    #no return needed. direct data manipulation on the object
+
 @permission_required(_permission_required, raise_exception=True)
 def get_votes_distribution_ajax(request):
     distribution_by_title_text = {
@@ -119,11 +202,17 @@ def get_votes_distribution_ajax(request):
                 dataset_dict['borderWidth'] = 1
                 dataset_list.append(dataset_dict)
 
+            #make others. if value is below 10 percent, dont make a one graph but rather sum them all and put Others
+
             #replace space with dash(-) to avoid issue in html upon using this as id
             position_as_id = str(position).replace(' ','-').lower()
             position_dict['object_id'] = position_as_id
             position_dict['dataset'] =  dataset_list
+            if distribution_by in ['voter_age','voter_address_barangay'] and len(position_dict['dataset']):
+                other_simplfier(position_dict)
+                #no return data needed
             distribution_by_data.append(position_dict)
+
 
             # create html for the panel to be inserted in the template
             context = dict()
