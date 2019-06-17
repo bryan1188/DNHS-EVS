@@ -821,7 +821,7 @@
       //populate tokens_list
       $(document).ready( function () {
         var table = $('#tokens_list').DataTable({
-          initComplete: function () {
+          initComplete: function () { //for dropdown filter
                 this.api().columns().every( function () {
                     var column = this;
                     var select = $('<select><option value=""></option></select>')

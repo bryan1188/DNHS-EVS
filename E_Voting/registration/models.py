@@ -58,6 +58,23 @@ class ObjectManagerAll(models.Manager):
     def get_queryset(self):
         return super().get_queryset().all()
 
+class VoterObjectManager(models.Manager):
+    def get_participation_rate(self,election):
+        """
+            based on a given election, get the voter's participation rate
+        """
+        total_voters = super().get_queryset().filter(
+                            election=election
+                        ).count()
+        total_voters_voted = super().get_queryset().filter(
+                                election=election,
+                                is_vote_casted = True
+                            ).count()
+        if total_voters != 0:
+            return total_voters_voted/total_voters
+        else:
+            return 0
+
 class ClassSchoolYearManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-school_year')\
@@ -478,6 +495,7 @@ class Election(BaseModel):
 
     def populate_reporting_participation_rate(self):
         '''
+            This is for reporting used Denormalized data
             Steps:
                 1. check if election is FINALIZED
                 2. get overall participation rate
@@ -570,6 +588,37 @@ class Election(BaseModel):
             return True
         else:
             return False
+
+    @property
+    def participation_rate(self):
+        '''
+            This is for active election
+        '''
+        return self.voters.get_participation_rate(self)
+
+    @property
+    def grade_level_participation_rate_dict(self):
+        '''
+            Return a dictionary of participation per grade_level
+        '''
+        from registration.management.helpers.db_object_helpers import live_monitoring_participation_rate
+
+        return live_monitoring_participation_rate(
+                    election_id = self.id,
+                    by_identifier = 'grade_level'
+                )
+
+    @property
+    def section_participation_rate_dict(self):
+        '''
+            Return a dictionary of participation per section
+        '''
+        from registration.management.helpers.db_object_helpers import live_monitoring_participation_rate
+
+        return live_monitoring_participation_rate(
+                    election_id = self.id,
+                    by_identifier = 'section'
+                )
 
 class Party(BaseModel):
     name = models.CharField(
@@ -754,6 +803,8 @@ class Voter(BaseModel):
             default=False,
             verbose_name="Temporary Token"
     )
+
+    objects = VoterObjectManager()
 
     validation_token_hasher = MyHasher()
     validation_token_hasher.hasher_lib = settings.HASHLIB_VOTER_NEW_TOKEN

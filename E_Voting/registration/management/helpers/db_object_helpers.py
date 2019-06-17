@@ -131,12 +131,66 @@ def get_student_summary_data(*args, **kwargs):
                     order by grade_level_integer, section"
 
     #https://django.readthedocs.io/en/2.1.x/topics/db/sql.html
-
     with connection.cursor() as cursor:
         cursor.execute(sql_query)
         desc = cursor.description
         namedtuple_result = namedtuple('Summary',[col[0] for col in desc])
         return [namedtuple_result(*row) for row in cursor.fetchall()]
+
+def live_monitoring_participation_rate(**kwargs):
+    '''
+        get the participation rate data by grade level or by section
+        return data is list of dictionary
+            by_ident:
+            number of voters:
+            number of voters casted:
+            participation rate:
+    '''
+    election_id = kwargs.get('election_id')
+    by_grade_level_or_section = kwargs.get('by_identifier')
+
+    sql_query = "\
+            select {by_identifier}, is_vote_casted, count(*)\
+            from django.registration_voter voter,\
+            	django.registration_student student, \
+            	django.registration_class class \
+            where voter.student_id = student.id \
+            	and voter.student_class_id = class.id \
+            	and voter.election_id = {election_id} \
+            group by {by_identifier}, is_vote_casted,grade_level_integer \
+            order by grade_level_integer	\
+           ".format(
+                by_identifier = by_grade_level_or_section,
+                election_id = election_id
+           )
+    with connection.cursor() as cursor:
+        cursor.execute(sql_query)
+        desc = cursor.description
+        namedtuple_result = namedtuple('Summary',[col[0] for col in desc])
+        namedtuple_result =  [namedtuple_result(*row) for row in cursor.fetchall()]
+
+        # use the return named tuple instead of querying in the database to improve performance
+        #create return list dictionary
+        return_list =  list()
+        item_dictionary = dict()
+
+        #build the list of grade_level/section
+        grade_level_section = list()
+        for item in namedtuple_result:
+            if item[0] not in grade_level_section:
+                grade_level_section.append(item[0])
+
+        for item in grade_level_section:
+            number_of_voters = sum([row.count for row in namedtuple_result if row[0]==item])
+            number_of_voters_voted = sum([row.count for row in namedtuple_result \
+                                        if row[0]==item if row.is_vote_casted])
+            item_dictionary = dict()
+            item_dictionary['grade_level_or_section'] = item
+            item_dictionary['number_of_voters'] = number_of_voters
+            item_dictionary['number_of_voters_voted'] = number_of_voters_voted
+            item_dictionary['participation_rate'] = (number_of_voters_voted/number_of_voters) * 100
+            return_list.append(item_dictionary)
+        return return_list
 
 def truncate_table(table_object):
     '''
