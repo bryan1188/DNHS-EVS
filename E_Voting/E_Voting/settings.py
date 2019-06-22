@@ -40,6 +40,10 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+#recomendation on check deploy
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+X_FRAME_OPTIONS = 'DENY'
 
 # Application definition
 
