@@ -36,7 +36,7 @@ HASHLIB_VOTER_NEW_TOKEN = hashlib.sha512
 VOTE_SECURITY = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -99,14 +99,18 @@ WSGI_APPLICATION = 'E_Voting.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+DATABASE_NAME =  os.environ.get('DB_NAME','E_voting')
+DATABASE_USER = os.environ.get('DB_USER', 'django')
+DATABASE_PASSWORD = os.environ.get('DB_PASSWORD','ikpakduwoq!')
+DATABASE_PORT = os.environ.get('DB_PORT','5454')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'E_voting',
-        'USER': 'django',
-        'PASSWORD': 'ikpakduwoq!',
+        'NAME': DATABASE_NAME,
+        'USER': DATABASE_USER,
+        'PASSWORD': DATABASE_PASSWORD,
         'HOST': '127.0.0.1',
-        'PORT': '5454'
+        'PORT': DATABASE_PORT
     }
 }
 
