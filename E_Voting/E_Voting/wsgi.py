@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'E_Voting.settings2.development')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'E_Voting.settings')
 
 application = get_wsgi_application()
