@@ -21,11 +21,11 @@ TEMPLATE_DIR = os.path.join(BASE_DIR,'templates')
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY','@r#ql!gfrgc5#6=9*7%*8(lha)!5os8kiqdqsex8#*85eoq&!!')
+SECRET_KEY = '@r#ql!gfrgc5#6=9*7%*8(lha)!5os8kiqdqsex8#*85eoq&!!'
 
 # hashing secret key
-HASHING_SECRET_KEY = os.environ.get('HASHING_SECRET_KEY','b0ch523jOhn316ForGodSoLoveTheWorldThatHeGaveHISOnlySon...')
-HASHING_SALT = os.environ.get('HASHING_SALT', 'b0ch523matthew2830')
+HASHING_SECRET_KEY = 'b0ch523jOhn316ForGodSoLoveTheWorldThatHeGaveHISOnlySon...'
+HASHING_SALT = 'b0ch523matthew2830'
 
 #hassing settings
 HASHLIB_VOTER_NEW_TOKEN = hashlib.sha512
