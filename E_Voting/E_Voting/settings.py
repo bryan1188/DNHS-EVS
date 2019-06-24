@@ -41,9 +41,9 @@ DEBUG = False
 ALLOWED_HOSTS = ['*']
 
 #recomendation on check deploy
-CSRF_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
 # SESSION_COOKIE_SECURE = True #needs to be running on https
-X_FRAME_OPTIONS = 'DENY'
+# X_FRAME_OPTIONS = 'DENY'
 
 # Application definition
 
